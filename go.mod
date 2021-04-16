@@ -1,4 +1,4 @@
-module github.com/joeandaverde/astra-client-go/v2
+module github.com/datastax/astra-client-go/v2
 
 go 1.16
 
