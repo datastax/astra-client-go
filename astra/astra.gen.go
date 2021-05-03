@@ -13,12 +13,237 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 )
 
 const (
 	BearerAuthScopes = "BearerAuth.Scopes"
+)
+
+// Defines values for DatabaseAvailableActions.
+const (
+	DatabaseAvailableActionsAddDatacenters DatabaseAvailableActions = "addDatacenters"
+
+	DatabaseAvailableActionsAddKeyspace DatabaseAvailableActions = "addKeyspace"
+
+	DatabaseAvailableActionsAddTable DatabaseAvailableActions = "addTable"
+
+	DatabaseAvailableActionsGetCreds DatabaseAvailableActions = "getCreds"
+
+	DatabaseAvailableActionsLaunchMigrationProxy DatabaseAvailableActions = "launchMigrationProxy"
+
+	DatabaseAvailableActionsPark DatabaseAvailableActions = "park"
+
+	DatabaseAvailableActionsRemoveKeyspace DatabaseAvailableActions = "removeKeyspace"
+
+	DatabaseAvailableActionsRemoveMigrationProxy DatabaseAvailableActions = "removeMigrationProxy"
+
+	DatabaseAvailableActionsResetPassword DatabaseAvailableActions = "resetPassword"
+
+	DatabaseAvailableActionsResize DatabaseAvailableActions = "resize"
+
+	DatabaseAvailableActionsTerminate DatabaseAvailableActions = "terminate"
+
+	DatabaseAvailableActionsTerminateDatacenter DatabaseAvailableActions = "terminateDatacenter"
+
+	DatabaseAvailableActionsUnpark DatabaseAvailableActions = "unpark"
+)
+
+// Defines values for DatabaseInfoCloudProvider.
+const (
+	DatabaseInfoCloudProviderAWS DatabaseInfoCloudProvider = "AWS"
+
+	DatabaseInfoCloudProviderAZURE DatabaseInfoCloudProvider = "AZURE"
+
+	DatabaseInfoCloudProviderGCP DatabaseInfoCloudProvider = "GCP"
+)
+
+// Defines values for DatabaseInfoTier.
+const (
+	DatabaseInfoTierA10 DatabaseInfoTier = "A10"
+
+	DatabaseInfoTierA20 DatabaseInfoTier = "A20"
+
+	DatabaseInfoTierA40 DatabaseInfoTier = "A40"
+
+	DatabaseInfoTierA5 DatabaseInfoTier = "A5"
+
+	DatabaseInfoTierC10 DatabaseInfoTier = "C10"
+
+	DatabaseInfoTierC20 DatabaseInfoTier = "C20"
+
+	DatabaseInfoTierC40 DatabaseInfoTier = "C40"
+
+	DatabaseInfoTierD10 DatabaseInfoTier = "D10"
+
+	DatabaseInfoTierD20 DatabaseInfoTier = "D20"
+
+	DatabaseInfoTierD40 DatabaseInfoTier = "D40"
+
+	DatabaseInfoTierDeveloper DatabaseInfoTier = "developer"
+)
+
+// Defines values for DatabaseInfoCreateCloudProvider.
+const (
+	DatabaseInfoCreateCloudProviderAWS DatabaseInfoCreateCloudProvider = "AWS"
+
+	DatabaseInfoCreateCloudProviderAZURE DatabaseInfoCreateCloudProvider = "AZURE"
+
+	DatabaseInfoCreateCloudProviderGCP DatabaseInfoCreateCloudProvider = "GCP"
+)
+
+// Defines values for DatabaseInfoCreateTier.
+const (
+	DatabaseInfoCreateTierA10 DatabaseInfoCreateTier = "A10"
+
+	DatabaseInfoCreateTierA20 DatabaseInfoCreateTier = "A20"
+
+	DatabaseInfoCreateTierA40 DatabaseInfoCreateTier = "A40"
+
+	DatabaseInfoCreateTierA5 DatabaseInfoCreateTier = "A5"
+
+	DatabaseInfoCreateTierC10 DatabaseInfoCreateTier = "C10"
+
+	DatabaseInfoCreateTierC20 DatabaseInfoCreateTier = "C20"
+
+	DatabaseInfoCreateTierC40 DatabaseInfoCreateTier = "C40"
+
+	DatabaseInfoCreateTierD10 DatabaseInfoCreateTier = "D10"
+
+	DatabaseInfoCreateTierD20 DatabaseInfoCreateTier = "D20"
+
+	DatabaseInfoCreateTierD40 DatabaseInfoCreateTier = "D40"
+
+	DatabaseInfoCreateTierDeveloper DatabaseInfoCreateTier = "developer"
+)
+
+// Defines values for PolicyActions.
+const (
+	PolicyActionsDbAllKeyspaceCreate PolicyActions = "db-all-keyspace-create"
+
+	PolicyActionsDbAllKeyspaceDescribe PolicyActions = "db-all-keyspace-describe"
+
+	PolicyActionsDbCql PolicyActions = "db-cql"
+
+	PolicyActionsDbGraphql PolicyActions = "db-graphql"
+
+	PolicyActionsDbKeyspaceAlter PolicyActions = "db-keyspace-alter"
+
+	PolicyActionsDbKeyspaceAuthorize PolicyActions = "db-keyspace-authorize"
+
+	PolicyActionsDbKeyspaceCreate PolicyActions = "db-keyspace-create"
+
+	PolicyActionsDbKeyspaceDescribe PolicyActions = "db-keyspace-describe"
+
+	PolicyActionsDbKeyspaceDrop PolicyActions = "db-keyspace-drop"
+
+	PolicyActionsDbKeyspaceGrant PolicyActions = "db-keyspace-grant"
+
+	PolicyActionsDbKeyspaceModify PolicyActions = "db-keyspace-modify"
+
+	PolicyActionsDbRest PolicyActions = "db-rest"
+
+	PolicyActionsDbTableAlter PolicyActions = "db-table-alter"
+
+	PolicyActionsDbTableAuthorize PolicyActions = "db-table-authorize"
+
+	PolicyActionsDbTableCreate PolicyActions = "db-table-create"
+
+	PolicyActionsDbTableDescribe PolicyActions = "db-table-describe"
+
+	PolicyActionsDbTableDrop PolicyActions = "db-table-drop"
+
+	PolicyActionsDbTableGrant PolicyActions = "db-table-grant"
+
+	PolicyActionsDbTableModify PolicyActions = "db-table-modify"
+
+	PolicyActionsDbTableSelect PolicyActions = "db-table-select"
+
+	PolicyActionsOrgAuditsRead PolicyActions = "org-audits-read"
+
+	PolicyActionsOrgBillingRead PolicyActions = "org-billing-read"
+
+	PolicyActionsOrgBillingWrite PolicyActions = "org-billing-write"
+
+	PolicyActionsOrgDbAddpeering PolicyActions = "org-db-addpeering"
+
+	PolicyActionsOrgDbCreate PolicyActions = "org-db-create"
+
+	PolicyActionsOrgDbExpand PolicyActions = "org-db-expand"
+
+	PolicyActionsOrgDbManagemigratorproxy PolicyActions = "org-db-managemigratorproxy"
+
+	PolicyActionsOrgDbPasswordreset PolicyActions = "org-db-passwordreset"
+
+	PolicyActionsOrgDbSuspend PolicyActions = "org-db-suspend"
+
+	PolicyActionsOrgDbTerminate PolicyActions = "org-db-terminate"
+
+	PolicyActionsOrgDbView PolicyActions = "org-db-view"
+
+	PolicyActionsOrgExternalAuthRead PolicyActions = "org-external-auth-read"
+
+	PolicyActionsOrgExternalAuthWrite PolicyActions = "org-external-auth-write"
+
+	PolicyActionsOrgNotificationWrite PolicyActions = "org-notification-write"
+
+	PolicyActionsOrgRead PolicyActions = "org-read"
+
+	PolicyActionsOrgRoleDelete PolicyActions = "org-role-delete"
+
+	PolicyActionsOrgRoleRead PolicyActions = "org-role-read"
+
+	PolicyActionsOrgRoleWrite PolicyActions = "org-role-write"
+
+	PolicyActionsOrgTokenRead PolicyActions = "org-token-read"
+
+	PolicyActionsOrgTokenWrite PolicyActions = "org-token-write"
+
+	PolicyActionsOrgUserRead PolicyActions = "org-user-read"
+
+	PolicyActionsOrgUserWrite PolicyActions = "org-user-write"
+
+	PolicyActionsOrgWrite PolicyActions = "org-write"
+)
+
+// Defines values for PolicyEffect.
+const (
+	PolicyEffectAllow PolicyEffect = "allow"
+)
+
+// Defines values for StatusEnum.
+const (
+	StatusEnumACTIVE StatusEnum = "ACTIVE"
+
+	StatusEnumERROR StatusEnum = "ERROR"
+
+	StatusEnumINITIALIZING StatusEnum = "INITIALIZING"
+
+	StatusEnumMAINTENANCE StatusEnum = "MAINTENANCE"
+
+	StatusEnumPARKED StatusEnum = "PARKED"
+
+	StatusEnumPARKING StatusEnum = "PARKING"
+
+	StatusEnumPENDING StatusEnum = "PENDING"
+
+	StatusEnumPREPARED StatusEnum = "PREPARED"
+
+	StatusEnumPREPARING StatusEnum = "PREPARING"
+
+	StatusEnumRESIZING StatusEnum = "RESIZING"
+
+	StatusEnumSUSPENDED StatusEnum = "SUSPENDED"
+
+	StatusEnumTERMINATED StatusEnum = "TERMINATED"
+
+	StatusEnumTERMINATING StatusEnum = "TERMINATING"
+
+	StatusEnumUNKNOWN StatusEnum = "UNKNOWN"
+
+	StatusEnumUNPARKING StatusEnum = "UNPARKING"
 )
 
 // AvailableRegionCombination defines a Tier, cloud provider, region combination
@@ -37,8 +262,23 @@ type AvailableRegionCombination struct {
 // CapacityUnits is used to horizontally scale a database.
 type CapacityUnits struct {
 
-	// CapacityUnits an be increased by a max of three additional capacity units per operation. Reducing capacity units is not supported at this time
+	// CapacityUnits can be increased by a max of three additional capacity units per operation. Reducing capacity units is not supported at this time
 	CapacityUnits *int `json:"capacityUnits,omitempty"`
+}
+
+// An individual clientID and associated roles
+type ClientRole struct {
+
+	// the clientID
+	ClientId *string   `json:"clientId,omitempty"`
+	Roles    *[]string `json:"roles,omitempty"`
+}
+
+// The response for a requested token
+type ClientRoleList struct {
+
+	// a list of clientId and associated soles
+	Clients *[]ClientRole `json:"clients,omitempty"`
 }
 
 // Costs defines model for Costs.
@@ -51,6 +291,14 @@ type Costs struct {
 	CostPerMinParkedCents   *float64 `json:"costPerMinParkedCents,omitempty"`
 	CostPerMonthCents       *float64 `json:"costPerMonthCents,omitempty"`
 	CostPerMonthParkedCents *float64 `json:"costPerMonthParkedCents,omitempty"`
+}
+
+// The createRole model
+type CreateRoleRequest struct {
+	Name string `json:"name"`
+
+	// A policy for a role in Astra.
+	Policy Policy `json:"policy"`
 }
 
 // CredsURL from which the creds zip may be downloaded
@@ -71,8 +319,8 @@ type CredsURL struct {
 
 // Database contains the key information about a database
 type Database struct {
-	AvailableActions *[]string `json:"availableActions,omitempty"`
-	CqlshUrl         *string   `json:"cqlshUrl,omitempty"`
+	AvailableActions *[]DatabaseAvailableActions `json:"availableActions,omitempty"`
+	CqlshUrl         *string                     `json:"cqlshUrl,omitempty"`
 
 	// CreationTime in ISO RFC3339 format
 	CreationTime    *string `json:"creationTime,omitempty"`
@@ -98,17 +346,20 @@ type Database struct {
 	TerminationTime *string `json:"terminationTime,omitempty"`
 }
 
+// DatabaseAvailableActions defines model for Database.AvailableActions.
+type DatabaseAvailableActions string
+
 // DatabaseInfo is the user-provided information describing a database
 type DatabaseInfo struct {
 
 	// Additional keyspaces names in database
 	AdditionalKeyspaces *[]string `json:"additionalKeyspaces,omitempty"`
 
-	// Capacity units were used for classic databases, but are not used for serverless databases. Enter 1 CU for serverless databases. Classic databases can no longer be created with the DevOps API.
+	// CapacityUnits is the amount of space available (horizontal scaling) for the database. For free tier the max CU's is 1, and 12 for C10 the max is 12 on startup.
 	CapacityUnits *int `json:"capacityUnits,omitempty"`
 
-	// This is the cloud provider where the database lives.
-	CloudProvider *string `json:"cloudProvider,omitempty"`
+	// CloudProvider where the database lives
+	CloudProvider *DatabaseInfoCloudProvider `json:"cloudProvider,omitempty"`
 
 	// Keyspace name in database
 	Keyspace *string `json:"keyspace,omitempty"`
@@ -122,21 +373,27 @@ type DatabaseInfo struct {
 	// Region refers to the cloud region.
 	Region *string `json:"region,omitempty"`
 
-	// With the exception of classic databases, all databases are serverless. Classic databases can no longer be created with the DevOps API.
-	Tier *string `json:"tier,omitempty"`
+	// Tier defines the compute power (vertical scaling) for the database
+	Tier *DatabaseInfoTier `json:"tier,omitempty"`
 
 	// User is the user to access the database
 	User *string `json:"user,omitempty"`
 }
 
+// CloudProvider where the database lives
+type DatabaseInfoCloudProvider string
+
+// Tier defines the compute power (vertical scaling) for the database
+type DatabaseInfoTier string
+
 // DatabaseInfo is the user-provided information describing a database
 type DatabaseInfoCreate struct {
 
-	// Capacity units were used for classic databases, but are not used for serverless databases. Enter 1 CU for serverless databases. Classic databases can no longer be created with the DevOps API.
+	// CapacityUnits is the amount of space available (horizontal scaling) for the database. For free tier the max CU's is 1, and 100 for CXX/DXX the max is 12 on startup.
 	CapacityUnits int `json:"capacityUnits"`
 
-	// This is the cloud provider where the database lives.
-	CloudProvider string `json:"cloudProvider"`
+	// CloudProvider where the database lives
+	CloudProvider DatabaseInfoCreateCloudProvider `json:"cloudProvider"`
 
 	// Keyspace name in database
 	Keyspace string `json:"keyspace"`
@@ -144,12 +401,24 @@ type DatabaseInfoCreate struct {
 	// Name of the database--user friendly identifier
 	Name string `json:"name"`
 
+	// Password for the user to access the database
+	Password string `json:"password"`
+
 	// Region refers to the cloud region.
 	Region string `json:"region"`
 
-	// With the exception of classic databases, all databases are serverless. Classic databases can no longer be created with the DevOps API.
-	Tier string `json:"tier"`
+	// Tier defines the compute power (vertical scaling) for the database, developer gcp is the free tier.
+	Tier DatabaseInfoCreateTier `json:"tier"`
+
+	// User is the user to access the database
+	User string `json:"user"`
 }
+
+// CloudProvider where the database lives
+type DatabaseInfoCreateCloudProvider string
+
+// Tier defines the compute power (vertical scaling) for the database, developer gcp is the free tier.
+type DatabaseInfoCreateTier string
 
 // ModelError information that is returned to users
 type Error struct {
@@ -166,26 +435,132 @@ type Errors struct {
 	Errors []Error `json:"errors"`
 }
 
+// The post body to generate a token
+type GenerateTokenBody struct {
+
+	// The roles for which the token will be generated
+	Roles []string `json:"roles"`
+}
+
+// The response for a requested token
+type GenerateTokenResponse struct {
+
+	// The id of the client (uuid)
+	ClientId string `json:"clientId"`
+
+	// the UUID of the organization
+	OrgId string `json:"orgId"`
+
+	// The roles for which the token will be generated
+	Roles []string `json:"roles"`
+
+	// The secret token
+	Secret string `json:"secret"`
+
+	// AstraCS:clientId:hex(sha256(secret))
+	Token *string `json:"token,omitempty"`
+}
+
+// Configuration of the migration proxy and mappings of astra node to a customer node currently in use
+type MigrationProxyConfiguration struct {
+	Mappings []MigrationProxyMapping `json:"mappings"`
+
+	// origin cassandra password
+	OriginPassword string `json:"originPassword"`
+
+	// origin cassandra username
+	OriginUsername string `json:"originUsername"`
+}
+
+// A mapping of astra node to a customer node currently in use
+type MigrationProxyMapping struct {
+
+	// ip on which the node currently in use is accessible
+	OriginIP string `json:"originIP"`
+
+	// port on which the node currently in use is accessible
+	OriginPort int `json:"originPort"`
+
+	// the number of the rack, usually 0, 1, or 2
+	Rack int `json:"rack"`
+
+	// The number of the node in a given rack, starting with 0
+	RackNodeOrdinal int `json:"rackNodeOrdinal"`
+}
+
+// An organization
+type Organization struct {
+
+	// The organization UUID
+	Id string `json:"id"`
+}
+
+// A policy for a role in Astra.
+type Policy struct {
+
+	// The actions this policy can take. Example Actions: 'org-billing-write' 'db-keyspace-create'
+	Actions []PolicyActions `json:"actions"`
+
+	// A description of this policy
+	Description string `json:"description"`
+
+	// Effect this policy will have on the provided resource
+	Effect PolicyEffect `json:"effect"`
+
+	// The resources this policy can manipulate.
+	Resources []string `json:"resources"`
+}
+
+// PolicyActions defines model for Policy.Actions.
+type PolicyActions string
+
+// Effect this policy will have on the provided resource
+type PolicyEffect string
+
+// Details of a user role and its policy details
+type Role struct {
+
+	// The unique system generated identifier of the role.
+	Id *string `json:"id,omitempty"`
+
+	// The date and time of the last update on the role.
+	LastUpdateDatetime *time.Time `json:"last_update_datetime,omitempty"`
+
+	// The userID of the user who last updated the role.
+	LastUpdateUserid *string `json:"last_update_userid,omitempty"`
+
+	// The name of the role.
+	Name *string `json:"name,omitempty"`
+
+	// A policy for a role in Astra.
+	Policy *Policy `json:"policy,omitempty"`
+}
+
+// an array of roles
+type Roles []Role
+
+// ServiceAccountTokenInput defines model for ServiceAccountTokenInput.
+type ServiceAccountTokenInput struct {
+
+	// The unique identifier for the client for authentication
+	ClientId string `json:"clientId"`
+
+	// The organization name in a more human readable format
+	ClientName string `json:"clientName"`
+
+	// The UUID client secret for the service account from the create service account response in the user interface
+	ClientSecret string `json:"clientSecret"`
+}
+
+// ServiceAccountTokenResponse defines model for ServiceAccountTokenResponse.
+type ServiceAccountTokenResponse struct {
+
+	// JWT that will be used as Authorization header on all requests requiring authentication.
+	Token *string `json:"token,omitempty"`
+}
+
 // StatusEnum defines model for StatusEnum.
 type StatusEnum string
-
-// List of StatusEnum
-const (
-	StatusEnum_ACTIVE       StatusEnum = "ACTIVE"
-	StatusEnum_ERROR        StatusEnum = "ERROR"
-	StatusEnum_INITIALIZING StatusEnum = "INITIALIZING"
-	StatusEnum_MAINTENANCE  StatusEnum = "MAINTENANCE"
-	StatusEnum_PARKED       StatusEnum = "PARKED"
-	StatusEnum_PARKING      StatusEnum = "PARKING"
-	StatusEnum_PENDING      StatusEnum = "PENDING"
-	StatusEnum_PREPARED     StatusEnum = "PREPARED"
-	StatusEnum_PREPARING    StatusEnum = "PREPARING"
-	StatusEnum_RESIZING     StatusEnum = "RESIZING"
-	StatusEnum_TERMINATED   StatusEnum = "TERMINATED"
-	StatusEnum_TERMINATING  StatusEnum = "TERMINATING"
-	StatusEnum_UNKNOWN      StatusEnum = "UNKNOWN"
-	StatusEnum_UNPARKING    StatusEnum = "UNPARKING"
-)
 
 // Storage contains the information about how much storage space a cluster has available
 type Storage struct {
@@ -203,6 +578,14 @@ type Storage struct {
 	UsedStorage *int `json:"usedStorage,omitempty"`
 }
 
+// The updateRole model
+type UpdateRoleRequest struct {
+	Name string `json:"name"`
+
+	// A policy for a role in Astra.
+	Policy Policy `json:"policy"`
+}
+
 // UserPassword specifies a username and new password. The specified password will be updated for the specified database user
 type UserPassword struct {
 
@@ -211,17 +594,26 @@ type UserPassword struct {
 	Username *string `json:"username,omitempty"`
 }
 
+// ClientIdParam defines model for ClientIdParam.
+type ClientIdParam string
+
 // DatabaseIdParam defines model for DatabaseIdParam.
 type DatabaseIdParam string
 
 // KeyspaceNameParam defines model for KeyspaceNameParam.
 type KeyspaceNameParam string
 
+// RoleIdParam defines model for RoleIdParam.
+type RoleIdParam string
+
 // Errors is a collection of individual Error objects
 type BadRequest Errors
 
 // Errors is a collection of individual Error objects
 type Conflict Errors
+
+// Errors is a collection of individual Error objects
+type Forbidden Errors
 
 // Errors is a collection of individual Error objects
 type NotFound Errors
@@ -235,14 +627,20 @@ type Unauthorized Errors
 // Errors is a collection of individual Error objects
 type UnprocessableEntity Errors
 
+// AuthenticateServiceAccountTokenJSONBody defines parameters for AuthenticateServiceAccountToken.
+type AuthenticateServiceAccountTokenJSONBody ServiceAccountTokenInput
+
+// GenerateTokenForClientJSONBody defines parameters for GenerateTokenForClient.
+type GenerateTokenForClientJSONBody GenerateTokenBody
+
 // ListDatabasesParams defines parameters for ListDatabases.
 type ListDatabasesParams struct {
 
 	// Allows filtering so that databases in listed states are returned
-	Include *string `json:"include,omitempty"`
+	Include *ListDatabasesParamsInclude `json:"include,omitempty"`
 
 	// Allows filtering so that databases from a given provider are returned
-	Provider *string `json:"provider,omitempty"`
+	Provider *ListDatabasesParamsProvider `json:"provider,omitempty"`
 
 	// Optional parameter for pagination purposes. Used as this value for starting retrieving a specific page of results
 	StartingAfter *string `json:"starting_after,omitempty"`
@@ -251,14 +649,30 @@ type ListDatabasesParams struct {
 	Limit *int `json:"limit,omitempty"`
 }
 
+// ListDatabasesParamsInclude defines parameters for ListDatabases.
+type ListDatabasesParamsInclude string
+
+// ListDatabasesParamsProvider defines parameters for ListDatabases.
+type ListDatabasesParamsProvider string
+
 // CreateDatabaseJSONBody defines parameters for CreateDatabase.
 type CreateDatabaseJSONBody DatabaseInfoCreate
+
+// LaunchMigrationProxyJSONBody defines parameters for LaunchMigrationProxy.
+type LaunchMigrationProxyJSONBody MigrationProxyConfiguration
 
 // ResetPasswordJSONBody defines parameters for ResetPassword.
 type ResetPasswordJSONBody UserPassword
 
 // ResizeDatabaseJSONBody defines parameters for ResizeDatabase.
 type ResizeDatabaseJSONBody CapacityUnits
+
+// SuspendDatabaseParams defines parameters for SuspendDatabase.
+type SuspendDatabaseParams struct {
+
+	// Represents, from 0 to 100, the free credits percentage consumed.
+	FreeConsumed *int `json:"freeConsumed,omitempty"`
+}
 
 // TerminateDatabaseParams defines parameters for TerminateDatabase.
 type TerminateDatabaseParams struct {
@@ -267,14 +681,35 @@ type TerminateDatabaseParams struct {
 	PreparedStateOnly *bool `json:"preparedStateOnly,omitempty"`
 }
 
+// AddOrganizationRoleJSONBody defines parameters for AddOrganizationRole.
+type AddOrganizationRoleJSONBody CreateRoleRequest
+
+// UpdateRoleJSONBody defines parameters for UpdateRole.
+type UpdateRoleJSONBody UpdateRoleRequest
+
+// AuthenticateServiceAccountTokenJSONRequestBody defines body for AuthenticateServiceAccountToken for application/json ContentType.
+type AuthenticateServiceAccountTokenJSONRequestBody AuthenticateServiceAccountTokenJSONBody
+
+// GenerateTokenForClientJSONRequestBody defines body for GenerateTokenForClient for application/json ContentType.
+type GenerateTokenForClientJSONRequestBody GenerateTokenForClientJSONBody
+
 // CreateDatabaseJSONRequestBody defines body for CreateDatabase for application/json ContentType.
 type CreateDatabaseJSONRequestBody CreateDatabaseJSONBody
+
+// LaunchMigrationProxyJSONRequestBody defines body for LaunchMigrationProxy for application/json ContentType.
+type LaunchMigrationProxyJSONRequestBody LaunchMigrationProxyJSONBody
 
 // ResetPasswordJSONRequestBody defines body for ResetPassword for application/json ContentType.
 type ResetPasswordJSONRequestBody ResetPasswordJSONBody
 
 // ResizeDatabaseJSONRequestBody defines body for ResizeDatabase for application/json ContentType.
 type ResizeDatabaseJSONRequestBody ResizeDatabaseJSONBody
+
+// AddOrganizationRoleJSONRequestBody defines body for AddOrganizationRole for application/json ContentType.
+type AddOrganizationRoleJSONRequestBody AddOrganizationRoleJSONBody
+
+// UpdateRoleJSONRequestBody defines body for UpdateRole for application/json ContentType.
+type UpdateRoleJSONRequestBody UpdateRoleJSONBody
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -349,8 +784,27 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// AuthenticateServiceAccountToken request  with any body
+	AuthenticateServiceAccountTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AuthenticateServiceAccountToken(ctx context.Context, body AuthenticateServiceAccountTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListAvailableRegions request
 	ListAvailableRegions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetClientsForOrg request
+	GetClientsForOrg(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GenerateTokenForClient request  with any body
+	GenerateTokenForClientWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	GenerateTokenForClient(ctx context.Context, body GenerateTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteTokenForClient request
+	DeleteTokenForClient(ctx context.Context, clientId ClientIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCurrentOrganization request
+	GetCurrentOrganization(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListDatabases request
 	ListDatabases(ctx context.Context, params *ListDatabasesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -365,6 +819,14 @@ type ClientInterface interface {
 
 	// AddKeyspace request
 	AddKeyspace(ctx context.Context, databaseID DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RemoveMigrationProxy request
+	RemoveMigrationProxy(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// LaunchMigrationProxy request  with any body
+	LaunchMigrationProxyWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	LaunchMigrationProxy(ctx context.Context, databaseID DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ParkDatabase request
 	ParkDatabase(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -382,15 +844,121 @@ type ClientInterface interface {
 	// GenerateSecureBundleURL request
 	GenerateSecureBundleURL(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// SuspendDatabase request
+	SuspendDatabase(ctx context.Context, databaseID DatabaseIdParam, params *SuspendDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// TerminateDatabase request
 	TerminateDatabase(ctx context.Context, databaseID DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UnparkDatabase request
 	UnparkDatabase(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOrganizationRoles request
+	GetOrganizationRoles(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AddOrganizationRole request  with any body
+	AddOrganizationRoleWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AddOrganizationRole(ctx context.Context, body AddOrganizationRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOrganizationRole request
+	DeleteOrganizationRole(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOrganizationRole request
+	GetOrganizationRole(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateRole request  with any body
+	UpdateRoleWithBody(ctx context.Context, roleID RoleIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateRole(ctx context.Context, roleID RoleIdParam, body UpdateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) AuthenticateServiceAccountTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAuthenticateServiceAccountTokenRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AuthenticateServiceAccountToken(ctx context.Context, body AuthenticateServiceAccountTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAuthenticateServiceAccountTokenRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) ListAvailableRegions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListAvailableRegionsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetClientsForOrg(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetClientsForOrgRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GenerateTokenForClientWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateTokenForClientRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GenerateTokenForClient(ctx context.Context, body GenerateTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateTokenForClientRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteTokenForClient(ctx context.Context, clientId ClientIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteTokenForClientRequest(c.Server, clientId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCurrentOrganization(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCurrentOrganizationRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -451,6 +1019,42 @@ func (c *Client) GetDatabase(ctx context.Context, databaseID DatabaseIdParam, re
 
 func (c *Client) AddKeyspace(ctx context.Context, databaseID DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAddKeyspaceRequest(c.Server, databaseID, keyspaceName)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RemoveMigrationProxy(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRemoveMigrationProxyRequest(c.Server, databaseID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LaunchMigrationProxyWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLaunchMigrationProxyRequestWithBody(c.Server, databaseID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) LaunchMigrationProxy(ctx context.Context, databaseID DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLaunchMigrationProxyRequest(c.Server, databaseID, body)
 	if err != nil {
 		return nil, err
 	}
@@ -533,6 +1137,18 @@ func (c *Client) GenerateSecureBundleURL(ctx context.Context, databaseID Databas
 	return c.Client.Do(req)
 }
 
+func (c *Client) SuspendDatabase(ctx context.Context, databaseID DatabaseIdParam, params *SuspendDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSuspendDatabaseRequest(c.Server, databaseID, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) TerminateDatabase(ctx context.Context, databaseID DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewTerminateDatabaseRequest(c.Server, databaseID, params)
 	if err != nil {
@@ -557,6 +1173,130 @@ func (c *Client) UnparkDatabase(ctx context.Context, databaseID DatabaseIdParam,
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetOrganizationRoles(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOrganizationRolesRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddOrganizationRoleWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddOrganizationRoleRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddOrganizationRole(ctx context.Context, body AddOrganizationRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddOrganizationRoleRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteOrganizationRole(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOrganizationRoleRequest(c.Server, roleID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOrganizationRole(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOrganizationRoleRequest(c.Server, roleID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRoleWithBody(ctx context.Context, roleID RoleIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRoleRequestWithBody(c.Server, roleID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRole(ctx context.Context, roleID RoleIdParam, body UpdateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRoleRequest(c.Server, roleID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NewAuthenticateServiceAccountTokenRequest calls the generic AuthenticateServiceAccountToken builder with application/json body
+func NewAuthenticateServiceAccountTokenRequest(server string, body AuthenticateServiceAccountTokenJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAuthenticateServiceAccountTokenRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAuthenticateServiceAccountTokenRequestWithBody generates requests for AuthenticateServiceAccountToken with any type of body
+func NewAuthenticateServiceAccountTokenRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/authenticateServiceAccount")
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListAvailableRegionsRequest generates requests for ListAvailableRegions
 func NewListAvailableRegionsRequest(server string) (*http.Request, error) {
 	var err error
@@ -567,6 +1307,134 @@ func NewListAvailableRegionsRequest(server string) (*http.Request, error) {
 	}
 
 	operationPath := fmt.Sprintf("/v2/availableRegions")
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetClientsForOrgRequest generates requests for GetClientsForOrg
+func NewGetClientsForOrgRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/clientIdSecrets")
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGenerateTokenForClientRequest calls the generic GenerateTokenForClient builder with application/json body
+func NewGenerateTokenForClientRequest(server string, body GenerateTokenForClientJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewGenerateTokenForClientRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewGenerateTokenForClientRequestWithBody generates requests for GenerateTokenForClient with any type of body
+func NewGenerateTokenForClientRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/clientIdSecrets")
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteTokenForClientRequest generates requests for DeleteTokenForClient
+func NewDeleteTokenForClientRequest(server string, clientId ClientIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clientId", runtime.ParamLocationPath, clientId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/clientIdSecrets/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetCurrentOrganizationRequest generates requests for GetCurrentOrganization
+func NewGetCurrentOrganizationRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/currentOrg")
 	if operationPath[0] == '/' {
 		operationPath = operationPath[1:]
 	}
@@ -794,6 +1662,87 @@ func NewAddKeyspaceRequest(server string, databaseID DatabaseIdParam, keyspaceNa
 	return req, nil
 }
 
+// NewRemoveMigrationProxyRequest generates requests for RemoveMigrationProxy
+func NewRemoveMigrationProxyRequest(server string, databaseID DatabaseIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/migrationProxy", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewLaunchMigrationProxyRequest calls the generic LaunchMigrationProxy builder with application/json body
+func NewLaunchMigrationProxyRequest(server string, databaseID DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewLaunchMigrationProxyRequestWithBody(server, databaseID, "application/json", bodyReader)
+}
+
+// NewLaunchMigrationProxyRequestWithBody generates requests for LaunchMigrationProxy with any type of body
+func NewLaunchMigrationProxyRequestWithBody(server string, databaseID DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/migrationProxy", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewParkDatabaseRequest generates requests for ParkDatabase
 func NewParkDatabaseRequest(server string, databaseID DatabaseIdParam) (*http.Request, error) {
 	var err error
@@ -956,6 +1905,60 @@ func NewGenerateSecureBundleURLRequest(server string, databaseID DatabaseIdParam
 	return req, nil
 }
 
+// NewSuspendDatabaseRequest generates requests for SuspendDatabase
+func NewSuspendDatabaseRequest(server string, databaseID DatabaseIdParam, params *SuspendDatabaseParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/suspend", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	queryValues := queryURL.Query()
+
+	if params.FreeConsumed != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "freeConsumed", runtime.ParamLocationQuery, *params.FreeConsumed); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewTerminateDatabaseRequest generates requests for TerminateDatabase
 func NewTerminateDatabaseRequest(server string, databaseID DatabaseIdParam, params *TerminateDatabaseParams) (*http.Request, error) {
 	var err error
@@ -1044,6 +2047,188 @@ func NewUnparkDatabaseRequest(server string, databaseID DatabaseIdParam) (*http.
 	return req, nil
 }
 
+// NewGetOrganizationRolesRequest generates requests for GetOrganizationRoles
+func NewGetOrganizationRolesRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/roles")
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAddOrganizationRoleRequest calls the generic AddOrganizationRole builder with application/json body
+func NewAddOrganizationRoleRequest(server string, body AddOrganizationRoleJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddOrganizationRoleRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAddOrganizationRoleRequestWithBody generates requests for AddOrganizationRole with any type of body
+func NewAddOrganizationRoleRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/roles")
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteOrganizationRoleRequest generates requests for DeleteOrganizationRole
+func NewDeleteOrganizationRoleRequest(server string, roleID RoleIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "roleID", runtime.ParamLocationPath, roleID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/roles/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetOrganizationRoleRequest generates requests for GetOrganizationRole
+func NewGetOrganizationRoleRequest(server string, roleID RoleIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "roleID", runtime.ParamLocationPath, roleID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/roles/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateRoleRequest calls the generic UpdateRole builder with application/json body
+func NewUpdateRoleRequest(server string, roleID RoleIdParam, body UpdateRoleJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateRoleRequestWithBody(server, roleID, "application/json", bodyReader)
+}
+
+// NewUpdateRoleRequestWithBody generates requests for UpdateRole with any type of body
+func NewUpdateRoleRequestWithBody(server string, roleID RoleIdParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "roleID", runtime.ParamLocationPath, roleID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/roles/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -1087,8 +2272,27 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// AuthenticateServiceAccountToken request  with any body
+	AuthenticateServiceAccountTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AuthenticateServiceAccountTokenResponse, error)
+
+	AuthenticateServiceAccountTokenWithResponse(ctx context.Context, body AuthenticateServiceAccountTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*AuthenticateServiceAccountTokenResponse, error)
+
 	// ListAvailableRegions request
 	ListAvailableRegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAvailableRegionsResponse, error)
+
+	// GetClientsForOrg request
+	GetClientsForOrgWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetClientsForOrgResponse, error)
+
+	// GenerateTokenForClient request  with any body
+	GenerateTokenForClientWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GenerateTokenForClientResponse, error)
+
+	GenerateTokenForClientWithResponse(ctx context.Context, body GenerateTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateTokenForClientResponse, error)
+
+	// DeleteTokenForClient request
+	DeleteTokenForClientWithResponse(ctx context.Context, clientId ClientIdParam, reqEditors ...RequestEditorFn) (*DeleteTokenForClientResponse, error)
+
+	// GetCurrentOrganization request
+	GetCurrentOrganizationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentOrganizationResponse, error)
 
 	// ListDatabases request
 	ListDatabasesWithResponse(ctx context.Context, params *ListDatabasesParams, reqEditors ...RequestEditorFn) (*ListDatabasesResponse, error)
@@ -1103,6 +2307,14 @@ type ClientWithResponsesInterface interface {
 
 	// AddKeyspace request
 	AddKeyspaceWithResponse(ctx context.Context, databaseID DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*AddKeyspaceResponse, error)
+
+	// RemoveMigrationProxy request
+	RemoveMigrationProxyWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*RemoveMigrationProxyResponse, error)
+
+	// LaunchMigrationProxy request  with any body
+	LaunchMigrationProxyWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LaunchMigrationProxyResponse, error)
+
+	LaunchMigrationProxyWithResponse(ctx context.Context, databaseID DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody, reqEditors ...RequestEditorFn) (*LaunchMigrationProxyResponse, error)
 
 	// ParkDatabase request
 	ParkDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*ParkDatabaseResponse, error)
@@ -1120,11 +2332,58 @@ type ClientWithResponsesInterface interface {
 	// GenerateSecureBundleURL request
 	GenerateSecureBundleURLWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*GenerateSecureBundleURLResponse, error)
 
+	// SuspendDatabase request
+	SuspendDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, params *SuspendDatabaseParams, reqEditors ...RequestEditorFn) (*SuspendDatabaseResponse, error)
+
 	// TerminateDatabase request
 	TerminateDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*TerminateDatabaseResponse, error)
 
 	// UnparkDatabase request
 	UnparkDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*UnparkDatabaseResponse, error)
+
+	// GetOrganizationRoles request
+	GetOrganizationRolesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetOrganizationRolesResponse, error)
+
+	// AddOrganizationRole request  with any body
+	AddOrganizationRoleWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddOrganizationRoleResponse, error)
+
+	AddOrganizationRoleWithResponse(ctx context.Context, body AddOrganizationRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*AddOrganizationRoleResponse, error)
+
+	// DeleteOrganizationRole request
+	DeleteOrganizationRoleWithResponse(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*DeleteOrganizationRoleResponse, error)
+
+	// GetOrganizationRole request
+	GetOrganizationRoleWithResponse(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*GetOrganizationRoleResponse, error)
+
+	// UpdateRole request  with any body
+	UpdateRoleWithBodyWithResponse(ctx context.Context, roleID RoleIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRoleResponse, error)
+
+	UpdateRoleWithResponse(ctx context.Context, roleID RoleIdParam, body UpdateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRoleResponse, error)
+}
+
+type AuthenticateServiceAccountTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ServiceAccountTokenResponse
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r AuthenticateServiceAccountTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AuthenticateServiceAccountTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type ListAvailableRegionsResponse struct {
@@ -1145,6 +2404,106 @@ func (r ListAvailableRegionsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListAvailableRegionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetClientsForOrgResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *interface{}
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetClientsForOrgResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetClientsForOrgResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GenerateTokenForClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *interface{}
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GenerateTokenForClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GenerateTokenForClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteTokenForClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteTokenForClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteTokenForClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCurrentOrganizationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *interface{}
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCurrentOrganizationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCurrentOrganizationResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1246,6 +2605,58 @@ func (r AddKeyspaceResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AddKeyspaceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RemoveMigrationProxyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r RemoveMigrationProxyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RemoveMigrationProxyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type LaunchMigrationProxyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r LaunchMigrationProxyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r LaunchMigrationProxyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1357,6 +2768,32 @@ func (r GenerateSecureBundleURLResponse) StatusCode() int {
 	return 0
 }
 
+type SuspendDatabaseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r SuspendDatabaseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SuspendDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type TerminateDatabaseResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -1409,6 +2846,150 @@ func (r UnparkDatabaseResponse) StatusCode() int {
 	return 0
 }
 
+type GetOrganizationRolesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *interface{}
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOrganizationRolesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOrganizationRolesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AddOrganizationRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *Role
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r AddOrganizationRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AddOrganizationRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteOrganizationRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteOrganizationRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteOrganizationRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOrganizationRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *interface{}
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOrganizationRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOrganizationRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// AuthenticateServiceAccountTokenWithBodyWithResponse request with arbitrary body returning *AuthenticateServiceAccountTokenResponse
+func (c *ClientWithResponses) AuthenticateServiceAccountTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AuthenticateServiceAccountTokenResponse, error) {
+	rsp, err := c.AuthenticateServiceAccountTokenWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAuthenticateServiceAccountTokenResponse(rsp)
+}
+
+func (c *ClientWithResponses) AuthenticateServiceAccountTokenWithResponse(ctx context.Context, body AuthenticateServiceAccountTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*AuthenticateServiceAccountTokenResponse, error) {
+	rsp, err := c.AuthenticateServiceAccountToken(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAuthenticateServiceAccountTokenResponse(rsp)
+}
+
 // ListAvailableRegionsWithResponse request returning *ListAvailableRegionsResponse
 func (c *ClientWithResponses) ListAvailableRegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAvailableRegionsResponse, error) {
 	rsp, err := c.ListAvailableRegions(ctx, reqEditors...)
@@ -1416,6 +2997,50 @@ func (c *ClientWithResponses) ListAvailableRegionsWithResponse(ctx context.Conte
 		return nil, err
 	}
 	return ParseListAvailableRegionsResponse(rsp)
+}
+
+// GetClientsForOrgWithResponse request returning *GetClientsForOrgResponse
+func (c *ClientWithResponses) GetClientsForOrgWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetClientsForOrgResponse, error) {
+	rsp, err := c.GetClientsForOrg(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetClientsForOrgResponse(rsp)
+}
+
+// GenerateTokenForClientWithBodyWithResponse request with arbitrary body returning *GenerateTokenForClientResponse
+func (c *ClientWithResponses) GenerateTokenForClientWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GenerateTokenForClientResponse, error) {
+	rsp, err := c.GenerateTokenForClientWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGenerateTokenForClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) GenerateTokenForClientWithResponse(ctx context.Context, body GenerateTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateTokenForClientResponse, error) {
+	rsp, err := c.GenerateTokenForClient(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGenerateTokenForClientResponse(rsp)
+}
+
+// DeleteTokenForClientWithResponse request returning *DeleteTokenForClientResponse
+func (c *ClientWithResponses) DeleteTokenForClientWithResponse(ctx context.Context, clientId ClientIdParam, reqEditors ...RequestEditorFn) (*DeleteTokenForClientResponse, error) {
+	rsp, err := c.DeleteTokenForClient(ctx, clientId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteTokenForClientResponse(rsp)
+}
+
+// GetCurrentOrganizationWithResponse request returning *GetCurrentOrganizationResponse
+func (c *ClientWithResponses) GetCurrentOrganizationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentOrganizationResponse, error) {
+	rsp, err := c.GetCurrentOrganization(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCurrentOrganizationResponse(rsp)
 }
 
 // ListDatabasesWithResponse request returning *ListDatabasesResponse
@@ -1460,6 +3085,32 @@ func (c *ClientWithResponses) AddKeyspaceWithResponse(ctx context.Context, datab
 		return nil, err
 	}
 	return ParseAddKeyspaceResponse(rsp)
+}
+
+// RemoveMigrationProxyWithResponse request returning *RemoveMigrationProxyResponse
+func (c *ClientWithResponses) RemoveMigrationProxyWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*RemoveMigrationProxyResponse, error) {
+	rsp, err := c.RemoveMigrationProxy(ctx, databaseID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRemoveMigrationProxyResponse(rsp)
+}
+
+// LaunchMigrationProxyWithBodyWithResponse request with arbitrary body returning *LaunchMigrationProxyResponse
+func (c *ClientWithResponses) LaunchMigrationProxyWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LaunchMigrationProxyResponse, error) {
+	rsp, err := c.LaunchMigrationProxyWithBody(ctx, databaseID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLaunchMigrationProxyResponse(rsp)
+}
+
+func (c *ClientWithResponses) LaunchMigrationProxyWithResponse(ctx context.Context, databaseID DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody, reqEditors ...RequestEditorFn) (*LaunchMigrationProxyResponse, error) {
+	rsp, err := c.LaunchMigrationProxy(ctx, databaseID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseLaunchMigrationProxyResponse(rsp)
 }
 
 // ParkDatabaseWithResponse request returning *ParkDatabaseResponse
@@ -1514,6 +3165,15 @@ func (c *ClientWithResponses) GenerateSecureBundleURLWithResponse(ctx context.Co
 	return ParseGenerateSecureBundleURLResponse(rsp)
 }
 
+// SuspendDatabaseWithResponse request returning *SuspendDatabaseResponse
+func (c *ClientWithResponses) SuspendDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, params *SuspendDatabaseParams, reqEditors ...RequestEditorFn) (*SuspendDatabaseResponse, error) {
+	rsp, err := c.SuspendDatabase(ctx, databaseID, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSuspendDatabaseResponse(rsp)
+}
+
 // TerminateDatabaseWithResponse request returning *TerminateDatabaseResponse
 func (c *ClientWithResponses) TerminateDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*TerminateDatabaseResponse, error) {
 	rsp, err := c.TerminateDatabase(ctx, databaseID, params, reqEditors...)
@@ -1530,6 +3190,114 @@ func (c *ClientWithResponses) UnparkDatabaseWithResponse(ctx context.Context, da
 		return nil, err
 	}
 	return ParseUnparkDatabaseResponse(rsp)
+}
+
+// GetOrganizationRolesWithResponse request returning *GetOrganizationRolesResponse
+func (c *ClientWithResponses) GetOrganizationRolesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetOrganizationRolesResponse, error) {
+	rsp, err := c.GetOrganizationRoles(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOrganizationRolesResponse(rsp)
+}
+
+// AddOrganizationRoleWithBodyWithResponse request with arbitrary body returning *AddOrganizationRoleResponse
+func (c *ClientWithResponses) AddOrganizationRoleWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddOrganizationRoleResponse, error) {
+	rsp, err := c.AddOrganizationRoleWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddOrganizationRoleResponse(rsp)
+}
+
+func (c *ClientWithResponses) AddOrganizationRoleWithResponse(ctx context.Context, body AddOrganizationRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*AddOrganizationRoleResponse, error) {
+	rsp, err := c.AddOrganizationRole(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddOrganizationRoleResponse(rsp)
+}
+
+// DeleteOrganizationRoleWithResponse request returning *DeleteOrganizationRoleResponse
+func (c *ClientWithResponses) DeleteOrganizationRoleWithResponse(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*DeleteOrganizationRoleResponse, error) {
+	rsp, err := c.DeleteOrganizationRole(ctx, roleID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOrganizationRoleResponse(rsp)
+}
+
+// GetOrganizationRoleWithResponse request returning *GetOrganizationRoleResponse
+func (c *ClientWithResponses) GetOrganizationRoleWithResponse(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*GetOrganizationRoleResponse, error) {
+	rsp, err := c.GetOrganizationRole(ctx, roleID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOrganizationRoleResponse(rsp)
+}
+
+// UpdateRoleWithBodyWithResponse request with arbitrary body returning *UpdateRoleResponse
+func (c *ClientWithResponses) UpdateRoleWithBodyWithResponse(ctx context.Context, roleID RoleIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRoleResponse, error) {
+	rsp, err := c.UpdateRoleWithBody(ctx, roleID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRoleResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateRoleWithResponse(ctx context.Context, roleID RoleIdParam, body UpdateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRoleResponse, error) {
+	rsp, err := c.UpdateRole(ctx, roleID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRoleResponse(rsp)
+}
+
+// ParseAuthenticateServiceAccountTokenResponse parses an HTTP response from a AuthenticateServiceAccountTokenWithResponse call
+func ParseAuthenticateServiceAccountTokenResponse(rsp *http.Response) (*AuthenticateServiceAccountTokenResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AuthenticateServiceAccountTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ServiceAccountTokenResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseListAvailableRegionsResponse parses an HTTP response from a ListAvailableRegionsWithResponse call
@@ -1566,6 +3334,194 @@ func ParseListAvailableRegionsResponse(rsp *http.Response) (*ListAvailableRegion
 			return nil, err
 		}
 		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetClientsForOrgResponse parses an HTTP response from a GetClientsForOrgWithResponse call
+func ParseGetClientsForOrgResponse(rsp *http.Response) (*GetClientsForOrgResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetClientsForOrgResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest interface{}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGenerateTokenForClientResponse parses an HTTP response from a GenerateTokenForClientWithResponse call
+func ParseGenerateTokenForClientResponse(rsp *http.Response) (*GenerateTokenForClientResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GenerateTokenForClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest interface{}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteTokenForClientResponse parses an HTTP response from a DeleteTokenForClientWithResponse call
+func ParseDeleteTokenForClientResponse(rsp *http.Response) (*DeleteTokenForClientResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteTokenForClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCurrentOrganizationResponse parses an HTTP response from a GetCurrentOrganizationWithResponse call
+func ParseGetCurrentOrganizationResponse(rsp *http.Response) (*GetCurrentOrganizationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCurrentOrganizationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest interface{}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
@@ -1754,6 +3710,114 @@ func ParseAddKeyspaceResponse(rsp *http.Response) (*AddKeyspaceResponse, error) 
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRemoveMigrationProxyResponse parses an HTTP response from a RemoveMigrationProxyWithResponse call
+func ParseRemoveMigrationProxyResponse(rsp *http.Response) (*RemoveMigrationProxyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RemoveMigrationProxyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseLaunchMigrationProxyResponse parses an HTTP response from a LaunchMigrationProxyWithResponse call
+func ParseLaunchMigrationProxyResponse(rsp *http.Response) (*LaunchMigrationProxyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &LaunchMigrationProxyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest Errors
@@ -1990,6 +4054,60 @@ func ParseGenerateSecureBundleURLResponse(rsp *http.Response) (*GenerateSecureBu
 	return response, nil
 }
 
+// ParseSuspendDatabaseResponse parses an HTTP response from a SuspendDatabaseWithResponse call
+func ParseSuspendDatabaseResponse(rsp *http.Response) (*SuspendDatabaseResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SuspendDatabaseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseTerminateDatabaseResponse parses an HTTP response from a TerminateDatabaseWithResponse call
 func ParseTerminateDatabaseResponse(rsp *http.Response) (*TerminateDatabaseResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -2092,6 +4210,255 @@ func ParseUnparkDatabaseResponse(rsp *http.Response) (*UnparkDatabaseResponse, e
 			return nil, err
 		}
 		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOrganizationRolesResponse parses an HTTP response from a GetOrganizationRolesWithResponse call
+func ParseGetOrganizationRolesResponse(rsp *http.Response) (*GetOrganizationRolesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOrganizationRolesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest interface{}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAddOrganizationRoleResponse parses an HTTP response from a AddOrganizationRoleWithResponse call
+func ParseAddOrganizationRoleResponse(rsp *http.Response) (*AddOrganizationRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AddOrganizationRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest Role
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteOrganizationRoleResponse parses an HTTP response from a DeleteOrganizationRoleWithResponse call
+func ParseDeleteOrganizationRoleResponse(rsp *http.Response) (*DeleteOrganizationRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteOrganizationRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOrganizationRoleResponse parses an HTTP response from a GetOrganizationRoleWithResponse call
+func ParseGetOrganizationRoleResponse(rsp *http.Response) (*GetOrganizationRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOrganizationRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest interface{}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateRoleResponse parses an HTTP response from a UpdateRoleWithResponse call
+func ParseUpdateRoleResponse(rsp *http.Response) (*UpdateRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
