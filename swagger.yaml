@@ -20,6 +20,9 @@ security:
       - org-db-managemigratorproxy
       - db-keyspace-create
       - db-cql
+      - accesslist-write
+      - accesslist-read
+      - db-manage-privateendpoint
 
 tags:
   - name: Operations
@@ -32,8 +35,11 @@ tags:
     description: The DevOps Users APIs are for interacting with users within your Astra organization
   - name: Token
     description: The DevOps Token APIs allow creation and deletion of client secrets
-  - name: Private-Link
-    description: The DevOps APIs for interacting with existing clusters and setting up Private Connections from virtual networks in cloud providers to DataStax Astra
+  - name: Access List
+    description: The DevOps Access List APIs allow creation and deletion of access lists
+  - name: Private Link
+    description: The DevOps Private Link APIs allow managing of private link endpoints
+
 
 paths:
 
@@ -82,7 +88,7 @@ paths:
           required: false
           schema:
             type: string
-            enum: [nonterminated, all, active, pending, preparing, prepared, initializing, parked, parking, unparking, terminating, terminated, resizing, error, maintenance, hibernating, hibernated, resuming, suspended, suspending]
+            enum: [nonterminated, all, active, pending, preparing, prepared, initializing, parked, parking, unparking, terminating, terminated, resizing, error, maintenance, suspended, suspending]
             default: nonterminated
         - in: query
           name: provider
@@ -647,7 +653,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetOrganizationUsersResponse'
+                $ref: '#/components/schemas/OrganizationUsers'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -715,6 +721,494 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2/organizations/private-link:
+    get:
+      tags:
+        - Private Link
+      summary: Gets info about all private link connections for a specific org
+      description: Gets info about all private link connections for a specific org
+      operationId: ListPrivateLinksForOrg
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateLinkOrgOutput'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /v2/organizations/clusters/{clusterID}/private-link:
+    get:
+      tags:
+        - Private Link
+      summary: Gets info about all private link connections for a specific cluster
+      description: Gets info about all private link connections for a cluster
+      operationId: ListPrivateLinksForCluster
+      parameters:
+        - name: clusterID
+          in: path
+          description: Database ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateLinkClusterOutput'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /organizations/clusters/{clusterID}/datacenters/{datacenterID}/private-link:
+    get:
+      tags:
+        - Private Link
+      summary: Gets info about private link in a datacenter
+      description: Gets info about a private link connection in a specific datacenter
+      operationId: GetPrivateLinksForDatacenter
+      parameters:
+        - name: clusterID
+          in: path
+          description: Database ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: datacenterID
+          in: path
+          description: Database ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateLinkDatacenterOutput'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags:
+        - Private Link
+      summary: Add an allowed principle to the private link service
+      description: Configure private link by providing the allowed principal to connect with
+      operationId: AddAllowedPrincipleToService
+      parameters:
+        - name: clusterID
+          in: path
+          description: Database ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: datacenterID
+          in: path
+          description: Database ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: The model for an AWS Private Link connection creation request
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PrivateLinkCreateConfigInput'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateLinkCreateConfigOutput'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /organizations/clusters/{clusterID}/datacenters/{datacenterID}/endpoints:
+    post:
+      tags:
+        - Private Link
+      summary: Accept an endpoint to the private link service
+      description: Complete Private Link connection by providing your endpoint
+      operationId: AcceptEndpointToService
+      parameters:
+        - name: clusterID
+          in: path
+          description: Database ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: datacenterID
+          in: path
+          description: Database ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: The model for an AWS Private Link connection creation request
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PrivateLinkCreateEndpointInput'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateLinkEndpoint'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /organizations/clusters/{clusterID}/datacenters/{datacenterID}/endpoints/{endpointID}:
+    get:
+      tags:
+        - Private Link
+      summary: Gets info about a private link endpoint
+      description: Gets info about a private link endpoint
+      operationId: GetPrivateLinkEndpoint
+      parameters:
+        - name: clusterID
+          in: path
+          description: Cluster ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: datacenterID
+          in: path
+          description: Datacenter ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: endpointID
+          in: path
+          description: Endpoint ID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateLinkEndpoint'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/ServerError'
+    put:
+      tags:
+        - Private Link
+      summary: Update the description for a private link endpoint
+      description: Update the description for a private link endpoint
+      operationId: UpdateEndpointDescription
+      parameters:
+        - name: clusterID
+          in: path
+          description: Cluster ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: datacenterID
+          in: path
+          description: Datacenter ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: endpointID
+          in: path
+          description: Endpoint ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The model for updating the description for an endpoint
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PrivateLinkUpdateEndpointInput'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateLinkEndpoint'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags:
+        - Private Link
+      summary: Reject an endpoint from the private link service
+      description: Reject an endpoint from the private link service
+      operationId: RejectEndpoint
+      parameters:
+        - name: clusterID
+          in: path
+          description: Cluster ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: datacenterID
+          in: path
+          description: Datacenter ID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: endpointID
+          in: path
+          description: Endpoint ID
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: No Content
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /v2/access-lists:
+    get:
+      tags:
+        - "Access List"
+      summary: "Get all access lists for an organization"
+      security:
+        - BearerAuth: [accesslist-read]
+      operationId: "GetAllAccessListsForOrganization"
+      responses:
+        '200':
+          description: Access lists for an organization
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccessListResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2/databases/{databaseID}/access-list:
+    get:
+      tags:
+        - "Access List"
+      summary: "Get the access list for a database"
+      security:
+        - BearerAuth: [accesslist-read]
+      operationId: "GetAccessListForDatabase"
+      parameters:
+        - $ref: '#/components/parameters/DatabaseIdParam'
+      responses:
+        '200':
+          description: Access list for a database
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    put:
+      tags:
+        - "Access List"
+      summary: "Upsert the access list for a database. This endpoint replaces the entire access list with what is present in the request body."
+      security:
+        - BearerAuth: [accesslist-write]
+      operationId: "UpsertAccessListForDatabase"
+      parameters:
+        - $ref: '#/components/parameters/DatabaseIdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessListRequest'
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags:
+        - "Access List"
+      summary: "Add addresses to the access list for a database"
+      security:
+        - BearerAuth: [accesslist-write]
+      operationId: "AddAddressesToAccessListForDatabase"
+      parameters:
+        - $ref: '#/components/parameters/DatabaseIdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AddressRequest'
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    patch:
+      tags:
+        - "Access List"
+      summary: "Update the access list for a database. This endpoint updates existing fields in the access list if they exist"
+      security:
+        - BearerAuth: [accesslist-write]
+      operationId: "UpdateAccessListForDatabase"
+      parameters:
+        - $ref: '#/components/parameters/DatabaseIdParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessListRequest'
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags:
+        - "Access List"
+      summary: >-
+        Delete a list of addresses or the access list for a database. If the addresses
+        query parameter is not present it will delete the entire access list. If the
+        addresses query parameter is present it will delete only the given addresses
+        from the access list
+      security:
+        - BearerAuth: [accesslist-write]
+      operationId: "DeleteAddressesOrAccessListForDatabase"
+      parameters:
+        - $ref: '#/components/parameters/DatabaseIdParam'
+        - $ref: '#/components/parameters/AddressesQueryParam'
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2/access-list/validate:
+    post:
+      tags:
+        - "Access List"
+      summary: "Validate the structure of an access list"
+      operationId: "ValidateAccessList"
+      responses:
+        '200':
+          description: Access lists for an organization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2/access-list/template:
+    post:
+      tags:
+        - "Access List"
+      summary: "Get a template of an access list"
+      operationId: "GetAccessListTemplate"
+      responses:
+        '200':
+          description: Access lists for an organization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessListRequest'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -795,7 +1289,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
+                items:
+                  $ref: '#/components/schemas/Organization'
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
@@ -805,292 +1300,6 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /v2/databases/{databaseID}/datacenters:
-    get:
-      summary: List all database datacenters
-      description: Returns the list of configured datacenters for the given database
-      operationId: listDatacenters
-      tags:
-        - Public
-      parameters:
-        - $ref: '#/components/parameters/DatabaseIdParam'
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Datacenter'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '5XX':
-          $ref: '#/components/responses/ServerError'
-
-    post:
-      summary: Adds datacenters
-      description: Adds the list of datacenters. Only AWS cloud provider is allowed at this point.
-      operationId: addDatacenters
-      tags:
-        - Public
-      parameters:
-        - $ref: '#/components/parameters/DatabaseIdParam'
-      requestBody:
-        description: Map containing capacityUnits key with a value greater than the current number of capacity units (max increment of 3 additional capacity units)
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/Datacenter'
-      responses:
-        '201':
-          $ref: '#/components/responses/Accepted'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '5XX':
-          $ref: '#/components/responses/ServerError'
-
-  /v2/databases/{databaseID}/datacenters/{datacenterID}/terminate:
-    post:
-      summary: Terminates a datacenter
-      description: Terminates a datacenter
-      operationId: terminateDatacenter
-      tags:
-        - Public
-      parameters:
-        - $ref: '#/components/parameters/DatabaseIdParam'
-        - $ref: '#/components/parameters/DatacenterIdParam'
-
-      responses:
-        '202':
-          $ref: '#/components/responses/Accepted'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '5XX':
-          $ref: '#/components/responses/ServerError'
-  /v2/organizations/private-link:
-    get:
-      tags:
-        - Private-Link
-      summary: Gets info about all private link connections for a specific org
-      description: Gets info about all private link connections for a specific org
-      operationId: ListPrivateLinksForOrg
-      parameters:
-        - name: orgID
-          in: path
-          description: Database ID
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PrivateLinkOrgOutput'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        409:
-          $ref: '#/components/responses/Conflict'
-        500:
-          $ref: '#/components/responses/InternalServiceError'
-  /v2/organizations/clusters/{clusterID}/private-link:
-    get:
-      tags:
-        - Private-Link
-      summary: Gets info about all private link connections for a specific cluster
-      description: Gets info about all private link connections for a cluster
-      operationId: ListPrivateLinksForCluster
-      parameters:
-        - name: orgID
-          in: path
-          description: Database ID
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: clusterID
-          in: path
-          description: Database ID
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PrivateLinkClusterOutput'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        409:
-          $ref: '#/components/responses/Conflict'
-        500:
-          $ref: '#/components/responses/InternalServiceError'
-
-  /v2/organizations/clusters/{clusterID}/datacenters/{datacenterID}/private-link:
-    get:
-      tags:
-        - Private-Link
-      summary: Gets info about private link in a datacenter
-      description: Gets info about a private link connection in a specific datacenter
-      operationId: GetPrivateLinksForDatacenter
-      parameters:
-        - name: orgID
-          in: path
-          description: Database ID
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: clusterID
-          in: path
-          description: Database ID
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: datacenterID
-          in: path
-          description: Database ID
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PrivateLinkDatacenterOutput'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        409:
-          $ref: '#/components/responses/Conflict'
-        500:
-          $ref: '#/components/responses/InternalServiceError'
-    post:
-      tags:
-        - Private-Link
-      summary: Config private link by providing the principal to connect with
-      description: Config private link by providing the principal to connect with
-      operationId: ConfigurePrivateLink
-      parameters:
-        - name: orgID
-          in: path
-          description: Database ID
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: clusterID
-          in: path
-          description: Database ID
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: datacenterID
-          in: path
-          description: Database ID
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        description: The model for an AWS Private Link connection creation request
-        content:
-          '*/*':
-            schema:
-              $ref: '#/components/schemas/PrivateLinkCreateConfigInput'
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PrivateLinkCreateConfigOutput'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        409:
-          $ref: '#/components/responses/Conflict'
-        500:
-          $ref: '#/components/responses/InternalServiceError'
-    put:
-      tags:
-        - Private-Link
-      summary: Update a private link connection
-      description: Update a private link connection
-      operationId: UpdatePrivateLink
-      parameters:
-        - name: orgID
-          in: path
-          description: Database ID
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: clusterID
-          in: path
-          description: Database ID
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: datacenterID
-          in: path
-          description: Database ID
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        description: The model for an AWS Private Link connection creation request
-        content:
-          '*/*':
-            schema:
-              $ref: '#/components/schemas/PrivateLinkCreateConfigInput'
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PrivateLinkCreateConfigOutput'
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        409:
-          $ref: '#/components/responses/Conflict'
-        500:
-          $ref: '#/components/responses/InternalServiceError'
 
 servers:
   - url: https://api.astra.datastax.com/
@@ -1103,14 +1312,6 @@ components:
       name: databaseID
       required: true
       description: String representation of the database ID
-      schema:
-        type: string
-
-    DatacenterIdParam:
-      in: path
-      name: datacenterID
-      required: true
-      description: String representation of the datacenter ID
       schema:
         type: string
 
@@ -1154,6 +1355,16 @@ components:
         type: string
       description: id for the user
 
+    AddressesQueryParam:
+      in: query
+      name: addresses
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+      description: Array of addresses
+
   schemas:
 
     UserInvite:
@@ -1175,7 +1386,7 @@ components:
           items:
             type: "string"
 
-    GetOrganizationUsersResponse:
+    OrganizationUsers:
       type: "object"
       required:
         - orgID
@@ -1245,7 +1456,7 @@ components:
 
     StatusEnum:
       type: string
-      enum: [ACTIVE, PENDING, PREPARING, PREPARED, INITIALIZING, PARKED, PARKING, UNPARKING, TERMINATED, TERMINATING, RESIZING, ERROR, MAINTENANCE, HIBERNATING, HIBERNATED, RESUMING, SUSPENDED, UNKNOWN]
+      enum: [ACTIVE, PENDING, PREPARING, PREPARED, INITIALIZING, PARKED, PARKING, UNPARKING, TERMINATED, TERMINATING, RESIZING, ERROR, MAINTENANCE, SUSPENDED, UNKNOWN]
       example: ACTIVE
 
     Database:
@@ -1432,69 +1643,6 @@ components:
             type: string
             example: additionalKeyspace
           description: Additional keyspaces names in database
-
-    Datacenter:
-      type: object
-      description: Datacenter is the definition of a cassandra datacenter
-      required:
-        - tier
-        - cloudProvider
-        - region
-      properties:
-        id:
-          type: string
-          example: 1234-5678-91011121-3141
-        name:
-          type: string
-          example: dc-1234-5678-91011121-3141
-        tier:
-          type: string
-          example: Serverless
-        cloudProvider:
-          type: string
-          example: GCP
-        region:
-          type: string
-          example: us-east1
-        regionZone:
-          type: string
-          example: emea
-          enum: [ emea, apac, na, sa ]
-        regionClassification:
-          type: string
-          example: standard
-          enum: [ standard, premium, premium_plus ]
-        capacityUnits:
-          type: integer
-          example: 1
-          description: CapacityUnits is the amount of space available (horizontal scaling) for the database
-        studioUrl:
-          type: string
-          example: "http://path-to-studio:port"
-        grafanaUrl:
-          type: string
-          example: "http://path-to-grafana:port"
-        cqlshUrl:
-          type: string
-          example: "http://path-to-cqlsh:port/cqlsh"
-        graphqlUrl:
-          type: string
-          example: "http://path-to-graqphl:port/api/graphql"
-        dataEndpointUrl:
-          type: string
-          example: "http://path-to-dataendpoint:port/api/rest"
-        secureBundleUrl:
-          type: string
-          example: "http://s3-signed-bundle-url"
-        secureBundleInternalUrl:
-          type: string
-          example: "http://s3-signed-internal-bundle-url"
-        secureBundleMigrationProxyUrl:
-          type: string
-          example: "http://s3-signed-proxy-bundle-url"
-        secureBundleMigrationProxyInternalUrl:
-          type: string
-          example: "http://s3-signed-proxy-internal-bundle-url"
 
     CredsURL:
       description: CredsURL from which the creds zip may be downloaded
@@ -1881,6 +2029,214 @@ components:
           items:
             type: string
 
+    #TODO
+    PrivateLinkOrgOutput:
+      type: "object"
+      properties:
+        clusters:
+          type: array
+          description: List of endpoints for a cluster
+          items:
+            $ref: '#/components/schemas/PrivateLinkClusterOutput'
+
+    PrivateLinkClusterOutput:
+      type: object
+      properties:
+        clusterID:
+          type: string
+          description: Cluster ID for all private links connected to the cluster's datacenters
+        datacenters:
+          type: array
+          description: List of endpoints for a datacenter
+          items:
+            $ref: '#/components/schemas/PrivateLinkDatacenterOutput'
+
+    PrivateLinkDatacenterOutput:
+      type: object
+      properties:
+        serviceName:
+          $ref: '#/components/schemas/ServiceName'
+        allowedPrincipals:
+          $ref: '#/components/schemas/AllowedPrincipals'
+        datacenterID:
+          type: string
+          description: Datacenter ID for the private link endpoint
+        endpoints:
+          type: array
+          description: List of endpoints associated with the given org-cluster-dc combo
+          items:
+            $ref: '#/components/schemas/PrivateLinkEndpoint'
+
+    PrivateLinkEndpoint:
+      type: object
+      properties:
+        endpointID:
+          type: string
+          description: Endpoint ID of the user side private link
+          example: 'vpce-svc-1148ea04af491da11'
+        description:
+          type: string
+          description: User defined description of the endpoint
+          example: ecomm-team-billing-app
+        status:
+          type: string
+          description: The current status of the connection
+          example: Accepted
+          enum:
+            - Accepted
+            - Rejected
+        createdDateTime:
+          type: string
+          description: The datetime that the private link connection was created
+          example: '2009-11-10T23:00:00'
+
+    ServiceName:
+      type: string
+      description: The given endpoint service for the user to connect to
+      example: "com.amazonaws.vpce.us-east-1.vpce-svc-1148ea04af491da11"
+
+    AllowedPrincipals:
+      type: array
+      description: List of principals to do action for private link
+      example: ['arn:aws:iam::123456789012:role/admin']
+      items:
+        type: string
+
+    PrivateLinkCreateConfigInput:
+      type: object
+      properties:
+        allowedPrincipals:
+          $ref: '#/components/schemas/AllowedPrincipals'
+
+    PrivateLinkCreateConfigOutput:
+      type: object
+      properties:
+        serviceName:
+          $ref: '#/components/schemas/ServiceName'
+        allowedPrincipals:
+          $ref: '#/components/schemas/AllowedPrincipals'
+
+    PrivateLinkCreateEndpointInput:
+      type: object
+      properties:
+        endpointID:
+          type: string
+          description: The user's endpoint created in their cloud provider account
+          example: "vpce-svc-1148ea04af8675309"
+        description:
+          type: string
+          description: The human readable description of the endpoint
+          example: ecomm-team-billing-app-prod
+
+    PrivateLinkUpdateEndpointInput:
+      type: object
+      properties:
+        description:
+          type: string
+          description: User defined description of the endpoint
+          example: ecomm-team-billing-app
+
+    AccessListRequest:
+      type: "object"
+      description: "The model used to build an access list"
+      properties:
+        addresses:
+          type: array
+          description: A listing of the allowed addresses
+          items:
+            $ref: '#/components/schemas/AddressRequest'
+        configurations:
+          $ref: '#/components/schemas/AccessListConfigurations'
+
+    AccessListResponse:
+      type: "object"
+      description: "The response for a requested access list"
+      properties:
+        organizationId:
+          type: string
+          description: The unique identifier of the organization
+          format: uuid
+          example: 303a3598-0905-4b5d-9db2-4bf2f9790973
+        databaseId:
+          type: string
+          description: The unique identifier of the database
+          format: uuid
+          example: 8fbcfe1d-56fa-4ed0-9aff-f57029feef1b
+        addresses:
+          type: array
+          description: A listing of the allowed addresses
+          items:
+            $ref: '#/components/schemas/AddressResponse'
+        configurations:
+          $ref: '#/components/schemas/AccessListConfigurations'
+
+    AddressRequest:
+      type: object
+      description: "The model used to build an address for an access list"
+      required:
+        - address
+        - enabled
+        - description
+      properties:
+        address:
+          pattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$
+          type: string
+          description: The address (ip address and subnet mask in CIDR notation) of the
+            address to allow
+          example: 137.187.23.0/24
+        enabled:
+          type: boolean
+          description: The indication if the access address is enabled or not
+          example: true
+        description:
+          type: string
+          description: Description of this addresses use
+          example: "This address allows the database connections from the prod environment"
+
+    AddressResponse:
+      type: object
+      description: "The response for a requested address in an access list"
+      properties:
+        address:
+          pattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$
+          type: string
+          description: The address (ip address and subnet mask in CIDR notation) of the
+            address to allow
+          example: 137.187.23.0/24
+        enabled:
+          type: boolean
+          description: The indication if the access address is enabled or not
+          example: true
+        description:
+          type: string
+          description: Description of this addresses use
+          example: "This address allows the database connections from the prod environment"
+        lastUpdateDateTime:
+          type: string
+          description: The last update date/time for the access list
+          format: date-time
+          example: "2021-01-21T17:32:28Z"
+
+    AccessListConfigurations:
+      required:
+        - accessListEnabled
+      type: object
+      properties:
+        accessListEnabled:
+          type: boolean
+
+    ValidationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        validationFailures:
+          type: array
+          items:
+            type: string
+      description: The response for validation checks
+
+
     GenerateTokenBody:
       type: "object"
       description: "The post body to generate a token"
@@ -1949,419 +2305,6 @@ components:
           type: "string"
           description: "AstraCS:clientId:hex(sha256(secret))"
           example: "uuid"
-    PrivateLinkConfiguration:
-      required:
-        - provider
-        - region
-        - organizationId
-        - datacenterId
-        - endpoints
-      type: object
-      properties:
-        provider:
-          type: string
-          description: Provider the private link is configured
-          example: 'aws'
-        region:
-          type: string
-          description: Region for the private link connection
-          example: 'us-east-1'
-        description:
-          type: string
-          description: Private Link configuration description
-          example: 'Private Endpoint B'
-        organizationId:
-          type: string
-          description: Organization ID UUID v4 formatted
-        datacenterId:
-          type: string
-          description: Datacenter ID UUID v4 formatted
-        endpoints:
-          type: array
-          items:
-            $ref: '#/components/schemas/PrivateLinkEndpoint'
-
-    PrivateLinkEndpoint:
-      required:
-        - id
-        - dateActivation
-      type: object
-      properties:
-        id:
-          type: string
-          description: Endpoint ID
-        dateActivation:
-          type: string
-          description: Private Link activation date in RFC3339 format
-          example: "1997-12-09T02:03:33.57Z"
-        dateDeactivation:
-          type: string
-          description: Private Link deactivation date in RFC3339 format
-          example: "1997-12-09T02:03:33.57Z"
-
-    VPCRepresentation:
-      required:
-        - provider
-        - account
-        - vpcId
-        - cidrBlock
-      type: object
-      properties:
-        provider:
-          type: string
-          description: Provider the VPC is hosted on
-          example: 'aws'
-        account:
-          type: string
-          description: The account the VPC is hosted on
-          example: '587695123584'
-        vpcId:
-          type: string
-          description: The unique identifier for the VPC
-          example: 'vpc-879df8e5d8f4d5d5f'
-        cidrBlock:
-          type: string
-          description: The CIDR block available for this VPC
-          example: '17.0.0.0/16'
-    AWSVPCRepresentation:
-      required:
-        - accountId
-        - region
-        - vpcId
-        - cidrBlock
-      type: object
-      properties:
-        accountId:
-          type: string
-          description: A unique identifier for the account being peered to
-          example: '489567213584'
-        vpcId:
-          type: string
-          description: A unique identifier for the VPC
-          example: 'vpc-038df8e5d8f4d5d8f'
-        region:
-          type: string
-          description: the region for the VPC
-          example: 'us-east-1'
-        cidrBlock:
-          type: string
-          description: the CIDR block available for this VPC
-          example: '10.0.0.0/16'
-      description: Details about an AWS VPC
-    GCPVPCRepresentation:
-      required:
-        - projectId
-        - vpcNetworkName
-      type: object
-      properties:
-        projectId:
-          type: string
-          description: A unique identifier for the project being peered to
-          example: 'project-name-01'
-        vpcNetworkName:
-          type: string
-          description: A unique identifier for the VPC being peered to
-          example: 'network-name-01'
-    AzureVPCRepresentation:
-      required:
-        - tenantId
-        - subscriptionId
-        - resourceGroupName
-        - virtualNetworkName
-      type: object
-      properties:
-        tenantId:
-          type: string
-          description: A unique identifier for the tenant being peered to
-          example: '8bf27cb8-2e44-402d-b3fa-1d3bf7c76760'
-        subscriptionId:
-          type: string
-          description: A unique identifier for the subscription being peered to
-          example: '6897g2u7-2b78-8ayg-5e55-b55x55dybj66'
-        resourceGroupName:
-          type: string
-          description: The name of the resource group the virtual network belongs in
-          example: 'group-name-01'
-        virtualNetworkName:
-          type: string
-          description: The name of the virtual networking being peered to
-          example: 'vnet-name-01'
-    AzurePrivateLinkModel:
-      required:
-        - subscriptionId
-        - resourceGroupName
-        - virtualNetworkName
-        - region
-      type: object
-      properties:
-        subscriptionId:
-          type: string
-          description: A unique identifier for the subscription being linked to
-          example: '6897g2u7-2b78-8ayg-5e55-b55x55dybj66'
-        resourceGroupName:
-          type: string
-          description: The name of the resource group the virtual network belongs in
-          example: 'group-name-01'
-        virtualNetworkName:
-          type: string
-          description: The name of the virtual networking being linked to
-          example: 'vnet-name-01'
-        region:
-          type: string
-          description: the region for the private link connection
-          example: 'us-east-1'
-    ConnectionRepresentation:
-      required:
-        - currentVpc
-        - otherVpc
-        - connectionId
-        - status
-      type: object
-      properties:
-        currentVpc:
-          $ref: '#/components/schemas/VPCRepresentation'
-        otherVpc:
-          $ref: '#/components/schemas/VPCRepresentation'
-        status:
-          type: string
-          description: The current status of the connection
-          example: active
-          enum:
-            - pending-acceptance
-            - failed
-            - expired
-            - provisioning
-            - active
-            - deleting
-            - deleted
-            - rejected
-        connectionId:
-          type: string
-          description: The AWS defined unique identifier for this connection resource
-      description: Details about a VPC connection
-    ClusterConnectionRepresentationAws:
-      required:
-        - fromClusterId
-        - toClusterId
-        - fromVpcId
-        - fromCidrBlock
-        - toVpcId
-        - toCidrBlock
-        - connectionId
-      type: object
-      properties:
-        fromClusterId:
-          type: string
-          description: Cluster ID for the cluster being peered from
-        toClusterId:
-          type: string
-          description: Cluster ID for the cluster being peered to
-        fromVpcId:
-          type: string
-          description: Vpc ID for the cluster being peered from
-        fromCidrBlock:
-          type: string
-          description: Cidr block for the cluster being peered from
-        toVpcId:
-          type: string
-          description: Vpc ID for the cluster being peered to
-        toCidrBlock:
-          type: string
-          description: Cidr block for the cluster being peered to
-        connectionId:
-          type: string
-          description: The AWS defined unique identifier for this connection resource
-      description: Details about a VPC connection
-    ClusterConnectionRepresentationGcp:
-      type: object
-      required:
-        - fromClusterID
-        - toClusterId
-        - fromConnectionId
-        - toConnectionId
-        - fromProjectId
-        - fromVpcNetworkName
-        - toProjectId
-        - toVpcNetworkName
-      properties:
-        fromClusterID:
-          type: string
-          description: Cluster ID for the cluster being peered from
-        toClusterId:
-          type: string
-          description: Cluster ID for the cluster being peered to
-        fromConnectionId:
-          type: string
-          description: Connection ID for the cluster peered from
-        toConnectionId:
-          type: string
-          description: Connection ID for the cluster peered to
-        fromProjectId:
-          type: string
-          description: Project ID for the cluster peered from
-        fromVpcNetworkName:
-          type: string
-          description: Vpc Name for the cluster peered from
-        toProjectId:
-          type: string
-          description: Project ID for the cluster peered to
-        toVpcNetworkName:
-          type: string
-          description: Project ID for the cluster peered from
-      description: Details about a VPC connection
-    AzureClientIDResponse:
-      type: object
-      required:
-        - Id
-      properties:
-        Id:
-          type: string
-          description: Azure client id
-      description: Response containing the azure client id
-    ClusterConnectionRepresentationAzure:
-      type: object
-      required:
-        - fromClusterID
-        - toClusterId
-        - fromSubscriptionId
-        - fromResourceGroupName
-        - fromVirtualNetworkName
-        - fromConnectionId
-        - toSubscriptionId
-        - toResourceGroupName
-        - toVirtualNetworkName
-        - toConnectionId
-      properties:
-        fromClusterID:
-          type: string
-          description: Cluster ID for the cluster being peered from
-        toClusterId:
-          type: string
-          description: Cluster ID for the cluster being peered to
-        fromSubscriptionId:
-          type: string
-          description: Subscription ID for the cluster peered from
-        fromResourceGroupName:
-          type: string
-          description: Resource Group Name for the cluster peered from
-        fromVirtalNetworkName:
-          type: string
-          description: Virtual Network Name for the cluster peered from
-        fromConnectionId:
-          type: string
-          description: Connection ID for the cluster peered to
-        toSubscriptionId:
-          type: string
-          description: Project ID for the cluster peered to
-        toResourceGroupName:
-          type: string
-          description: Resource Group the virtual network resides in
-        toVpcNetworkName:
-          type: string
-          description: Project ID for the cluster peered from
-        toConnectionId:
-          type: string
-          description: Connection ID for the cluster peered to
-      description: Details about an azure cluster to cluster VPC connection
-    ServiceName:
-      type: string
-      description: The given endpoint service for the user to connect to
-      example: "com.amazonaws.vpce.us-east-1.vpce-svc-1148ea04af491da11"
-    AllowedPrincipals:
-      type: array
-      description: List of principals to do action for private link
-      example: ['arn:aws:iam::123456789012:role/admin']
-      items:
-        type: string
-    Endpoint:
-      type: object
-      properties:
-        endpointID:
-          type: string
-          description: Endpoint ID of the user side private link
-          example: 'vpce-svc-1148ea04af491da11'
-        description:
-          type: string
-          description: User defined description of the endpoint
-          example: ecomm-team-billing-app
-        status:
-          type: string
-          description: The current status of the connection
-          example: ACTIVE
-          enum:
-            - ACTIVE
-            - FAILED
-            - PENDING
-        createdDateTime:
-          type: string
-          description: The datetime that the private link connection was created
-          example: '2009-11-10T23:00:00'
-    PrivateLinkCreateEndpointInput:
-      type: object
-      properties:
-        endpointID:
-          type: string
-          description: The user's endpoint created in their cloud provider account
-          example: "vpce-svc-1148ea04af8675309"
-        description:
-          type: string
-          description: The human readable description of the endpoint
-          example: ecomm-team-billing-app-prod
-    PrivateLinkCreateConfigInput:
-      type: object
-      properties:
-        allowedPrincipals:
-          $ref: '#/components/schemas/AllowedPrincipals'
-    PrivateLinkCreateConfigOutput:
-      type: object
-      properties:
-        serviceName:
-          $ref: '#/components/schemas/ServiceName'
-        allowedPrincipals:
-          $ref: '#/components/schemas/AllowedPrincipals'
-    PrivateLinkDatacenterOutput:
-      type: object
-      properties:
-        serviceName:
-          $ref: '#/components/schemas/ServiceName'
-        allowedPrincipals:
-          $ref: '#/components/schemas/AllowedPrincipals'
-        datacenterID:
-          type: string
-          description: Datacenter ID for the private link endpoint
-        endpoints:
-          type: array
-          description: List of endpoints associated with the given org-cluster-dc combo
-          items:
-            $ref: '#/components/schemas/Endpoint'
-    PrivateLinkClusterOutput:
-      type: object
-      properties:
-        clusterID:
-          type: string
-          description: Cluster ID for all private links connected to the cluster's datacenters
-        datacenters:
-          type: array
-          description: List of endpoints for a datacenter
-          items:
-            $ref: '#/components/schemas/PrivateLinkDatacenterOutput'
-
-    PrivateLinkOrgOutput:
-      type: object
-      properties:
-        clusters:
-          type: array
-          description: List of endpoints for a cluster
-          items:
-            $ref: '#/components/schemas/PrivateLinkClusterOutput'
-
-    UpdateEndpointInput:
-      type: object
-      properties:
-        description:
-          type: string
-          description: User defined description of the endpoint
-          example: ecomm-team-billing-app
 
   responses:
 
@@ -2437,16 +2380,11 @@ components:
           schema:
             $ref: '#/components/schemas/Errors'
 
-    InternalServiceError:
-      description: Internal Service Error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-
   securitySchemes:
 
     BearerAuth:
-      description: A JWT token must be passed in header in order to access the API
+      description: >-
+        An Application token must be passed in header in order to access the API.
+        https://docs.datastax.com/en/astra/docs/manage-application-tokens.html
       type: http
       scheme: bearer
