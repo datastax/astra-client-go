@@ -839,7 +839,7 @@ paths:
       requestBody:
         description: The model for an AWS Private Link connection creation request
         content:
-          '*/*':
+          'application/json':
             schema:
               $ref: '#/components/schemas/PrivateLinkCreateConfigInput'
       responses:
@@ -883,7 +883,7 @@ paths:
       requestBody:
         description: The model for an AWS Private Link connection creation request
         content:
-          '*/*':
+          'application/json':
             schema:
               $ref: '#/components/schemas/PrivateLinkCreateEndpointInput'
       responses:
@@ -975,7 +975,7 @@ paths:
       requestBody:
         description: The model for updating the description for an endpoint
         content:
-          '*/*':
+          'application/json':
             schema:
               $ref: '#/components/schemas/PrivateLinkUpdateEndpointInput'
       responses:

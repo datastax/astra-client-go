@@ -831,6 +831,15 @@ type Unauthorized Errors
 // Errors is a collection of individual Error objects
 type UnprocessableEntity Errors
 
+// AcceptEndpointToServiceJSONBody defines parameters for AcceptEndpointToService.
+type AcceptEndpointToServiceJSONBody PrivateLinkCreateEndpointInput
+
+// UpdateEndpointDescriptionJSONBody defines parameters for UpdateEndpointDescription.
+type UpdateEndpointDescriptionJSONBody PrivateLinkUpdateEndpointInput
+
+// AddAllowedPrincipleToServiceJSONBody defines parameters for AddAllowedPrincipleToService.
+type AddAllowedPrincipleToServiceJSONBody PrivateLinkCreateConfigInput
+
 // AuthenticateServiceAccountTokenJSONBody defines parameters for AuthenticateServiceAccountToken.
 type AuthenticateServiceAccountTokenJSONBody ServiceAccountTokenInput
 
@@ -912,6 +921,15 @@ type InviteUserToOrganizationJSONBody UserInvite
 
 // UpdateRolesForUserInOrganizationJSONBody defines parameters for UpdateRolesForUserInOrganization.
 type UpdateRolesForUserInOrganizationJSONBody RoleInviteRequest
+
+// AcceptEndpointToServiceJSONRequestBody defines body for AcceptEndpointToService for application/json ContentType.
+type AcceptEndpointToServiceJSONRequestBody AcceptEndpointToServiceJSONBody
+
+// UpdateEndpointDescriptionJSONRequestBody defines body for UpdateEndpointDescription for application/json ContentType.
+type UpdateEndpointDescriptionJSONRequestBody UpdateEndpointDescriptionJSONBody
+
+// AddAllowedPrincipleToServiceJSONRequestBody defines body for AddAllowedPrincipleToService for application/json ContentType.
+type AddAllowedPrincipleToServiceJSONRequestBody AddAllowedPrincipleToServiceJSONBody
 
 // AuthenticateServiceAccountTokenJSONRequestBody defines body for AuthenticateServiceAccountToken for application/json ContentType.
 type AuthenticateServiceAccountTokenJSONRequestBody AuthenticateServiceAccountTokenJSONBody
@@ -1028,6 +1046,8 @@ type ClientInterface interface {
 	// AcceptEndpointToService request  with any body
 	AcceptEndpointToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	AcceptEndpointToService(ctx context.Context, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// RejectEndpoint request
 	RejectEndpoint(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1037,11 +1057,15 @@ type ClientInterface interface {
 	// UpdateEndpointDescription request  with any body
 	UpdateEndpointDescriptionWithBody(ctx context.Context, clusterID string, datacenterID string, endpointID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	UpdateEndpointDescription(ctx context.Context, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetPrivateLinksForDatacenter request
 	GetPrivateLinksForDatacenter(ctx context.Context, clusterID string, datacenterID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AddAllowedPrincipleToService request  with any body
 	AddAllowedPrincipleToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AddAllowedPrincipleToService(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetAccessListTemplate request
 	GetAccessListTemplate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1199,6 +1223,18 @@ func (c *Client) AcceptEndpointToServiceWithBody(ctx context.Context, clusterID 
 	return c.Client.Do(req)
 }
 
+func (c *Client) AcceptEndpointToService(ctx context.Context, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAcceptEndpointToServiceRequest(c.Server, clusterID, datacenterID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) RejectEndpoint(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRejectEndpointRequest(c.Server, clusterID, datacenterID, endpointID)
 	if err != nil {
@@ -1235,6 +1271,18 @@ func (c *Client) UpdateEndpointDescriptionWithBody(ctx context.Context, clusterI
 	return c.Client.Do(req)
 }
 
+func (c *Client) UpdateEndpointDescription(ctx context.Context, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEndpointDescriptionRequest(c.Server, clusterID, datacenterID, endpointID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetPrivateLinksForDatacenter(ctx context.Context, clusterID string, datacenterID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetPrivateLinksForDatacenterRequest(c.Server, clusterID, datacenterID)
 	if err != nil {
@@ -1249,6 +1297,18 @@ func (c *Client) GetPrivateLinksForDatacenter(ctx context.Context, clusterID str
 
 func (c *Client) AddAllowedPrincipleToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAddAllowedPrincipleToServiceRequestWithBody(c.Server, clusterID, datacenterID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddAllowedPrincipleToService(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddAllowedPrincipleToServiceRequest(c.Server, clusterID, datacenterID, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1883,6 +1943,17 @@ func (c *Client) UpdateRolesForUserInOrganization(ctx context.Context, userID Us
 	return c.Client.Do(req)
 }
 
+// NewAcceptEndpointToServiceRequest calls the generic AcceptEndpointToService builder with application/json body
+func NewAcceptEndpointToServiceRequest(server string, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAcceptEndpointToServiceRequestWithBody(server, clusterID, datacenterID, "application/json", bodyReader)
+}
+
 // NewAcceptEndpointToServiceRequestWithBody generates requests for AcceptEndpointToService with any type of body
 func NewAcceptEndpointToServiceRequestWithBody(server string, clusterID string, datacenterID string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
@@ -2022,6 +2093,17 @@ func NewGetPrivateLinkEndpointRequest(server string, clusterID string, datacente
 	return req, nil
 }
 
+// NewUpdateEndpointDescriptionRequest calls the generic UpdateEndpointDescription builder with application/json body
+func NewUpdateEndpointDescriptionRequest(server string, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateEndpointDescriptionRequestWithBody(server, clusterID, datacenterID, endpointID, "application/json", bodyReader)
+}
+
 // NewUpdateEndpointDescriptionRequestWithBody generates requests for UpdateEndpointDescription with any type of body
 func NewUpdateEndpointDescriptionRequestWithBody(server string, clusterID string, datacenterID string, endpointID string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
@@ -2111,6 +2193,17 @@ func NewGetPrivateLinksForDatacenterRequest(server string, clusterID string, dat
 	}
 
 	return req, nil
+}
+
+// NewAddAllowedPrincipleToServiceRequest calls the generic AddAllowedPrincipleToService builder with application/json body
+func NewAddAllowedPrincipleToServiceRequest(server string, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddAllowedPrincipleToServiceRequestWithBody(server, clusterID, datacenterID, "application/json", bodyReader)
 }
 
 // NewAddAllowedPrincipleToServiceRequestWithBody generates requests for AddAllowedPrincipleToService with any type of body
@@ -3727,6 +3820,8 @@ type ClientWithResponsesInterface interface {
 	// AcceptEndpointToService request  with any body
 	AcceptEndpointToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcceptEndpointToServiceResponse, error)
 
+	AcceptEndpointToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AcceptEndpointToServiceResponse, error)
+
 	// RejectEndpoint request
 	RejectEndpointWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*RejectEndpointResponse, error)
 
@@ -3736,11 +3831,15 @@ type ClientWithResponsesInterface interface {
 	// UpdateEndpointDescription request  with any body
 	UpdateEndpointDescriptionWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEndpointDescriptionResponse, error)
 
+	UpdateEndpointDescriptionWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEndpointDescriptionResponse, error)
+
 	// GetPrivateLinksForDatacenter request
 	GetPrivateLinksForDatacenterWithResponse(ctx context.Context, clusterID string, datacenterID string, reqEditors ...RequestEditorFn) (*GetPrivateLinksForDatacenterResponse, error)
 
 	// AddAllowedPrincipleToService request  with any body
 	AddAllowedPrincipleToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error)
+
+	AddAllowedPrincipleToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error)
 
 	// GetAccessListTemplate request
 	GetAccessListTemplateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAccessListTemplateResponse, error)
@@ -5033,6 +5132,14 @@ func (c *ClientWithResponses) AcceptEndpointToServiceWithBodyWithResponse(ctx co
 	return ParseAcceptEndpointToServiceResponse(rsp)
 }
 
+func (c *ClientWithResponses) AcceptEndpointToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AcceptEndpointToServiceResponse, error) {
+	rsp, err := c.AcceptEndpointToService(ctx, clusterID, datacenterID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAcceptEndpointToServiceResponse(rsp)
+}
+
 // RejectEndpointWithResponse request returning *RejectEndpointResponse
 func (c *ClientWithResponses) RejectEndpointWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*RejectEndpointResponse, error) {
 	rsp, err := c.RejectEndpoint(ctx, clusterID, datacenterID, endpointID, reqEditors...)
@@ -5060,6 +5167,14 @@ func (c *ClientWithResponses) UpdateEndpointDescriptionWithBodyWithResponse(ctx 
 	return ParseUpdateEndpointDescriptionResponse(rsp)
 }
 
+func (c *ClientWithResponses) UpdateEndpointDescriptionWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEndpointDescriptionResponse, error) {
+	rsp, err := c.UpdateEndpointDescription(ctx, clusterID, datacenterID, endpointID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateEndpointDescriptionResponse(rsp)
+}
+
 // GetPrivateLinksForDatacenterWithResponse request returning *GetPrivateLinksForDatacenterResponse
 func (c *ClientWithResponses) GetPrivateLinksForDatacenterWithResponse(ctx context.Context, clusterID string, datacenterID string, reqEditors ...RequestEditorFn) (*GetPrivateLinksForDatacenterResponse, error) {
 	rsp, err := c.GetPrivateLinksForDatacenter(ctx, clusterID, datacenterID, reqEditors...)
@@ -5072,6 +5187,14 @@ func (c *ClientWithResponses) GetPrivateLinksForDatacenterWithResponse(ctx conte
 // AddAllowedPrincipleToServiceWithBodyWithResponse request with arbitrary body returning *AddAllowedPrincipleToServiceResponse
 func (c *ClientWithResponses) AddAllowedPrincipleToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error) {
 	rsp, err := c.AddAllowedPrincipleToServiceWithBody(ctx, clusterID, datacenterID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddAllowedPrincipleToServiceResponse(rsp)
+}
+
+func (c *ClientWithResponses) AddAllowedPrincipleToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error) {
+	rsp, err := c.AddAllowedPrincipleToService(ctx, clusterID, datacenterID, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
