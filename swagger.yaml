@@ -778,7 +778,7 @@ paths:
         500:
           $ref: '#/components/responses/ServerError'
 
-  /organizations/clusters/{clusterID}/datacenters/{datacenterID}/private-link:
+  /v2/organizations/clusters/{clusterID}/datacenters/{datacenterID}/private-link:
     get:
       tags:
         - Private Link
@@ -858,7 +858,7 @@ paths:
         500:
           $ref: '#/components/responses/ServerError'
 
-  /organizations/clusters/{clusterID}/datacenters/{datacenterID}/endpoints:
+  /v2/organizations/clusters/{clusterID}/datacenters/{datacenterID}/endpoints:
     post:
       tags:
         - Private Link
@@ -902,7 +902,7 @@ paths:
         500:
           $ref: '#/components/responses/ServerError'
 
-  /organizations/clusters/{clusterID}/datacenters/{datacenterID}/endpoints/{endpointID}:
+  /v2/organizations/clusters/{clusterID}/datacenters/{datacenterID}/endpoints/{endpointID}:
     get:
       tags:
         - Private Link

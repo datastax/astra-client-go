@@ -831,15 +831,6 @@ type Unauthorized Errors
 // Errors is a collection of individual Error objects
 type UnprocessableEntity Errors
 
-// AcceptEndpointToServiceJSONBody defines parameters for AcceptEndpointToService.
-type AcceptEndpointToServiceJSONBody PrivateLinkCreateEndpointInput
-
-// UpdateEndpointDescriptionJSONBody defines parameters for UpdateEndpointDescription.
-type UpdateEndpointDescriptionJSONBody PrivateLinkUpdateEndpointInput
-
-// AddAllowedPrincipleToServiceJSONBody defines parameters for AddAllowedPrincipleToService.
-type AddAllowedPrincipleToServiceJSONBody PrivateLinkCreateConfigInput
-
 // AuthenticateServiceAccountTokenJSONBody defines parameters for AuthenticateServiceAccountToken.
 type AuthenticateServiceAccountTokenJSONBody ServiceAccountTokenInput
 
@@ -910,6 +901,15 @@ type TerminateDatabaseParams struct {
 	PreparedStateOnly *bool `json:"preparedStateOnly,omitempty"`
 }
 
+// AcceptEndpointToServiceJSONBody defines parameters for AcceptEndpointToService.
+type AcceptEndpointToServiceJSONBody PrivateLinkCreateEndpointInput
+
+// UpdateEndpointDescriptionJSONBody defines parameters for UpdateEndpointDescription.
+type UpdateEndpointDescriptionJSONBody PrivateLinkUpdateEndpointInput
+
+// AddAllowedPrincipleToServiceJSONBody defines parameters for AddAllowedPrincipleToService.
+type AddAllowedPrincipleToServiceJSONBody PrivateLinkCreateConfigInput
+
 // AddOrganizationRoleJSONBody defines parameters for AddOrganizationRole.
 type AddOrganizationRoleJSONBody CreateRoleRequest
 
@@ -921,15 +921,6 @@ type InviteUserToOrganizationJSONBody UserInvite
 
 // UpdateRolesForUserInOrganizationJSONBody defines parameters for UpdateRolesForUserInOrganization.
 type UpdateRolesForUserInOrganizationJSONBody RoleInviteRequest
-
-// AcceptEndpointToServiceJSONRequestBody defines body for AcceptEndpointToService for application/json ContentType.
-type AcceptEndpointToServiceJSONRequestBody AcceptEndpointToServiceJSONBody
-
-// UpdateEndpointDescriptionJSONRequestBody defines body for UpdateEndpointDescription for application/json ContentType.
-type UpdateEndpointDescriptionJSONRequestBody UpdateEndpointDescriptionJSONBody
-
-// AddAllowedPrincipleToServiceJSONRequestBody defines body for AddAllowedPrincipleToService for application/json ContentType.
-type AddAllowedPrincipleToServiceJSONRequestBody AddAllowedPrincipleToServiceJSONBody
 
 // AuthenticateServiceAccountTokenJSONRequestBody defines body for AuthenticateServiceAccountToken for application/json ContentType.
 type AuthenticateServiceAccountTokenJSONRequestBody AuthenticateServiceAccountTokenJSONBody
@@ -957,6 +948,15 @@ type ResetPasswordJSONRequestBody ResetPasswordJSONBody
 
 // ResizeDatabaseJSONRequestBody defines body for ResizeDatabase for application/json ContentType.
 type ResizeDatabaseJSONRequestBody ResizeDatabaseJSONBody
+
+// AcceptEndpointToServiceJSONRequestBody defines body for AcceptEndpointToService for application/json ContentType.
+type AcceptEndpointToServiceJSONRequestBody AcceptEndpointToServiceJSONBody
+
+// UpdateEndpointDescriptionJSONRequestBody defines body for UpdateEndpointDescription for application/json ContentType.
+type UpdateEndpointDescriptionJSONRequestBody UpdateEndpointDescriptionJSONBody
+
+// AddAllowedPrincipleToServiceJSONRequestBody defines body for AddAllowedPrincipleToService for application/json ContentType.
+type AddAllowedPrincipleToServiceJSONRequestBody AddAllowedPrincipleToServiceJSONBody
 
 // AddOrganizationRoleJSONRequestBody defines body for AddOrganizationRole for application/json ContentType.
 type AddOrganizationRoleJSONRequestBody AddOrganizationRoleJSONBody
@@ -1043,30 +1043,6 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// AcceptEndpointToService request  with any body
-	AcceptEndpointToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	AcceptEndpointToService(ctx context.Context, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// RejectEndpoint request
-	RejectEndpoint(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetPrivateLinkEndpoint request
-	GetPrivateLinkEndpoint(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// UpdateEndpointDescription request  with any body
-	UpdateEndpointDescriptionWithBody(ctx context.Context, clusterID string, datacenterID string, endpointID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	UpdateEndpointDescription(ctx context.Context, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetPrivateLinksForDatacenter request
-	GetPrivateLinksForDatacenter(ctx context.Context, clusterID string, datacenterID string, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// AddAllowedPrincipleToService request  with any body
-	AddAllowedPrincipleToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	AddAllowedPrincipleToService(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// GetAccessListTemplate request
 	GetAccessListTemplate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1166,6 +1142,30 @@ type ClientInterface interface {
 	// UnparkDatabase request
 	UnparkDatabase(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AcceptEndpointToService request  with any body
+	AcceptEndpointToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AcceptEndpointToService(ctx context.Context, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RejectEndpoint request
+	RejectEndpoint(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetPrivateLinkEndpoint request
+	GetPrivateLinkEndpoint(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateEndpointDescription request  with any body
+	UpdateEndpointDescriptionWithBody(ctx context.Context, clusterID string, datacenterID string, endpointID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateEndpointDescription(ctx context.Context, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetPrivateLinksForDatacenter request
+	GetPrivateLinksForDatacenter(ctx context.Context, clusterID string, datacenterID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AddAllowedPrincipleToService request  with any body
+	AddAllowedPrincipleToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AddAllowedPrincipleToService(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListPrivateLinksForCluster request
 	ListPrivateLinksForCluster(ctx context.Context, clusterID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1209,114 +1209,6 @@ type ClientInterface interface {
 	UpdateRolesForUserInOrganizationWithBody(ctx context.Context, userID UserIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateRolesForUserInOrganization(ctx context.Context, userID UserIdParam, body UpdateRolesForUserInOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-}
-
-func (c *Client) AcceptEndpointToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAcceptEndpointToServiceRequestWithBody(c.Server, clusterID, datacenterID, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AcceptEndpointToService(ctx context.Context, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAcceptEndpointToServiceRequest(c.Server, clusterID, datacenterID, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) RejectEndpoint(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewRejectEndpointRequest(c.Server, clusterID, datacenterID, endpointID)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetPrivateLinkEndpoint(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetPrivateLinkEndpointRequest(c.Server, clusterID, datacenterID, endpointID)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) UpdateEndpointDescriptionWithBody(ctx context.Context, clusterID string, datacenterID string, endpointID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateEndpointDescriptionRequestWithBody(c.Server, clusterID, datacenterID, endpointID, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) UpdateEndpointDescription(ctx context.Context, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateEndpointDescriptionRequest(c.Server, clusterID, datacenterID, endpointID, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetPrivateLinksForDatacenter(ctx context.Context, clusterID string, datacenterID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetPrivateLinksForDatacenterRequest(c.Server, clusterID, datacenterID)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AddAllowedPrincipleToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddAllowedPrincipleToServiceRequestWithBody(c.Server, clusterID, datacenterID, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AddAllowedPrincipleToService(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddAllowedPrincipleToServiceRequest(c.Server, clusterID, datacenterID, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
 }
 
 func (c *Client) GetAccessListTemplate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1751,6 +1643,114 @@ func (c *Client) UnparkDatabase(ctx context.Context, databaseID DatabaseIdParam,
 	return c.Client.Do(req)
 }
 
+func (c *Client) AcceptEndpointToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAcceptEndpointToServiceRequestWithBody(c.Server, clusterID, datacenterID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AcceptEndpointToService(ctx context.Context, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAcceptEndpointToServiceRequest(c.Server, clusterID, datacenterID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RejectEndpoint(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRejectEndpointRequest(c.Server, clusterID, datacenterID, endpointID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetPrivateLinkEndpoint(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPrivateLinkEndpointRequest(c.Server, clusterID, datacenterID, endpointID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateEndpointDescriptionWithBody(ctx context.Context, clusterID string, datacenterID string, endpointID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEndpointDescriptionRequestWithBody(c.Server, clusterID, datacenterID, endpointID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateEndpointDescription(ctx context.Context, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEndpointDescriptionRequest(c.Server, clusterID, datacenterID, endpointID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetPrivateLinksForDatacenter(ctx context.Context, clusterID string, datacenterID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPrivateLinksForDatacenterRequest(c.Server, clusterID, datacenterID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddAllowedPrincipleToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddAllowedPrincipleToServiceRequestWithBody(c.Server, clusterID, datacenterID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddAllowedPrincipleToService(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddAllowedPrincipleToServiceRequest(c.Server, clusterID, datacenterID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListPrivateLinksForCluster(ctx context.Context, clusterID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListPrivateLinksForClusterRequest(c.Server, clusterID)
 	if err != nil {
@@ -1941,312 +1941,6 @@ func (c *Client) UpdateRolesForUserInOrganization(ctx context.Context, userID Us
 		return nil, err
 	}
 	return c.Client.Do(req)
-}
-
-// NewAcceptEndpointToServiceRequest calls the generic AcceptEndpointToService builder with application/json body
-func NewAcceptEndpointToServiceRequest(server string, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewAcceptEndpointToServiceRequestWithBody(server, clusterID, datacenterID, "application/json", bodyReader)
-}
-
-// NewAcceptEndpointToServiceRequestWithBody generates requests for AcceptEndpointToService with any type of body
-func NewAcceptEndpointToServiceRequestWithBody(server string, clusterID string, datacenterID string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterID", runtime.ParamLocationPath, clusterID)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/organizations/clusters/%s/datacenters/%s/endpoints", pathParam0, pathParam1)
-	if operationPath[0] == '/' {
-		operationPath = operationPath[1:]
-	}
-	operationURL := url.URL{
-		Path: operationPath,
-	}
-
-	queryURL := serverURL.ResolveReference(&operationURL)
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewRejectEndpointRequest generates requests for RejectEndpoint
-func NewRejectEndpointRequest(server string, clusterID string, datacenterID string, endpointID string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterID", runtime.ParamLocationPath, clusterID)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam2 string
-
-	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "endpointID", runtime.ParamLocationPath, endpointID)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/organizations/clusters/%s/datacenters/%s/endpoints/%s", pathParam0, pathParam1, pathParam2)
-	if operationPath[0] == '/' {
-		operationPath = operationPath[1:]
-	}
-	operationURL := url.URL{
-		Path: operationPath,
-	}
-
-	queryURL := serverURL.ResolveReference(&operationURL)
-
-	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetPrivateLinkEndpointRequest generates requests for GetPrivateLinkEndpoint
-func NewGetPrivateLinkEndpointRequest(server string, clusterID string, datacenterID string, endpointID string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterID", runtime.ParamLocationPath, clusterID)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam2 string
-
-	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "endpointID", runtime.ParamLocationPath, endpointID)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/organizations/clusters/%s/datacenters/%s/endpoints/%s", pathParam0, pathParam1, pathParam2)
-	if operationPath[0] == '/' {
-		operationPath = operationPath[1:]
-	}
-	operationURL := url.URL{
-		Path: operationPath,
-	}
-
-	queryURL := serverURL.ResolveReference(&operationURL)
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewUpdateEndpointDescriptionRequest calls the generic UpdateEndpointDescription builder with application/json body
-func NewUpdateEndpointDescriptionRequest(server string, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewUpdateEndpointDescriptionRequestWithBody(server, clusterID, datacenterID, endpointID, "application/json", bodyReader)
-}
-
-// NewUpdateEndpointDescriptionRequestWithBody generates requests for UpdateEndpointDescription with any type of body
-func NewUpdateEndpointDescriptionRequestWithBody(server string, clusterID string, datacenterID string, endpointID string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterID", runtime.ParamLocationPath, clusterID)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam2 string
-
-	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "endpointID", runtime.ParamLocationPath, endpointID)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/organizations/clusters/%s/datacenters/%s/endpoints/%s", pathParam0, pathParam1, pathParam2)
-	if operationPath[0] == '/' {
-		operationPath = operationPath[1:]
-	}
-	operationURL := url.URL{
-		Path: operationPath,
-	}
-
-	queryURL := serverURL.ResolveReference(&operationURL)
-
-	req, err := http.NewRequest("PUT", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewGetPrivateLinksForDatacenterRequest generates requests for GetPrivateLinksForDatacenter
-func NewGetPrivateLinksForDatacenterRequest(server string, clusterID string, datacenterID string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterID", runtime.ParamLocationPath, clusterID)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/organizations/clusters/%s/datacenters/%s/private-link", pathParam0, pathParam1)
-	if operationPath[0] == '/' {
-		operationPath = operationPath[1:]
-	}
-	operationURL := url.URL{
-		Path: operationPath,
-	}
-
-	queryURL := serverURL.ResolveReference(&operationURL)
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewAddAllowedPrincipleToServiceRequest calls the generic AddAllowedPrincipleToService builder with application/json body
-func NewAddAllowedPrincipleToServiceRequest(server string, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewAddAllowedPrincipleToServiceRequestWithBody(server, clusterID, datacenterID, "application/json", bodyReader)
-}
-
-// NewAddAllowedPrincipleToServiceRequestWithBody generates requests for AddAllowedPrincipleToService with any type of body
-func NewAddAllowedPrincipleToServiceRequestWithBody(server string, clusterID string, datacenterID string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterID", runtime.ParamLocationPath, clusterID)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/organizations/clusters/%s/datacenters/%s/private-link", pathParam0, pathParam1)
-	if operationPath[0] == '/' {
-		operationPath = operationPath[1:]
-	}
-	operationURL := url.URL{
-		Path: operationPath,
-	}
-
-	queryURL := serverURL.ResolveReference(&operationURL)
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
 }
 
 // NewGetAccessListTemplateRequest generates requests for GetAccessListTemplate
@@ -3349,6 +3043,312 @@ func NewUnparkDatabaseRequest(server string, databaseID DatabaseIdParam) (*http.
 	return req, nil
 }
 
+// NewAcceptEndpointToServiceRequest calls the generic AcceptEndpointToService builder with application/json body
+func NewAcceptEndpointToServiceRequest(server string, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAcceptEndpointToServiceRequestWithBody(server, clusterID, datacenterID, "application/json", bodyReader)
+}
+
+// NewAcceptEndpointToServiceRequestWithBody generates requests for AcceptEndpointToService with any type of body
+func NewAcceptEndpointToServiceRequestWithBody(server string, clusterID string, datacenterID string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterID", runtime.ParamLocationPath, clusterID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/clusters/%s/datacenters/%s/endpoints", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewRejectEndpointRequest generates requests for RejectEndpoint
+func NewRejectEndpointRequest(server string, clusterID string, datacenterID string, endpointID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterID", runtime.ParamLocationPath, clusterID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "endpointID", runtime.ParamLocationPath, endpointID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/clusters/%s/datacenters/%s/endpoints/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetPrivateLinkEndpointRequest generates requests for GetPrivateLinkEndpoint
+func NewGetPrivateLinkEndpointRequest(server string, clusterID string, datacenterID string, endpointID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterID", runtime.ParamLocationPath, clusterID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "endpointID", runtime.ParamLocationPath, endpointID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/clusters/%s/datacenters/%s/endpoints/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateEndpointDescriptionRequest calls the generic UpdateEndpointDescription builder with application/json body
+func NewUpdateEndpointDescriptionRequest(server string, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateEndpointDescriptionRequestWithBody(server, clusterID, datacenterID, endpointID, "application/json", bodyReader)
+}
+
+// NewUpdateEndpointDescriptionRequestWithBody generates requests for UpdateEndpointDescription with any type of body
+func NewUpdateEndpointDescriptionRequestWithBody(server string, clusterID string, datacenterID string, endpointID string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterID", runtime.ParamLocationPath, clusterID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "endpointID", runtime.ParamLocationPath, endpointID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/clusters/%s/datacenters/%s/endpoints/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetPrivateLinksForDatacenterRequest generates requests for GetPrivateLinksForDatacenter
+func NewGetPrivateLinksForDatacenterRequest(server string, clusterID string, datacenterID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterID", runtime.ParamLocationPath, clusterID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/clusters/%s/datacenters/%s/private-link", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAddAllowedPrincipleToServiceRequest calls the generic AddAllowedPrincipleToService builder with application/json body
+func NewAddAllowedPrincipleToServiceRequest(server string, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddAllowedPrincipleToServiceRequestWithBody(server, clusterID, datacenterID, "application/json", bodyReader)
+}
+
+// NewAddAllowedPrincipleToServiceRequestWithBody generates requests for AddAllowedPrincipleToService with any type of body
+func NewAddAllowedPrincipleToServiceRequestWithBody(server string, clusterID string, datacenterID string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterID", runtime.ParamLocationPath, clusterID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/clusters/%s/datacenters/%s/private-link", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListPrivateLinksForClusterRequest generates requests for ListPrivateLinksForCluster
 func NewListPrivateLinksForClusterRequest(server string, clusterID string) (*http.Request, error) {
 	var err error
@@ -3817,30 +3817,6 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// AcceptEndpointToService request  with any body
-	AcceptEndpointToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcceptEndpointToServiceResponse, error)
-
-	AcceptEndpointToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AcceptEndpointToServiceResponse, error)
-
-	// RejectEndpoint request
-	RejectEndpointWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*RejectEndpointResponse, error)
-
-	// GetPrivateLinkEndpoint request
-	GetPrivateLinkEndpointWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*GetPrivateLinkEndpointResponse, error)
-
-	// UpdateEndpointDescription request  with any body
-	UpdateEndpointDescriptionWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEndpointDescriptionResponse, error)
-
-	UpdateEndpointDescriptionWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEndpointDescriptionResponse, error)
-
-	// GetPrivateLinksForDatacenter request
-	GetPrivateLinksForDatacenterWithResponse(ctx context.Context, clusterID string, datacenterID string, reqEditors ...RequestEditorFn) (*GetPrivateLinksForDatacenterResponse, error)
-
-	// AddAllowedPrincipleToService request  with any body
-	AddAllowedPrincipleToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error)
-
-	AddAllowedPrincipleToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error)
-
 	// GetAccessListTemplate request
 	GetAccessListTemplateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAccessListTemplateResponse, error)
 
@@ -3940,6 +3916,30 @@ type ClientWithResponsesInterface interface {
 	// UnparkDatabase request
 	UnparkDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*UnparkDatabaseResponse, error)
 
+	// AcceptEndpointToService request  with any body
+	AcceptEndpointToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcceptEndpointToServiceResponse, error)
+
+	AcceptEndpointToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AcceptEndpointToServiceResponse, error)
+
+	// RejectEndpoint request
+	RejectEndpointWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*RejectEndpointResponse, error)
+
+	// GetPrivateLinkEndpoint request
+	GetPrivateLinkEndpointWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*GetPrivateLinkEndpointResponse, error)
+
+	// UpdateEndpointDescription request  with any body
+	UpdateEndpointDescriptionWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEndpointDescriptionResponse, error)
+
+	UpdateEndpointDescriptionWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEndpointDescriptionResponse, error)
+
+	// GetPrivateLinksForDatacenter request
+	GetPrivateLinksForDatacenterWithResponse(ctx context.Context, clusterID string, datacenterID string, reqEditors ...RequestEditorFn) (*GetPrivateLinksForDatacenterResponse, error)
+
+	// AddAllowedPrincipleToService request  with any body
+	AddAllowedPrincipleToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error)
+
+	AddAllowedPrincipleToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error)
+
 	// ListPrivateLinksForCluster request
 	ListPrivateLinksForClusterWithResponse(ctx context.Context, clusterID string, reqEditors ...RequestEditorFn) (*ListPrivateLinksForClusterResponse, error)
 
@@ -3983,160 +3983,6 @@ type ClientWithResponsesInterface interface {
 	UpdateRolesForUserInOrganizationWithBodyWithResponse(ctx context.Context, userID UserIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRolesForUserInOrganizationResponse, error)
 
 	UpdateRolesForUserInOrganizationWithResponse(ctx context.Context, userID UserIdParam, body UpdateRolesForUserInOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRolesForUserInOrganizationResponse, error)
-}
-
-type AcceptEndpointToServiceResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *PrivateLinkEndpoint
-	JSON400      *Errors
-	JSON404      *Errors
-	JSON409      *Errors
-	JSON500      *Errors
-}
-
-// Status returns HTTPResponse.Status
-func (r AcceptEndpointToServiceResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r AcceptEndpointToServiceResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type RejectEndpointResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON400      *Errors
-	JSON404      *Errors
-	JSON500      *Errors
-}
-
-// Status returns HTTPResponse.Status
-func (r RejectEndpointResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r RejectEndpointResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetPrivateLinkEndpointResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *PrivateLinkEndpoint
-	JSON400      *Errors
-	JSON404      *Errors
-	JSON409      *Errors
-	JSON500      *Errors
-}
-
-// Status returns HTTPResponse.Status
-func (r GetPrivateLinkEndpointResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetPrivateLinkEndpointResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type UpdateEndpointDescriptionResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *PrivateLinkEndpoint
-	JSON400      *Errors
-	JSON404      *Errors
-	JSON409      *Errors
-	JSON500      *Errors
-}
-
-// Status returns HTTPResponse.Status
-func (r UpdateEndpointDescriptionResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r UpdateEndpointDescriptionResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetPrivateLinksForDatacenterResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *PrivateLinkDatacenterOutput
-	JSON400      *Errors
-	JSON404      *Errors
-	JSON409      *Errors
-	JSON500      *Errors
-}
-
-// Status returns HTTPResponse.Status
-func (r GetPrivateLinksForDatacenterResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetPrivateLinksForDatacenterResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type AddAllowedPrincipleToServiceResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *PrivateLinkCreateConfigOutput
-	JSON400      *Errors
-	JSON404      *Errors
-	JSON409      *Errors
-	JSON500      *Errors
-}
-
-// Status returns HTTPResponse.Status
-func (r AddAllowedPrincipleToServiceResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r AddAllowedPrincipleToServiceResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
 }
 
 type GetAccessListTemplateResponse struct {
@@ -4820,6 +4666,160 @@ func (r UnparkDatabaseResponse) StatusCode() int {
 	return 0
 }
 
+type AcceptEndpointToServiceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PrivateLinkEndpoint
+	JSON400      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r AcceptEndpointToServiceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AcceptEndpointToServiceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RejectEndpointResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r RejectEndpointResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RejectEndpointResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetPrivateLinkEndpointResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PrivateLinkEndpoint
+	JSON400      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetPrivateLinkEndpointResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetPrivateLinkEndpointResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateEndpointDescriptionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PrivateLinkEndpoint
+	JSON400      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateEndpointDescriptionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateEndpointDescriptionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetPrivateLinksForDatacenterResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PrivateLinkDatacenterOutput
+	JSON400      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetPrivateLinksForDatacenterResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetPrivateLinksForDatacenterResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AddAllowedPrincipleToServiceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PrivateLinkCreateConfigOutput
+	JSON400      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r AddAllowedPrincipleToServiceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AddAllowedPrincipleToServiceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListPrivateLinksForClusterResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5121,84 +5121,6 @@ func (r UpdateRolesForUserInOrganizationResponse) StatusCode() int {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
-}
-
-// AcceptEndpointToServiceWithBodyWithResponse request with arbitrary body returning *AcceptEndpointToServiceResponse
-func (c *ClientWithResponses) AcceptEndpointToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcceptEndpointToServiceResponse, error) {
-	rsp, err := c.AcceptEndpointToServiceWithBody(ctx, clusterID, datacenterID, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAcceptEndpointToServiceResponse(rsp)
-}
-
-func (c *ClientWithResponses) AcceptEndpointToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AcceptEndpointToServiceResponse, error) {
-	rsp, err := c.AcceptEndpointToService(ctx, clusterID, datacenterID, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAcceptEndpointToServiceResponse(rsp)
-}
-
-// RejectEndpointWithResponse request returning *RejectEndpointResponse
-func (c *ClientWithResponses) RejectEndpointWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*RejectEndpointResponse, error) {
-	rsp, err := c.RejectEndpoint(ctx, clusterID, datacenterID, endpointID, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseRejectEndpointResponse(rsp)
-}
-
-// GetPrivateLinkEndpointWithResponse request returning *GetPrivateLinkEndpointResponse
-func (c *ClientWithResponses) GetPrivateLinkEndpointWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*GetPrivateLinkEndpointResponse, error) {
-	rsp, err := c.GetPrivateLinkEndpoint(ctx, clusterID, datacenterID, endpointID, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetPrivateLinkEndpointResponse(rsp)
-}
-
-// UpdateEndpointDescriptionWithBodyWithResponse request with arbitrary body returning *UpdateEndpointDescriptionResponse
-func (c *ClientWithResponses) UpdateEndpointDescriptionWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEndpointDescriptionResponse, error) {
-	rsp, err := c.UpdateEndpointDescriptionWithBody(ctx, clusterID, datacenterID, endpointID, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdateEndpointDescriptionResponse(rsp)
-}
-
-func (c *ClientWithResponses) UpdateEndpointDescriptionWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEndpointDescriptionResponse, error) {
-	rsp, err := c.UpdateEndpointDescription(ctx, clusterID, datacenterID, endpointID, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdateEndpointDescriptionResponse(rsp)
-}
-
-// GetPrivateLinksForDatacenterWithResponse request returning *GetPrivateLinksForDatacenterResponse
-func (c *ClientWithResponses) GetPrivateLinksForDatacenterWithResponse(ctx context.Context, clusterID string, datacenterID string, reqEditors ...RequestEditorFn) (*GetPrivateLinksForDatacenterResponse, error) {
-	rsp, err := c.GetPrivateLinksForDatacenter(ctx, clusterID, datacenterID, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetPrivateLinksForDatacenterResponse(rsp)
-}
-
-// AddAllowedPrincipleToServiceWithBodyWithResponse request with arbitrary body returning *AddAllowedPrincipleToServiceResponse
-func (c *ClientWithResponses) AddAllowedPrincipleToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error) {
-	rsp, err := c.AddAllowedPrincipleToServiceWithBody(ctx, clusterID, datacenterID, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAddAllowedPrincipleToServiceResponse(rsp)
-}
-
-func (c *ClientWithResponses) AddAllowedPrincipleToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error) {
-	rsp, err := c.AddAllowedPrincipleToService(ctx, clusterID, datacenterID, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAddAllowedPrincipleToServiceResponse(rsp)
 }
 
 // GetAccessListTemplateWithResponse request returning *GetAccessListTemplateResponse
@@ -5516,6 +5438,84 @@ func (c *ClientWithResponses) UnparkDatabaseWithResponse(ctx context.Context, da
 	return ParseUnparkDatabaseResponse(rsp)
 }
 
+// AcceptEndpointToServiceWithBodyWithResponse request with arbitrary body returning *AcceptEndpointToServiceResponse
+func (c *ClientWithResponses) AcceptEndpointToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcceptEndpointToServiceResponse, error) {
+	rsp, err := c.AcceptEndpointToServiceWithBody(ctx, clusterID, datacenterID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAcceptEndpointToServiceResponse(rsp)
+}
+
+func (c *ClientWithResponses) AcceptEndpointToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AcceptEndpointToServiceResponse, error) {
+	rsp, err := c.AcceptEndpointToService(ctx, clusterID, datacenterID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAcceptEndpointToServiceResponse(rsp)
+}
+
+// RejectEndpointWithResponse request returning *RejectEndpointResponse
+func (c *ClientWithResponses) RejectEndpointWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*RejectEndpointResponse, error) {
+	rsp, err := c.RejectEndpoint(ctx, clusterID, datacenterID, endpointID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRejectEndpointResponse(rsp)
+}
+
+// GetPrivateLinkEndpointWithResponse request returning *GetPrivateLinkEndpointResponse
+func (c *ClientWithResponses) GetPrivateLinkEndpointWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, reqEditors ...RequestEditorFn) (*GetPrivateLinkEndpointResponse, error) {
+	rsp, err := c.GetPrivateLinkEndpoint(ctx, clusterID, datacenterID, endpointID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPrivateLinkEndpointResponse(rsp)
+}
+
+// UpdateEndpointDescriptionWithBodyWithResponse request with arbitrary body returning *UpdateEndpointDescriptionResponse
+func (c *ClientWithResponses) UpdateEndpointDescriptionWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEndpointDescriptionResponse, error) {
+	rsp, err := c.UpdateEndpointDescriptionWithBody(ctx, clusterID, datacenterID, endpointID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateEndpointDescriptionResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateEndpointDescriptionWithResponse(ctx context.Context, clusterID string, datacenterID string, endpointID string, body UpdateEndpointDescriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEndpointDescriptionResponse, error) {
+	rsp, err := c.UpdateEndpointDescription(ctx, clusterID, datacenterID, endpointID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateEndpointDescriptionResponse(rsp)
+}
+
+// GetPrivateLinksForDatacenterWithResponse request returning *GetPrivateLinksForDatacenterResponse
+func (c *ClientWithResponses) GetPrivateLinksForDatacenterWithResponse(ctx context.Context, clusterID string, datacenterID string, reqEditors ...RequestEditorFn) (*GetPrivateLinksForDatacenterResponse, error) {
+	rsp, err := c.GetPrivateLinksForDatacenter(ctx, clusterID, datacenterID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPrivateLinksForDatacenterResponse(rsp)
+}
+
+// AddAllowedPrincipleToServiceWithBodyWithResponse request with arbitrary body returning *AddAllowedPrincipleToServiceResponse
+func (c *ClientWithResponses) AddAllowedPrincipleToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error) {
+	rsp, err := c.AddAllowedPrincipleToServiceWithBody(ctx, clusterID, datacenterID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddAllowedPrincipleToServiceResponse(rsp)
+}
+
+func (c *ClientWithResponses) AddAllowedPrincipleToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error) {
+	rsp, err := c.AddAllowedPrincipleToService(ctx, clusterID, datacenterID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddAllowedPrincipleToServiceResponse(rsp)
+}
+
 // ListPrivateLinksForClusterWithResponse request returning *ListPrivateLinksForClusterResponse
 func (c *ClientWithResponses) ListPrivateLinksForClusterWithResponse(ctx context.Context, clusterID string, reqEditors ...RequestEditorFn) (*ListPrivateLinksForClusterResponse, error) {
 	rsp, err := c.ListPrivateLinksForCluster(ctx, clusterID, reqEditors...)
@@ -5654,316 +5654,6 @@ func (c *ClientWithResponses) UpdateRolesForUserInOrganizationWithResponse(ctx c
 		return nil, err
 	}
 	return ParseUpdateRolesForUserInOrganizationResponse(rsp)
-}
-
-// ParseAcceptEndpointToServiceResponse parses an HTTP response from a AcceptEndpointToServiceWithResponse call
-func ParseAcceptEndpointToServiceResponse(rsp *http.Response) (*AcceptEndpointToServiceResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer rsp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &AcceptEndpointToServiceResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PrivateLinkEndpoint
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON409 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseRejectEndpointResponse parses an HTTP response from a RejectEndpointWithResponse call
-func ParseRejectEndpointResponse(rsp *http.Response) (*RejectEndpointResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer rsp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &RejectEndpointResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetPrivateLinkEndpointResponse parses an HTTP response from a GetPrivateLinkEndpointWithResponse call
-func ParseGetPrivateLinkEndpointResponse(rsp *http.Response) (*GetPrivateLinkEndpointResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer rsp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetPrivateLinkEndpointResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PrivateLinkEndpoint
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON409 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseUpdateEndpointDescriptionResponse parses an HTTP response from a UpdateEndpointDescriptionWithResponse call
-func ParseUpdateEndpointDescriptionResponse(rsp *http.Response) (*UpdateEndpointDescriptionResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer rsp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &UpdateEndpointDescriptionResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PrivateLinkEndpoint
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON409 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetPrivateLinksForDatacenterResponse parses an HTTP response from a GetPrivateLinksForDatacenterWithResponse call
-func ParseGetPrivateLinksForDatacenterResponse(rsp *http.Response) (*GetPrivateLinksForDatacenterResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer rsp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetPrivateLinksForDatacenterResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PrivateLinkDatacenterOutput
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON409 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseAddAllowedPrincipleToServiceResponse parses an HTTP response from a AddAllowedPrincipleToServiceWithResponse call
-func ParseAddAllowedPrincipleToServiceResponse(rsp *http.Response) (*AddAllowedPrincipleToServiceResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer rsp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &AddAllowedPrincipleToServiceResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PrivateLinkCreateConfigOutput
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON409 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
 }
 
 // ParseGetAccessListTemplateResponse parses an HTTP response from a GetAccessListTemplateWithResponse call
@@ -7271,6 +6961,316 @@ func ParseUnparkDatabaseResponse(rsp *http.Response) (*UnparkDatabaseResponse, e
 			return nil, err
 		}
 		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAcceptEndpointToServiceResponse parses an HTTP response from a AcceptEndpointToServiceWithResponse call
+func ParseAcceptEndpointToServiceResponse(rsp *http.Response) (*AcceptEndpointToServiceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AcceptEndpointToServiceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PrivateLinkEndpoint
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRejectEndpointResponse parses an HTTP response from a RejectEndpointWithResponse call
+func ParseRejectEndpointResponse(rsp *http.Response) (*RejectEndpointResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RejectEndpointResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetPrivateLinkEndpointResponse parses an HTTP response from a GetPrivateLinkEndpointWithResponse call
+func ParseGetPrivateLinkEndpointResponse(rsp *http.Response) (*GetPrivateLinkEndpointResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetPrivateLinkEndpointResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PrivateLinkEndpoint
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateEndpointDescriptionResponse parses an HTTP response from a UpdateEndpointDescriptionWithResponse call
+func ParseUpdateEndpointDescriptionResponse(rsp *http.Response) (*UpdateEndpointDescriptionResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateEndpointDescriptionResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PrivateLinkEndpoint
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetPrivateLinksForDatacenterResponse parses an HTTP response from a GetPrivateLinksForDatacenterWithResponse call
+func ParseGetPrivateLinksForDatacenterResponse(rsp *http.Response) (*GetPrivateLinksForDatacenterResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetPrivateLinksForDatacenterResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PrivateLinkDatacenterOutput
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAddAllowedPrincipleToServiceResponse parses an HTTP response from a AddAllowedPrincipleToServiceWithResponse call
+func ParseAddAllowedPrincipleToServiceResponse(rsp *http.Response) (*AddAllowedPrincipleToServiceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AddAllowedPrincipleToServiceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PrivateLinkCreateConfigOutput
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
