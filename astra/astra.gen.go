@@ -13,7 +13,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 )
@@ -655,9 +654,6 @@ type PrivateLinkUpdateEndpointInput struct {
 type Role struct {
 	// The unique system generated identifier of the role.
 	Id *string `json:"id,omitempty"`
-
-	// The date and time of the last update on the role.
-	LastUpdateDatetime *time.Time `json:"last_update_datetime,omitempty"`
 
 	// The userID of the user who last updated the role.
 	LastUpdateUserid *string `json:"last_update_userid,omitempty"`

@@ -1897,10 +1897,6 @@ components:
           description: "The name of the role."
         policy:
           $ref: '#/components/schemas/Policy'
-        last_update_datetime:
-          type: "string"
-          description: "The date and time of the last update on the role."
-          format: "date-time"
         last_update_userid:
           type: "string"
           description: "The userID of the user who last updated the role."
