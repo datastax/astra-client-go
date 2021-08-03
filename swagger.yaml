@@ -2211,11 +2211,6 @@ components:
           type: string
           description: Description of this addresses use
           example: "This address allows the database connections from the prod environment"
-        lastUpdateDateTime:
-          type: string
-          description: The last update date/time for the access list
-          format: date-time
-          example: "2021-01-21T17:32:28Z"
 
     AccessListConfigurations:
       required:
