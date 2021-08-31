@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 )
@@ -116,6 +117,26 @@ const (
 	DatabaseInfoCreateTierD40 DatabaseInfoCreateTier = "D40"
 
 	DatabaseInfoCreateTierDeveloper DatabaseInfoCreateTier = "developer"
+)
+
+// Defines values for DatacenterRegionClassification.
+const (
+	DatacenterRegionClassificationPremium DatacenterRegionClassification = "premium"
+
+	DatacenterRegionClassificationPremiumPlus DatacenterRegionClassification = "premium_plus"
+
+	DatacenterRegionClassificationStandard DatacenterRegionClassification = "standard"
+)
+
+// Defines values for DatacenterRegionZone.
+const (
+	DatacenterRegionZoneApac DatacenterRegionZone = "apac"
+
+	DatacenterRegionZoneEmea DatacenterRegionZone = "emea"
+
+	DatacenterRegionZoneNa DatacenterRegionZone = "na"
+
+	DatacenterRegionZoneSa DatacenterRegionZone = "sa"
 )
 
 // Defines values for PolicyActions.
@@ -299,6 +320,9 @@ type AddressResponse struct {
 
 	// The indication if the access address is enabled or not
 	Enabled *bool `json:"enabled,omitempty"`
+
+	// The last update date/time for the access list
+	LastUpdateDateTime *time.Time `json:"lastUpdateDateTime,omitempty"`
 }
 
 // List of principals to do action for private link
@@ -472,6 +496,35 @@ type DatabaseInfoCreateCloudProvider string
 // Tier defines the compute power (vertical scaling) for the database, developer gcp is the free tier.
 type DatabaseInfoCreateTier string
 
+// Datacenter is the definition of a cassandra datacenter
+type Datacenter struct {
+	// CapacityUnits is the amount of space available (horizontal scaling) for the database
+	CapacityUnits                         *int                            `json:"capacityUnits,omitempty"`
+	CloudProvider                         string                          `json:"cloudProvider"`
+	CqlshUrl                              *string                         `json:"cqlshUrl,omitempty"`
+	DataEndpointUrl                       *string                         `json:"dataEndpointUrl,omitempty"`
+	GrafanaUrl                            *string                         `json:"grafanaUrl,omitempty"`
+	GraphqlUrl                            *string                         `json:"graphqlUrl,omitempty"`
+	Id                                    *string                         `json:"id,omitempty"`
+	Name                                  *string                         `json:"name,omitempty"`
+	Region                                string                          `json:"region"`
+	RegionClassification                  *DatacenterRegionClassification `json:"regionClassification,omitempty"`
+	RegionZone                            *DatacenterRegionZone           `json:"regionZone,omitempty"`
+	SecureBundleInternalUrl               *string                         `json:"secureBundleInternalUrl,omitempty"`
+	SecureBundleMigrationProxyInternalUrl *string                         `json:"secureBundleMigrationProxyInternalUrl,omitempty"`
+	SecureBundleMigrationProxyUrl         *string                         `json:"secureBundleMigrationProxyUrl,omitempty"`
+	SecureBundleUrl                       *string                         `json:"secureBundleUrl,omitempty"`
+	Status                                string                          `json:"status"`
+	StudioUrl                             *string                         `json:"studioUrl,omitempty"`
+	Tier                                  string                          `json:"tier"`
+}
+
+// DatacenterRegionClassification defines model for Datacenter.RegionClassification.
+type DatacenterRegionClassification string
+
+// DatacenterRegionZone defines model for Datacenter.RegionZone.
+type DatacenterRegionZone string
+
 // ModelError information that is returned to users
 type Error struct {
 	// API specific error code
@@ -620,6 +673,12 @@ type PrivateLinkDatacenterOutput struct {
 	ServiceName *ServiceName `json:"serviceName,omitempty"`
 }
 
+// PrivateLinkDeleteConfigInput defines model for PrivateLinkDeleteConfigInput.
+type PrivateLinkDeleteConfigInput struct {
+	// The allowed-principal
+	AllowedPrincipal *string `json:"allowedPrincipal,omitempty"`
+}
+
 // PrivateLinkEndpoint defines model for PrivateLinkEndpoint.
 type PrivateLinkEndpoint struct {
 	// The datetime that the private link connection was created
@@ -630,6 +689,9 @@ type PrivateLinkEndpoint struct {
 
 	// Endpoint ID of the user side private link
 	EndpointID *string `json:"endpointID,omitempty"`
+
+	// Link ID for the private link service and endpoint connection
+	LinkID *string `json:"linkID,omitempty"`
 
 	// The current status of the connection
 	Status *PrivateLinkEndpointStatus `json:"status,omitempty"`
@@ -655,6 +717,9 @@ type Role struct {
 	// The unique system generated identifier of the role.
 	Id *string `json:"id,omitempty"`
 
+	// The date and time of the last update on the role.
+	LastUpdateDatetime *time.Time `json:"last_update_datetime,omitempty"`
+
 	// The userID of the user who last updated the role.
 	LastUpdateUserid *string `json:"last_update_userid,omitempty"`
 
@@ -672,6 +737,15 @@ type RoleInviteRequest struct {
 
 // an array of roles
 type Roles []Role
+
+// Serverless region information
+type ServerlessRegion struct {
+	Classification string `json:"classification"`
+	CloudProvider  string `json:"cloudProvider"`
+	DisplayName    string `json:"displayName"`
+	Name           string `json:"name"`
+	Zone           string `json:"zone"`
+}
 
 // ServiceAccountTokenInput defines model for ServiceAccountTokenInput.
 type ServiceAccountTokenInput struct {
@@ -764,6 +838,9 @@ type ClientIdParam string
 // DatabaseIdParam defines model for DatabaseIdParam.
 type DatabaseIdParam string
 
+// DatacenterIdParam defines model for DatacenterIdParam.
+type DatacenterIdParam string
+
 // KeyspaceNameParam defines model for KeyspaceNameParam.
 type KeyspaceNameParam string
 
@@ -839,6 +916,15 @@ type AddAddressesToAccessListForDatabaseJSONBody []AddressRequest
 // UpsertAccessListForDatabaseJSONBody defines parameters for UpsertAccessListForDatabase.
 type UpsertAccessListForDatabaseJSONBody AccessListRequest
 
+// ListDatacentersParams defines parameters for ListDatacenters.
+type ListDatacentersParams struct {
+	// Allows retrieving datacenters in TERMINATED state along with ACTIVE ones
+	All *bool `json:"all,omitempty"`
+}
+
+// AddDatacentersJSONBody defines parameters for AddDatacenters.
+type AddDatacentersJSONBody []Datacenter
+
 // LaunchMigrationProxyJSONBody defines parameters for LaunchMigrationProxy.
 type LaunchMigrationProxyJSONBody MigrationProxyConfiguration
 
@@ -860,14 +946,20 @@ type TerminateDatabaseParams struct {
 	PreparedStateOnly *bool `json:"preparedStateOnly,omitempty"`
 }
 
+// RemoveAllowedPrincipalFromServiceJSONBody defines parameters for RemoveAllowedPrincipalFromService.
+type RemoveAllowedPrincipalFromServiceJSONBody PrivateLinkDeleteConfigInput
+
+// AddAllowedPrincipalJSONBody defines parameters for AddAllowedPrincipal.
+type AddAllowedPrincipalJSONBody PrivateLinkCreateConfigInput
+
 // AcceptEndpointToServiceJSONBody defines parameters for AcceptEndpointToService.
 type AcceptEndpointToServiceJSONBody PrivateLinkCreateEndpointInput
 
 // UpdateEndpointDescriptionJSONBody defines parameters for UpdateEndpointDescription.
 type UpdateEndpointDescriptionJSONBody PrivateLinkUpdateEndpointInput
 
-// AddAllowedPrincipleToServiceJSONBody defines parameters for AddAllowedPrincipleToService.
-type AddAllowedPrincipleToServiceJSONBody PrivateLinkCreateConfigInput
+// AddAllowedPrincipalToServiceJSONBody defines parameters for AddAllowedPrincipalToService.
+type AddAllowedPrincipalToServiceJSONBody PrivateLinkCreateConfigInput
 
 // AddOrganizationRoleJSONBody defines parameters for AddOrganizationRole.
 type AddOrganizationRoleJSONBody CreateRoleRequest
@@ -899,6 +991,9 @@ type AddAddressesToAccessListForDatabaseJSONRequestBody AddAddressesToAccessList
 // UpsertAccessListForDatabaseJSONRequestBody defines body for UpsertAccessListForDatabase for application/json ContentType.
 type UpsertAccessListForDatabaseJSONRequestBody UpsertAccessListForDatabaseJSONBody
 
+// AddDatacentersJSONRequestBody defines body for AddDatacenters for application/json ContentType.
+type AddDatacentersJSONRequestBody AddDatacentersJSONBody
+
 // LaunchMigrationProxyJSONRequestBody defines body for LaunchMigrationProxy for application/json ContentType.
 type LaunchMigrationProxyJSONRequestBody LaunchMigrationProxyJSONBody
 
@@ -908,14 +1003,20 @@ type ResetPasswordJSONRequestBody ResetPasswordJSONBody
 // ResizeDatabaseJSONRequestBody defines body for ResizeDatabase for application/json ContentType.
 type ResizeDatabaseJSONRequestBody ResizeDatabaseJSONBody
 
+// RemoveAllowedPrincipalFromServiceJSONRequestBody defines body for RemoveAllowedPrincipalFromService for application/json ContentType.
+type RemoveAllowedPrincipalFromServiceJSONRequestBody RemoveAllowedPrincipalFromServiceJSONBody
+
+// AddAllowedPrincipalJSONRequestBody defines body for AddAllowedPrincipal for application/json ContentType.
+type AddAllowedPrincipalJSONRequestBody AddAllowedPrincipalJSONBody
+
 // AcceptEndpointToServiceJSONRequestBody defines body for AcceptEndpointToService for application/json ContentType.
 type AcceptEndpointToServiceJSONRequestBody AcceptEndpointToServiceJSONBody
 
 // UpdateEndpointDescriptionJSONRequestBody defines body for UpdateEndpointDescription for application/json ContentType.
 type UpdateEndpointDescriptionJSONRequestBody UpdateEndpointDescriptionJSONBody
 
-// AddAllowedPrincipleToServiceJSONRequestBody defines body for AddAllowedPrincipleToService for application/json ContentType.
-type AddAllowedPrincipleToServiceJSONRequestBody AddAllowedPrincipleToServiceJSONBody
+// AddAllowedPrincipalToServiceJSONRequestBody defines body for AddAllowedPrincipalToService for application/json ContentType.
+type AddAllowedPrincipalToServiceJSONRequestBody AddAllowedPrincipalToServiceJSONBody
 
 // AddOrganizationRoleJSONRequestBody defines body for AddOrganizationRole for application/json ContentType.
 type AddOrganizationRoleJSONRequestBody AddOrganizationRoleJSONBody
@@ -1065,6 +1166,17 @@ type ClientInterface interface {
 
 	UpsertAccessListForDatabase(ctx context.Context, databaseID DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListDatacenters request
+	ListDatacenters(ctx context.Context, databaseID DatabaseIdParam, params *ListDatacentersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AddDatacenters request with any body
+	AddDatacentersWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AddDatacenters(ctx context.Context, databaseID DatabaseIdParam, body AddDatacentersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TerminateDatacenter request
+	TerminateDatacenter(ctx context.Context, databaseID DatabaseIdParam, datacenterID DatacenterIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AddKeyspace request
 	AddKeyspace(ctx context.Context, databaseID DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1101,6 +1213,16 @@ type ClientInterface interface {
 	// UnparkDatabase request
 	UnparkDatabase(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// RemoveAllowedPrincipalFromService request with any body
+	RemoveAllowedPrincipalFromServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	RemoveAllowedPrincipalFromService(ctx context.Context, clusterID string, datacenterID string, body RemoveAllowedPrincipalFromServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AddAllowedPrincipal request with any body
+	AddAllowedPrincipalWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AddAllowedPrincipal(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AcceptEndpointToService request with any body
 	AcceptEndpointToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1120,10 +1242,10 @@ type ClientInterface interface {
 	// GetPrivateLinksForDatacenter request
 	GetPrivateLinksForDatacenter(ctx context.Context, clusterID string, datacenterID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AddAllowedPrincipleToService request with any body
-	AddAllowedPrincipleToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// AddAllowedPrincipalToService request with any body
+	AddAllowedPrincipalToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	AddAllowedPrincipleToService(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	AddAllowedPrincipalToService(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipalToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListPrivateLinksForCluster request
 	ListPrivateLinksForCluster(ctx context.Context, clusterID string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1168,6 +1290,9 @@ type ClientInterface interface {
 	UpdateRolesForUserInOrganizationWithBody(ctx context.Context, userID UserIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateRolesForUserInOrganization(ctx context.Context, userID UserIdParam, body UpdateRolesForUserInOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListServerlessRegions request
+	ListServerlessRegions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccessListTemplate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1446,6 +1571,54 @@ func (c *Client) UpsertAccessListForDatabase(ctx context.Context, databaseID Dat
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListDatacenters(ctx context.Context, databaseID DatabaseIdParam, params *ListDatacentersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListDatacentersRequest(c.Server, databaseID, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddDatacentersWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddDatacentersRequestWithBody(c.Server, databaseID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddDatacenters(ctx context.Context, databaseID DatabaseIdParam, body AddDatacentersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddDatacentersRequest(c.Server, databaseID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) TerminateDatacenter(ctx context.Context, databaseID DatabaseIdParam, datacenterID DatacenterIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTerminateDatacenterRequest(c.Server, databaseID, datacenterID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) AddKeyspace(ctx context.Context, databaseID DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAddKeyspaceRequest(c.Server, databaseID, keyspaceName)
 	if err != nil {
@@ -1602,6 +1775,54 @@ func (c *Client) UnparkDatabase(ctx context.Context, databaseID DatabaseIdParam,
 	return c.Client.Do(req)
 }
 
+func (c *Client) RemoveAllowedPrincipalFromServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRemoveAllowedPrincipalFromServiceRequestWithBody(c.Server, clusterID, datacenterID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RemoveAllowedPrincipalFromService(ctx context.Context, clusterID string, datacenterID string, body RemoveAllowedPrincipalFromServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRemoveAllowedPrincipalFromServiceRequest(c.Server, clusterID, datacenterID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddAllowedPrincipalWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddAllowedPrincipalRequestWithBody(c.Server, clusterID, datacenterID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddAllowedPrincipal(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddAllowedPrincipalRequest(c.Server, clusterID, datacenterID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) AcceptEndpointToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAcceptEndpointToServiceRequestWithBody(c.Server, clusterID, datacenterID, contentType, body)
 	if err != nil {
@@ -1686,8 +1907,8 @@ func (c *Client) GetPrivateLinksForDatacenter(ctx context.Context, clusterID str
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddAllowedPrincipleToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddAllowedPrincipleToServiceRequestWithBody(c.Server, clusterID, datacenterID, contentType, body)
+func (c *Client) AddAllowedPrincipalToServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddAllowedPrincipalToServiceRequestWithBody(c.Server, clusterID, datacenterID, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1698,8 +1919,8 @@ func (c *Client) AddAllowedPrincipleToServiceWithBody(ctx context.Context, clust
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddAllowedPrincipleToService(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddAllowedPrincipleToServiceRequest(c.Server, clusterID, datacenterID, body)
+func (c *Client) AddAllowedPrincipalToService(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipalToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddAllowedPrincipalToServiceRequest(c.Server, clusterID, datacenterID, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1892,6 +2113,18 @@ func (c *Client) UpdateRolesForUserInOrganizationWithBody(ctx context.Context, u
 
 func (c *Client) UpdateRolesForUserInOrganization(ctx context.Context, userID UserIdParam, body UpdateRolesForUserInOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateRolesForUserInOrganizationRequest(c.Server, userID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListServerlessRegions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListServerlessRegionsRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -2576,6 +2809,148 @@ func NewUpsertAccessListForDatabaseRequestWithBody(server string, databaseID Dat
 	return req, nil
 }
 
+// NewListDatacentersRequest generates requests for ListDatacenters
+func NewListDatacentersRequest(server string, databaseID DatabaseIdParam, params *ListDatacentersParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/datacenters", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.All != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "all", runtime.ParamLocationQuery, *params.All); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAddDatacentersRequest calls the generic AddDatacenters builder with application/json body
+func NewAddDatacentersRequest(server string, databaseID DatabaseIdParam, body AddDatacentersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddDatacentersRequestWithBody(server, databaseID, "application/json", bodyReader)
+}
+
+// NewAddDatacentersRequestWithBody generates requests for AddDatacenters with any type of body
+func NewAddDatacentersRequestWithBody(server string, databaseID DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/datacenters", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewTerminateDatacenterRequest generates requests for TerminateDatacenter
+func NewTerminateDatacenterRequest(server string, databaseID DatabaseIdParam, datacenterID DatacenterIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/datacenters/%s/terminate", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewAddKeyspaceRequest generates requests for AddKeyspace
 func NewAddKeyspaceRequest(server string, databaseID DatabaseIdParam, keyspaceName KeyspaceNameParam) (*http.Request, error) {
 	var err error
@@ -3002,6 +3377,114 @@ func NewUnparkDatabaseRequest(server string, databaseID DatabaseIdParam) (*http.
 	return req, nil
 }
 
+// NewRemoveAllowedPrincipalFromServiceRequest calls the generic RemoveAllowedPrincipalFromService builder with application/json body
+func NewRemoveAllowedPrincipalFromServiceRequest(server string, clusterID string, datacenterID string, body RemoveAllowedPrincipalFromServiceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRemoveAllowedPrincipalFromServiceRequestWithBody(server, clusterID, datacenterID, "application/json", bodyReader)
+}
+
+// NewRemoveAllowedPrincipalFromServiceRequestWithBody generates requests for RemoveAllowedPrincipalFromService with any type of body
+func NewRemoveAllowedPrincipalFromServiceRequestWithBody(server string, clusterID string, datacenterID string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterID", runtime.ParamLocationPath, clusterID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/clusters/%s/datacenters/%s/allowed-principals", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAddAllowedPrincipalRequest calls the generic AddAllowedPrincipal builder with application/json body
+func NewAddAllowedPrincipalRequest(server string, clusterID string, datacenterID string, body AddAllowedPrincipalJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddAllowedPrincipalRequestWithBody(server, clusterID, datacenterID, "application/json", bodyReader)
+}
+
+// NewAddAllowedPrincipalRequestWithBody generates requests for AddAllowedPrincipal with any type of body
+func NewAddAllowedPrincipalRequestWithBody(server string, clusterID string, datacenterID string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterID", runtime.ParamLocationPath, clusterID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/clusters/%s/datacenters/%s/allowed-principals", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewAcceptEndpointToServiceRequest calls the generic AcceptEndpointToService builder with application/json body
 func NewAcceptEndpointToServiceRequest(server string, clusterID string, datacenterID string, body AcceptEndpointToServiceJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -3254,19 +3737,19 @@ func NewGetPrivateLinksForDatacenterRequest(server string, clusterID string, dat
 	return req, nil
 }
 
-// NewAddAllowedPrincipleToServiceRequest calls the generic AddAllowedPrincipleToService builder with application/json body
-func NewAddAllowedPrincipleToServiceRequest(server string, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody) (*http.Request, error) {
+// NewAddAllowedPrincipalToServiceRequest calls the generic AddAllowedPrincipalToService builder with application/json body
+func NewAddAllowedPrincipalToServiceRequest(server string, clusterID string, datacenterID string, body AddAllowedPrincipalToServiceJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewAddAllowedPrincipleToServiceRequestWithBody(server, clusterID, datacenterID, "application/json", bodyReader)
+	return NewAddAllowedPrincipalToServiceRequestWithBody(server, clusterID, datacenterID, "application/json", bodyReader)
 }
 
-// NewAddAllowedPrincipleToServiceRequestWithBody generates requests for AddAllowedPrincipleToService with any type of body
-func NewAddAllowedPrincipleToServiceRequestWithBody(server string, clusterID string, datacenterID string, contentType string, body io.Reader) (*http.Request, error) {
+// NewAddAllowedPrincipalToServiceRequestWithBody generates requests for AddAllowedPrincipalToService with any type of body
+func NewAddAllowedPrincipalToServiceRequestWithBody(server string, clusterID string, datacenterID string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3733,6 +4216,33 @@ func NewUpdateRolesForUserInOrganizationRequestWithBody(server string, userID Us
 	return req, nil
 }
 
+// NewListServerlessRegionsRequest generates requests for ListServerlessRegions
+func NewListServerlessRegionsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/regions/serverless")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -3839,6 +4349,17 @@ type ClientWithResponsesInterface interface {
 
 	UpsertAccessListForDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertAccessListForDatabaseResponse, error)
 
+	// ListDatacenters request
+	ListDatacentersWithResponse(ctx context.Context, databaseID DatabaseIdParam, params *ListDatacentersParams, reqEditors ...RequestEditorFn) (*ListDatacentersResponse, error)
+
+	// AddDatacenters request with any body
+	AddDatacentersWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddDatacentersResponse, error)
+
+	AddDatacentersWithResponse(ctx context.Context, databaseID DatabaseIdParam, body AddDatacentersJSONRequestBody, reqEditors ...RequestEditorFn) (*AddDatacentersResponse, error)
+
+	// TerminateDatacenter request
+	TerminateDatacenterWithResponse(ctx context.Context, databaseID DatabaseIdParam, datacenterID DatacenterIdParam, reqEditors ...RequestEditorFn) (*TerminateDatacenterResponse, error)
+
 	// AddKeyspace request
 	AddKeyspaceWithResponse(ctx context.Context, databaseID DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*AddKeyspaceResponse, error)
 
@@ -3875,6 +4396,16 @@ type ClientWithResponsesInterface interface {
 	// UnparkDatabase request
 	UnparkDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*UnparkDatabaseResponse, error)
 
+	// RemoveAllowedPrincipalFromService request with any body
+	RemoveAllowedPrincipalFromServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RemoveAllowedPrincipalFromServiceResponse, error)
+
+	RemoveAllowedPrincipalFromServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body RemoveAllowedPrincipalFromServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*RemoveAllowedPrincipalFromServiceResponse, error)
+
+	// AddAllowedPrincipal request with any body
+	AddAllowedPrincipalWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAllowedPrincipalResponse, error)
+
+	AddAllowedPrincipalWithResponse(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipalJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAllowedPrincipalResponse, error)
+
 	// AcceptEndpointToService request with any body
 	AcceptEndpointToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcceptEndpointToServiceResponse, error)
 
@@ -3894,10 +4425,10 @@ type ClientWithResponsesInterface interface {
 	// GetPrivateLinksForDatacenter request
 	GetPrivateLinksForDatacenterWithResponse(ctx context.Context, clusterID string, datacenterID string, reqEditors ...RequestEditorFn) (*GetPrivateLinksForDatacenterResponse, error)
 
-	// AddAllowedPrincipleToService request with any body
-	AddAllowedPrincipleToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error)
+	// AddAllowedPrincipalToService request with any body
+	AddAllowedPrincipalToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAllowedPrincipalToServiceResponse, error)
 
-	AddAllowedPrincipleToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error)
+	AddAllowedPrincipalToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipalToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAllowedPrincipalToServiceResponse, error)
 
 	// ListPrivateLinksForCluster request
 	ListPrivateLinksForClusterWithResponse(ctx context.Context, clusterID string, reqEditors ...RequestEditorFn) (*ListPrivateLinksForClusterResponse, error)
@@ -3942,6 +4473,9 @@ type ClientWithResponsesInterface interface {
 	UpdateRolesForUserInOrganizationWithBodyWithResponse(ctx context.Context, userID UserIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRolesForUserInOrganizationResponse, error)
 
 	UpdateRolesForUserInOrganizationWithResponse(ctx context.Context, userID UserIdParam, body UpdateRolesForUserInOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRolesForUserInOrganizationResponse, error)
+
+	// ListServerlessRegions request
+	ListServerlessRegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListServerlessRegionsResponse, error)
 }
 
 type GetAccessListTemplateResponse struct {
@@ -4365,6 +4899,81 @@ func (r UpsertAccessListForDatabaseResponse) StatusCode() int {
 	return 0
 }
 
+type ListDatacentersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]Datacenter
+	JSON401      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r ListDatacentersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListDatacentersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AddDatacentersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON404      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r AddDatacentersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AddDatacentersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type TerminateDatacenterResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r TerminateDatacenterResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TerminateDatacenterResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type AddKeyspaceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -4625,6 +5234,56 @@ func (r UnparkDatabaseResponse) StatusCode() int {
 	return 0
 }
 
+type RemoveAllowedPrincipalFromServiceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r RemoveAllowedPrincipalFromServiceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RemoveAllowedPrincipalFromServiceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AddAllowedPrincipalResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PrivateLinkCreateConfigOutput
+	JSON400      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r AddAllowedPrincipalResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AddAllowedPrincipalResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type AcceptEndpointToServiceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -4753,7 +5412,7 @@ func (r GetPrivateLinksForDatacenterResponse) StatusCode() int {
 	return 0
 }
 
-type AddAllowedPrincipleToServiceResponse struct {
+type AddAllowedPrincipalToServiceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *PrivateLinkCreateConfigOutput
@@ -4764,7 +5423,7 @@ type AddAllowedPrincipleToServiceResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r AddAllowedPrincipleToServiceResponse) Status() string {
+func (r AddAllowedPrincipalToServiceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4772,7 +5431,7 @@ func (r AddAllowedPrincipleToServiceResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r AddAllowedPrincipleToServiceResponse) StatusCode() int {
+func (r AddAllowedPrincipalToServiceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5082,6 +5741,30 @@ func (r UpdateRolesForUserInOrganizationResponse) StatusCode() int {
 	return 0
 }
 
+type ListServerlessRegionsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]ServerlessRegion
+	JSON401      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r ListServerlessRegionsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListServerlessRegionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetAccessListTemplateWithResponse request returning *GetAccessListTemplateResponse
 func (c *ClientWithResponses) GetAccessListTemplateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAccessListTemplateResponse, error) {
 	rsp, err := c.GetAccessListTemplate(ctx, reqEditors...)
@@ -5283,6 +5966,41 @@ func (c *ClientWithResponses) UpsertAccessListForDatabaseWithResponse(ctx contex
 	return ParseUpsertAccessListForDatabaseResponse(rsp)
 }
 
+// ListDatacentersWithResponse request returning *ListDatacentersResponse
+func (c *ClientWithResponses) ListDatacentersWithResponse(ctx context.Context, databaseID DatabaseIdParam, params *ListDatacentersParams, reqEditors ...RequestEditorFn) (*ListDatacentersResponse, error) {
+	rsp, err := c.ListDatacenters(ctx, databaseID, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListDatacentersResponse(rsp)
+}
+
+// AddDatacentersWithBodyWithResponse request with arbitrary body returning *AddDatacentersResponse
+func (c *ClientWithResponses) AddDatacentersWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddDatacentersResponse, error) {
+	rsp, err := c.AddDatacentersWithBody(ctx, databaseID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddDatacentersResponse(rsp)
+}
+
+func (c *ClientWithResponses) AddDatacentersWithResponse(ctx context.Context, databaseID DatabaseIdParam, body AddDatacentersJSONRequestBody, reqEditors ...RequestEditorFn) (*AddDatacentersResponse, error) {
+	rsp, err := c.AddDatacenters(ctx, databaseID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddDatacentersResponse(rsp)
+}
+
+// TerminateDatacenterWithResponse request returning *TerminateDatacenterResponse
+func (c *ClientWithResponses) TerminateDatacenterWithResponse(ctx context.Context, databaseID DatabaseIdParam, datacenterID DatacenterIdParam, reqEditors ...RequestEditorFn) (*TerminateDatacenterResponse, error) {
+	rsp, err := c.TerminateDatacenter(ctx, databaseID, datacenterID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTerminateDatacenterResponse(rsp)
+}
+
 // AddKeyspaceWithResponse request returning *AddKeyspaceResponse
 func (c *ClientWithResponses) AddKeyspaceWithResponse(ctx context.Context, databaseID DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*AddKeyspaceResponse, error) {
 	rsp, err := c.AddKeyspace(ctx, databaseID, keyspaceName, reqEditors...)
@@ -5397,6 +6115,40 @@ func (c *ClientWithResponses) UnparkDatabaseWithResponse(ctx context.Context, da
 	return ParseUnparkDatabaseResponse(rsp)
 }
 
+// RemoveAllowedPrincipalFromServiceWithBodyWithResponse request with arbitrary body returning *RemoveAllowedPrincipalFromServiceResponse
+func (c *ClientWithResponses) RemoveAllowedPrincipalFromServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RemoveAllowedPrincipalFromServiceResponse, error) {
+	rsp, err := c.RemoveAllowedPrincipalFromServiceWithBody(ctx, clusterID, datacenterID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRemoveAllowedPrincipalFromServiceResponse(rsp)
+}
+
+func (c *ClientWithResponses) RemoveAllowedPrincipalFromServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body RemoveAllowedPrincipalFromServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*RemoveAllowedPrincipalFromServiceResponse, error) {
+	rsp, err := c.RemoveAllowedPrincipalFromService(ctx, clusterID, datacenterID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRemoveAllowedPrincipalFromServiceResponse(rsp)
+}
+
+// AddAllowedPrincipalWithBodyWithResponse request with arbitrary body returning *AddAllowedPrincipalResponse
+func (c *ClientWithResponses) AddAllowedPrincipalWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAllowedPrincipalResponse, error) {
+	rsp, err := c.AddAllowedPrincipalWithBody(ctx, clusterID, datacenterID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddAllowedPrincipalResponse(rsp)
+}
+
+func (c *ClientWithResponses) AddAllowedPrincipalWithResponse(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipalJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAllowedPrincipalResponse, error) {
+	rsp, err := c.AddAllowedPrincipal(ctx, clusterID, datacenterID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddAllowedPrincipalResponse(rsp)
+}
+
 // AcceptEndpointToServiceWithBodyWithResponse request with arbitrary body returning *AcceptEndpointToServiceResponse
 func (c *ClientWithResponses) AcceptEndpointToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcceptEndpointToServiceResponse, error) {
 	rsp, err := c.AcceptEndpointToServiceWithBody(ctx, clusterID, datacenterID, contentType, body, reqEditors...)
@@ -5458,21 +6210,21 @@ func (c *ClientWithResponses) GetPrivateLinksForDatacenterWithResponse(ctx conte
 	return ParseGetPrivateLinksForDatacenterResponse(rsp)
 }
 
-// AddAllowedPrincipleToServiceWithBodyWithResponse request with arbitrary body returning *AddAllowedPrincipleToServiceResponse
-func (c *ClientWithResponses) AddAllowedPrincipleToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error) {
-	rsp, err := c.AddAllowedPrincipleToServiceWithBody(ctx, clusterID, datacenterID, contentType, body, reqEditors...)
+// AddAllowedPrincipalToServiceWithBodyWithResponse request with arbitrary body returning *AddAllowedPrincipalToServiceResponse
+func (c *ClientWithResponses) AddAllowedPrincipalToServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAllowedPrincipalToServiceResponse, error) {
+	rsp, err := c.AddAllowedPrincipalToServiceWithBody(ctx, clusterID, datacenterID, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseAddAllowedPrincipleToServiceResponse(rsp)
+	return ParseAddAllowedPrincipalToServiceResponse(rsp)
 }
 
-func (c *ClientWithResponses) AddAllowedPrincipleToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipleToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAllowedPrincipleToServiceResponse, error) {
-	rsp, err := c.AddAllowedPrincipleToService(ctx, clusterID, datacenterID, body, reqEditors...)
+func (c *ClientWithResponses) AddAllowedPrincipalToServiceWithResponse(ctx context.Context, clusterID string, datacenterID string, body AddAllowedPrincipalToServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAllowedPrincipalToServiceResponse, error) {
+	rsp, err := c.AddAllowedPrincipalToService(ctx, clusterID, datacenterID, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseAddAllowedPrincipleToServiceResponse(rsp)
+	return ParseAddAllowedPrincipalToServiceResponse(rsp)
 }
 
 // ListPrivateLinksForClusterWithResponse request returning *ListPrivateLinksForClusterResponse
@@ -5613,6 +6365,15 @@ func (c *ClientWithResponses) UpdateRolesForUserInOrganizationWithResponse(ctx c
 		return nil, err
 	}
 	return ParseUpdateRolesForUserInOrganizationResponse(rsp)
+}
+
+// ListServerlessRegionsWithResponse request returning *ListServerlessRegionsResponse
+func (c *ClientWithResponses) ListServerlessRegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListServerlessRegionsResponse, error) {
+	rsp, err := c.ListServerlessRegions(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListServerlessRegionsResponse(rsp)
 }
 
 // ParseGetAccessListTemplateResponse parses an HTTP response from a GetAccessListTemplateWithResponse call
@@ -6386,6 +7147,147 @@ func ParseUpsertAccessListForDatabaseResponse(rsp *http.Response) (*UpsertAccess
 	return response, nil
 }
 
+// ParseListDatacentersResponse parses an HTTP response from a ListDatacentersWithResponse call
+func ParseListDatacentersResponse(rsp *http.Response) (*ListDatacentersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListDatacentersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []Datacenter
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAddDatacentersResponse parses an HTTP response from a AddDatacentersWithResponse call
+func ParseAddDatacentersResponse(rsp *http.Response) (*AddDatacentersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AddDatacentersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseTerminateDatacenterResponse parses an HTTP response from a TerminateDatacenterWithResponse call
+func ParseTerminateDatacenterResponse(rsp *http.Response) (*TerminateDatacenterResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TerminateDatacenterResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseAddKeyspaceResponse parses an HTTP response from a AddKeyspaceWithResponse call
 func ParseAddKeyspaceResponse(rsp *http.Response) (*AddKeyspaceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -6926,6 +7828,100 @@ func ParseUnparkDatabaseResponse(rsp *http.Response) (*UnparkDatabaseResponse, e
 	return response, nil
 }
 
+// ParseRemoveAllowedPrincipalFromServiceResponse parses an HTTP response from a RemoveAllowedPrincipalFromServiceWithResponse call
+func ParseRemoveAllowedPrincipalFromServiceResponse(rsp *http.Response) (*RemoveAllowedPrincipalFromServiceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RemoveAllowedPrincipalFromServiceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAddAllowedPrincipalResponse parses an HTTP response from a AddAllowedPrincipalWithResponse call
+func ParseAddAllowedPrincipalResponse(rsp *http.Response) (*AddAllowedPrincipalResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AddAllowedPrincipalResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PrivateLinkCreateConfigOutput
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseAcceptEndpointToServiceResponse parses an HTTP response from a AcceptEndpointToServiceWithResponse call
 func ParseAcceptEndpointToServiceResponse(rsp *http.Response) (*AcceptEndpointToServiceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -7182,15 +8178,15 @@ func ParseGetPrivateLinksForDatacenterResponse(rsp *http.Response) (*GetPrivateL
 	return response, nil
 }
 
-// ParseAddAllowedPrincipleToServiceResponse parses an HTTP response from a AddAllowedPrincipleToServiceWithResponse call
-func ParseAddAllowedPrincipleToServiceResponse(rsp *http.Response) (*AddAllowedPrincipleToServiceResponse, error) {
+// ParseAddAllowedPrincipalToServiceResponse parses an HTTP response from a AddAllowedPrincipalToServiceWithResponse call
+func ParseAddAllowedPrincipalToServiceResponse(rsp *http.Response) (*AddAllowedPrincipalToServiceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &AddAllowedPrincipleToServiceResponse{
+	response := &AddAllowedPrincipalToServiceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -7815,6 +8811,46 @@ func ParseUpdateRolesForUserInOrganizationResponse(rsp *http.Response) (*UpdateR
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListServerlessRegionsResponse parses an HTTP response from a ListServerlessRegionsWithResponse call
+func ParseListServerlessRegionsResponse(rsp *http.Response) (*ListServerlessRegionsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListServerlessRegionsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []ServerlessRegion
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
 
 	}
 
