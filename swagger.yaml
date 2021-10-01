@@ -882,12 +882,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/PrivateLinkDatacenterOutput'
         400:
-         description: not ok
-         content:
-           text/plain:
-             schema:
-               type: string
-               example: invalid
+          description: not ok
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
         404:
           description: not ok
         409:
