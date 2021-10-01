@@ -5390,10 +5390,6 @@ type GetPrivateLinksForDatacenterResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *PrivateLinkDatacenterOutput
-	JSON400      *Errors
-	JSON404      *Errors
-	JSON409      *Errors
-	JSON500      *Errors
 }
 
 // Status returns HTTPResponse.Status
@@ -8144,34 +8140,6 @@ func ParseGetPrivateLinksForDatacenterResponse(rsp *http.Response) (*GetPrivateL
 			return nil, err
 		}
 		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON409 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
 
 	}
 

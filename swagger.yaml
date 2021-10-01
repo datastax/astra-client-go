@@ -882,13 +882,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/PrivateLinkDatacenterOutput'
         400:
-          $ref: '#/components/responses/BadRequest'
+         description: not ok
+         content:
+           text/plain:
+             schema:
+               type: string
+               example: invalid
         404:
-          $ref: '#/components/responses/NotFound'
+          description: not ok
         409:
-          $ref: '#/components/responses/Conflict'
+          description: not ok
         500:
-          $ref: '#/components/responses/ServerError'
+          description: not ok
     post:
       tags:
         - Private Link
