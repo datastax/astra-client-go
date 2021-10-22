@@ -1096,7 +1096,7 @@ paths:
         400:
           $ref: '#/components/responses/BadRequest'
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/CustomNotFound'
         409:
           $ref: '#/components/responses/Conflict'
         500:
@@ -2546,6 +2546,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Errors'
+    # 404 Custom
+    CustomNotFound:
+      description: The specified database was not found
+      content:
+        application/json:
+          schema:
+            type: string
     # 409
     Conflict:
       description: The database is not in a valid state to perform the operation
