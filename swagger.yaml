@@ -153,7 +153,7 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '500':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseID}:
+  /v2/databases/{databaseId}:
     get:
       tags:
         - Operations
@@ -179,7 +179,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '5XX':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseID}/keyspaces/{keyspaceName}:
+  /v2/databases/{databaseId}/keyspaces/{keyspaceName}:
     post:
       tags:
         - Operations
@@ -202,7 +202,7 @@ paths:
           $ref: '#/components/responses/UnprocessableEntity'
         '5XX':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseID}/secureBundleURL:
+  /v2/databases/{databaseId}/secureBundleURL:
     post:
       summary: Obtain zip for connecting to the database
       description: 'Returns a temporary URL to download a zip file with certificates for connecting to the database. The URL expires after five minutes.<p>There are two types of the secure bundle URL:
@@ -233,7 +233,7 @@ paths:
           $ref: '#/components/responses/Conflict'
         '5XX':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseID}/terminate:
+  /v2/databases/{databaseId}/terminate:
     post:
       summary: Terminates a database
       description: Terminates a database
@@ -264,7 +264,7 @@ paths:
           $ref: '#/components/responses/Conflict'
         '5XX':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseID}/park:
+  /v2/databases/{databaseId}/park:
     post:
       summary: Parks a database
       description: Parks a database
@@ -288,7 +288,7 @@ paths:
           $ref: '#/components/responses/Conflict'
         '5XX':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseID}/suspend:
+  /v2/databases/{databaseId}/suspend:
     post:
       summary: Suspends a database
       description: Suspends a database
@@ -319,7 +319,7 @@ paths:
           $ref: '#/components/responses/Conflict'
         '5XX':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseID}/unpark:
+  /v2/databases/{databaseId}/unpark:
     post:
       summary: Unparks a database
       description: Unparks a database
@@ -343,7 +343,7 @@ paths:
           $ref: '#/components/responses/Conflict'
         '5XX':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseID}/resize:
+  /v2/databases/{databaseId}/resize:
     post:
       summary: Resizes a database
       description: Resizes a database. Total number of capacity units desired should be specified. Reducing a size of a database is not supported at this time.
@@ -374,7 +374,7 @@ paths:
           $ref: '#/components/responses/Conflict'
         '5XX':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseID}/datacenters:
+  /v2/databases/{databaseId}/datacenters:
     get:
       summary: List all database datacenters
       description: Returns the list of configured ACTIVE datacenters for the given database, if you want to get the TERMINATED along with ACTIVE send query param all=true
@@ -431,7 +431,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '5XX':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseID}/datacenters/{datacenterID}/terminate:
+  /v2/databases/{databaseId}/datacenters/{datacenterId}/terminate:
     post:
       summary: Terminates a datacenter
       description: Terminates a datacenter
@@ -454,7 +454,7 @@ paths:
           $ref: '#/components/responses/Conflict'
         '5XX':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseID}/resetPassword:
+  /v2/databases/{databaseId}/resetPassword:
     post:
       summary: Resets Password
       description: Sets a database password to the one specified in POST body
@@ -485,7 +485,7 @@ paths:
           $ref: '#/components/responses/Conflict'
         '5XX':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseID}/migrationProxy:
+  /v2/databases/{databaseId}/migrationProxy:
     put:
       tags:
         - Public
@@ -596,8 +596,9 @@ paths:
           content:
             application/json:
               schema:
+                type: array
                 items:
-                  $ref: '#/components/schemas/Roles'
+                  $ref: '#/components/schemas/Role'
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
@@ -1208,7 +1209,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseID}/access-list:
+  /v2/databases/{databaseId}/access-list:
     get:
       tags:
         - "Access List"
@@ -1454,14 +1455,14 @@ components:
   parameters:
     DatabaseIdParam:
       in: path
-      name: databaseID
+      name: databaseId
       required: true
       description: String representation of the database ID
       schema:
         type: string
     DatacenterIdParam:
       in: path
-      name: datacenterID
+      name: datacenterId
       required: true
       description: String representation of the datacenter ID
       schema:
@@ -1511,6 +1512,31 @@ components:
           type: string
       description: Array of addresses
   schemas:
+    Tier:
+      type: string
+      example: developer
+      enum:
+        - developer
+        - A5
+        - A10
+        - A20
+        - A40
+        - C10
+        - C20
+        - C40
+        - D10
+        - D20
+        - D40
+        - serverless
+        - cloudnative
+      description: Tier defines the compute power (vertical scaling) for the database
+    CloudProvider:
+      type: string
+      description: "Cloud hosting provider"
+      enum:
+        - AWS
+        - GCP
+        - AZURE
     UserInvite:
       type: "object"
       description: "The userInvite model"
@@ -1634,7 +1660,25 @@ components:
           type: array
           items:
             type: string
-            enum: [park, unpark, resize, resetPassword, addKeyspace, addDatacenters, terminateDatacenter, getCreds, terminate, removeKeyspace, addTable, removeMigrationProxy, launchMigrationProxy]
+            enum:
+              - park
+              - unpark
+              - resize
+              - resetPassword
+              - addKeyspace
+              - addDatacenters
+              - terminateDatacenter
+              - getCreds
+              - terminate
+              - removeKeyspace
+              - addTable
+              - removeMigrationProxy
+              - launchMigrationProxy
+              - migrateServerlessTenant
+              - suspend
+              - createServerlessMigrationProxy
+              - removeServerlessMigrationProxy
+              - hibernate
             example: park, terminate
         message:
           type: string
@@ -1671,14 +1715,12 @@ components:
           type: string
           example: dc-1234-5678-91011121-3141
         tier:
-          type: string
-          example: Developer
+          $ref: "#/components/schemas/Tier"
         status:
           type: string
           example: ACTIVE
         cloudProvider:
-          type: string
-          example: GCP
+          $ref: "#/components/schemas/CloudProvider"
         region:
           type: string
           example: us-east1
@@ -1730,8 +1772,6 @@ components:
         - tier
         - capacityUnits
         - region
-        - user
-        - password
       description: DatabaseInfo is the user-provided information describing a database
       properties:
         name:
@@ -1743,29 +1783,9 @@ components:
           example: myKeyspace
           description: Keyspace name in database
         cloudProvider:
-          type: string
-          example: AWS
-          enum:
-            - AWS
-            - GCP
-            - AZURE
-          description: CloudProvider where the database lives
+          $ref: "#/components/schemas/CloudProvider"
         tier:
-          type: string
-          example: developer
-          enum:
-            - developer
-            - A5
-            - A10
-            - A20
-            - A40
-            - C10
-            - C20
-            - C40
-            - D10
-            - D20
-            - D40
-          description: Tier defines the compute power (vertical scaling) for the database, developer gcp is the free tier.
+          $ref: "#/components/schemas/Tier"
         capacityUnits:
           type: integer
           example: 1
@@ -1797,29 +1817,9 @@ components:
           example: myKeyspace
           description: Keyspace name in database
         cloudProvider:
-          type: string
-          example: AWS
-          enum:
-            - AWS
-            - GCP
-            - AZURE
-          description: CloudProvider where the database lives
+          $ref: "#/components/schemas/CloudProvider"
         tier:
-          type: string
-          example: developer
-          enum:
-            - developer
-            - A5
-            - A10
-            - A20
-            - A40
-            - C10
-            - C20
-            - C40
-            - D10
-            - D20
-            - D40
-          description: Tier defines the compute power (vertical scaling) for the database
+          $ref: "#/components/schemas/Tier"
         capacityUnits:
           type: integer
           example: 1
@@ -1971,11 +1971,9 @@ components:
         - cost
       properties:
         tier:
-          type: string
-          example: Free
+          $ref: "#/components/schemas/Tier"
         cloudProvider:
-          type: string
-          example: GCP
+          $ref: "#/components/schemas/CloudProvider"
         region:
           type: string
           example: us-east1
@@ -1996,11 +1994,12 @@ components:
         - defaultStoragePerCapacityUnitGb
       properties:
         tier:
-          type: string
-          example: Free
+          $ref: "#/components/schemas/Tier"
         cloudProvider:
+          $ref: "#/components/schemas/CloudProvider"
+        description:
           type: string
-          example: GCP
+          example: "Free tier: Try Astra with no obligation. Get 5 GB of storage, free forever."
         region:
           type: string
           example: us-east1
@@ -2032,8 +2031,7 @@ components:
         - classification
       properties:
         cloudProvider:
-          type: string
-          example: aws
+          $ref: "#/components/schemas/CloudProvider"
         name:
           type: string
           example: us-west-2
@@ -2124,6 +2122,53 @@ components:
         last_update_userid:
           type: "string"
           description: "The userID of the user who last updated the role."
+    PolicyAction:
+      type: "string"
+      description: "Actions permitted by a Policy"
+      enum:
+        - db-all-keyspace-create
+        - db-all-keyspace-describe
+        - db-cql
+        - db-graphql
+        - db-keyspace-alter
+        - db-keyspace-authorize
+        - db-keyspace-create
+        - db-keyspace-describe
+        - db-keyspace-drop
+        - db-keyspace-grant
+        - db-keyspace-modify
+        - db-rest
+        - db-table-alter
+        - db-table-authorize
+        - db-table-create
+        - db-table-describe
+        - db-table-drop
+        - db-table-grant
+        - db-table-modify
+        - db-table-select
+        - org-audits-read
+        - org-billing-read
+        - org-billing-write
+        - org-db-addpeering
+        - org-db-create
+        - org-db-expand
+        - org-db-managemigratorproxy
+        - org-db-passwordreset
+        - org-db-suspend
+        - org-db-terminate
+        - org-db-view
+        - org-external-auth-read
+        - org-external-auth-write
+        - org-notification-write
+        - org-read
+        - org-role-delete
+        - org-role-read
+        - org-role-write
+        - org-token-read
+        - org-token-write
+        - org-user-read
+        - org-user-write
+        - org-write
     Policy:
       type: object
       description: "A policy for a role in Astra."
@@ -2146,51 +2191,7 @@ components:
           type: array
           description: "The actions this policy can take. Example Actions: 'org-billing-write' 'db-keyspace-create'"
           items:
-            type: string
-            enum:
-              [   "db-all-keyspace-create",
-                  "db-all-keyspace-describe",
-                  "db-cql",
-                  "db-graphql",
-                  "db-keyspace-alter",
-                  "db-keyspace-authorize",
-                  "db-keyspace-create",
-                  "db-keyspace-describe",
-                  "db-keyspace-drop",
-                  "db-keyspace-grant",
-                  "db-keyspace-modify",
-                  "db-rest",
-                  "db-table-alter",
-                  "db-table-authorize",
-                  "db-table-create",
-                  "db-table-describe",
-                  "db-table-drop",
-                  "db-table-grant",
-                  "db-table-modify",
-                  "db-table-select",
-                  "org-audits-read",
-                  "org-billing-read",
-                  "org-billing-write",
-                  "org-db-addpeering",
-                  "org-db-create",
-                  "org-db-expand",
-                  "org-db-managemigratorproxy",
-                  "org-db-passwordreset",
-                  "org-db-suspend",
-                  "org-db-terminate",
-                  "org-db-view",
-                  "org-external-auth-read",
-                  "org-external-auth-write",
-                  "org-notification-write",
-                  "org-read",
-                  "org-role-delete",
-                  "org-role-read",
-                  "org-role-write",
-                  "org-token-read",
-                  "org-token-write",
-                  "org-user-read",
-                  "org-user-write",
-                  "org-write" ]
+            $ref: '#/components/schemas/PolicyAction'
         effect:
           type: string
           description: "Effect this policy will have on the provided resource"
@@ -2205,11 +2206,6 @@ components:
           type: string
           description: "The organization UUID"
           example: "d04d1eb2-6a52-483e-ab16-faaad3d077a9"
-    Roles:
-      type: "array"
-      description: "an array of roles"
-      items:
-        $ref: '#/components/schemas/Role'
     CreateRoleRequest:
       type: "object"
       description: "The createRole model"
