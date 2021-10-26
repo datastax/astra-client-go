@@ -22,6 +22,15 @@ const (
 	BearerAuthScopes = "BearerAuth.Scopes"
 )
 
+// Defines values for CloudProvider.
+const (
+	CloudProviderAWS CloudProvider = "AWS"
+
+	CloudProviderAZURE CloudProvider = "AZURE"
+
+	CloudProviderGCP CloudProvider = "GCP"
+)
+
 // Defines values for DatabaseAvailableActions.
 const (
 	DatabaseAvailableActionsAddDatacenters DatabaseAvailableActions = "addDatacenters"
@@ -30,9 +39,15 @@ const (
 
 	DatabaseAvailableActionsAddTable DatabaseAvailableActions = "addTable"
 
+	DatabaseAvailableActionsCreateServerlessMigrationProxy DatabaseAvailableActions = "createServerlessMigrationProxy"
+
 	DatabaseAvailableActionsGetCreds DatabaseAvailableActions = "getCreds"
 
+	DatabaseAvailableActionsHibernate DatabaseAvailableActions = "hibernate"
+
 	DatabaseAvailableActionsLaunchMigrationProxy DatabaseAvailableActions = "launchMigrationProxy"
+
+	DatabaseAvailableActionsMigrateServerlessTenant DatabaseAvailableActions = "migrateServerlessTenant"
 
 	DatabaseAvailableActionsPark DatabaseAvailableActions = "park"
 
@@ -40,83 +55,19 @@ const (
 
 	DatabaseAvailableActionsRemoveMigrationProxy DatabaseAvailableActions = "removeMigrationProxy"
 
+	DatabaseAvailableActionsRemoveServerlessMigrationProxy DatabaseAvailableActions = "removeServerlessMigrationProxy"
+
 	DatabaseAvailableActionsResetPassword DatabaseAvailableActions = "resetPassword"
 
 	DatabaseAvailableActionsResize DatabaseAvailableActions = "resize"
+
+	DatabaseAvailableActionsSuspend DatabaseAvailableActions = "suspend"
 
 	DatabaseAvailableActionsTerminate DatabaseAvailableActions = "terminate"
 
 	DatabaseAvailableActionsTerminateDatacenter DatabaseAvailableActions = "terminateDatacenter"
 
 	DatabaseAvailableActionsUnpark DatabaseAvailableActions = "unpark"
-)
-
-// Defines values for DatabaseInfoCloudProvider.
-const (
-	DatabaseInfoCloudProviderAWS DatabaseInfoCloudProvider = "AWS"
-
-	DatabaseInfoCloudProviderAZURE DatabaseInfoCloudProvider = "AZURE"
-
-	DatabaseInfoCloudProviderGCP DatabaseInfoCloudProvider = "GCP"
-)
-
-// Defines values for DatabaseInfoTier.
-const (
-	DatabaseInfoTierA10 DatabaseInfoTier = "A10"
-
-	DatabaseInfoTierA20 DatabaseInfoTier = "A20"
-
-	DatabaseInfoTierA40 DatabaseInfoTier = "A40"
-
-	DatabaseInfoTierA5 DatabaseInfoTier = "A5"
-
-	DatabaseInfoTierC10 DatabaseInfoTier = "C10"
-
-	DatabaseInfoTierC20 DatabaseInfoTier = "C20"
-
-	DatabaseInfoTierC40 DatabaseInfoTier = "C40"
-
-	DatabaseInfoTierD10 DatabaseInfoTier = "D10"
-
-	DatabaseInfoTierD20 DatabaseInfoTier = "D20"
-
-	DatabaseInfoTierD40 DatabaseInfoTier = "D40"
-
-	DatabaseInfoTierDeveloper DatabaseInfoTier = "developer"
-)
-
-// Defines values for DatabaseInfoCreateCloudProvider.
-const (
-	DatabaseInfoCreateCloudProviderAWS DatabaseInfoCreateCloudProvider = "AWS"
-
-	DatabaseInfoCreateCloudProviderAZURE DatabaseInfoCreateCloudProvider = "AZURE"
-
-	DatabaseInfoCreateCloudProviderGCP DatabaseInfoCreateCloudProvider = "GCP"
-)
-
-// Defines values for DatabaseInfoCreateTier.
-const (
-	DatabaseInfoCreateTierA10 DatabaseInfoCreateTier = "A10"
-
-	DatabaseInfoCreateTierA20 DatabaseInfoCreateTier = "A20"
-
-	DatabaseInfoCreateTierA40 DatabaseInfoCreateTier = "A40"
-
-	DatabaseInfoCreateTierA5 DatabaseInfoCreateTier = "A5"
-
-	DatabaseInfoCreateTierC10 DatabaseInfoCreateTier = "C10"
-
-	DatabaseInfoCreateTierC20 DatabaseInfoCreateTier = "C20"
-
-	DatabaseInfoCreateTierC40 DatabaseInfoCreateTier = "C40"
-
-	DatabaseInfoCreateTierD10 DatabaseInfoCreateTier = "D10"
-
-	DatabaseInfoCreateTierD20 DatabaseInfoCreateTier = "D20"
-
-	DatabaseInfoCreateTierD40 DatabaseInfoCreateTier = "D40"
-
-	DatabaseInfoCreateTierDeveloper DatabaseInfoCreateTier = "developer"
 )
 
 // Defines values for DatacenterRegionClassification.
@@ -139,98 +90,98 @@ const (
 	DatacenterRegionZoneSa DatacenterRegionZone = "sa"
 )
 
-// Defines values for PolicyActions.
-const (
-	PolicyActionsDbAllKeyspaceCreate PolicyActions = "db-all-keyspace-create"
-
-	PolicyActionsDbAllKeyspaceDescribe PolicyActions = "db-all-keyspace-describe"
-
-	PolicyActionsDbCql PolicyActions = "db-cql"
-
-	PolicyActionsDbGraphql PolicyActions = "db-graphql"
-
-	PolicyActionsDbKeyspaceAlter PolicyActions = "db-keyspace-alter"
-
-	PolicyActionsDbKeyspaceAuthorize PolicyActions = "db-keyspace-authorize"
-
-	PolicyActionsDbKeyspaceCreate PolicyActions = "db-keyspace-create"
-
-	PolicyActionsDbKeyspaceDescribe PolicyActions = "db-keyspace-describe"
-
-	PolicyActionsDbKeyspaceDrop PolicyActions = "db-keyspace-drop"
-
-	PolicyActionsDbKeyspaceGrant PolicyActions = "db-keyspace-grant"
-
-	PolicyActionsDbKeyspaceModify PolicyActions = "db-keyspace-modify"
-
-	PolicyActionsDbRest PolicyActions = "db-rest"
-
-	PolicyActionsDbTableAlter PolicyActions = "db-table-alter"
-
-	PolicyActionsDbTableAuthorize PolicyActions = "db-table-authorize"
-
-	PolicyActionsDbTableCreate PolicyActions = "db-table-create"
-
-	PolicyActionsDbTableDescribe PolicyActions = "db-table-describe"
-
-	PolicyActionsDbTableDrop PolicyActions = "db-table-drop"
-
-	PolicyActionsDbTableGrant PolicyActions = "db-table-grant"
-
-	PolicyActionsDbTableModify PolicyActions = "db-table-modify"
-
-	PolicyActionsDbTableSelect PolicyActions = "db-table-select"
-
-	PolicyActionsOrgAuditsRead PolicyActions = "org-audits-read"
-
-	PolicyActionsOrgBillingRead PolicyActions = "org-billing-read"
-
-	PolicyActionsOrgBillingWrite PolicyActions = "org-billing-write"
-
-	PolicyActionsOrgDbAddpeering PolicyActions = "org-db-addpeering"
-
-	PolicyActionsOrgDbCreate PolicyActions = "org-db-create"
-
-	PolicyActionsOrgDbExpand PolicyActions = "org-db-expand"
-
-	PolicyActionsOrgDbManagemigratorproxy PolicyActions = "org-db-managemigratorproxy"
-
-	PolicyActionsOrgDbPasswordreset PolicyActions = "org-db-passwordreset"
-
-	PolicyActionsOrgDbSuspend PolicyActions = "org-db-suspend"
-
-	PolicyActionsOrgDbTerminate PolicyActions = "org-db-terminate"
-
-	PolicyActionsOrgDbView PolicyActions = "org-db-view"
-
-	PolicyActionsOrgExternalAuthRead PolicyActions = "org-external-auth-read"
-
-	PolicyActionsOrgExternalAuthWrite PolicyActions = "org-external-auth-write"
-
-	PolicyActionsOrgNotificationWrite PolicyActions = "org-notification-write"
-
-	PolicyActionsOrgRead PolicyActions = "org-read"
-
-	PolicyActionsOrgRoleDelete PolicyActions = "org-role-delete"
-
-	PolicyActionsOrgRoleRead PolicyActions = "org-role-read"
-
-	PolicyActionsOrgRoleWrite PolicyActions = "org-role-write"
-
-	PolicyActionsOrgTokenRead PolicyActions = "org-token-read"
-
-	PolicyActionsOrgTokenWrite PolicyActions = "org-token-write"
-
-	PolicyActionsOrgUserRead PolicyActions = "org-user-read"
-
-	PolicyActionsOrgUserWrite PolicyActions = "org-user-write"
-
-	PolicyActionsOrgWrite PolicyActions = "org-write"
-)
-
 // Defines values for PolicyEffect.
 const (
 	PolicyEffectAllow PolicyEffect = "allow"
+)
+
+// Defines values for PolicyAction.
+const (
+	PolicyActionDbAllKeyspaceCreate PolicyAction = "db-all-keyspace-create"
+
+	PolicyActionDbAllKeyspaceDescribe PolicyAction = "db-all-keyspace-describe"
+
+	PolicyActionDbCql PolicyAction = "db-cql"
+
+	PolicyActionDbGraphql PolicyAction = "db-graphql"
+
+	PolicyActionDbKeyspaceAlter PolicyAction = "db-keyspace-alter"
+
+	PolicyActionDbKeyspaceAuthorize PolicyAction = "db-keyspace-authorize"
+
+	PolicyActionDbKeyspaceCreate PolicyAction = "db-keyspace-create"
+
+	PolicyActionDbKeyspaceDescribe PolicyAction = "db-keyspace-describe"
+
+	PolicyActionDbKeyspaceDrop PolicyAction = "db-keyspace-drop"
+
+	PolicyActionDbKeyspaceGrant PolicyAction = "db-keyspace-grant"
+
+	PolicyActionDbKeyspaceModify PolicyAction = "db-keyspace-modify"
+
+	PolicyActionDbRest PolicyAction = "db-rest"
+
+	PolicyActionDbTableAlter PolicyAction = "db-table-alter"
+
+	PolicyActionDbTableAuthorize PolicyAction = "db-table-authorize"
+
+	PolicyActionDbTableCreate PolicyAction = "db-table-create"
+
+	PolicyActionDbTableDescribe PolicyAction = "db-table-describe"
+
+	PolicyActionDbTableDrop PolicyAction = "db-table-drop"
+
+	PolicyActionDbTableGrant PolicyAction = "db-table-grant"
+
+	PolicyActionDbTableModify PolicyAction = "db-table-modify"
+
+	PolicyActionDbTableSelect PolicyAction = "db-table-select"
+
+	PolicyActionOrgAuditsRead PolicyAction = "org-audits-read"
+
+	PolicyActionOrgBillingRead PolicyAction = "org-billing-read"
+
+	PolicyActionOrgBillingWrite PolicyAction = "org-billing-write"
+
+	PolicyActionOrgDbAddpeering PolicyAction = "org-db-addpeering"
+
+	PolicyActionOrgDbCreate PolicyAction = "org-db-create"
+
+	PolicyActionOrgDbExpand PolicyAction = "org-db-expand"
+
+	PolicyActionOrgDbManagemigratorproxy PolicyAction = "org-db-managemigratorproxy"
+
+	PolicyActionOrgDbPasswordreset PolicyAction = "org-db-passwordreset"
+
+	PolicyActionOrgDbSuspend PolicyAction = "org-db-suspend"
+
+	PolicyActionOrgDbTerminate PolicyAction = "org-db-terminate"
+
+	PolicyActionOrgDbView PolicyAction = "org-db-view"
+
+	PolicyActionOrgExternalAuthRead PolicyAction = "org-external-auth-read"
+
+	PolicyActionOrgExternalAuthWrite PolicyAction = "org-external-auth-write"
+
+	PolicyActionOrgNotificationWrite PolicyAction = "org-notification-write"
+
+	PolicyActionOrgRead PolicyAction = "org-read"
+
+	PolicyActionOrgRoleDelete PolicyAction = "org-role-delete"
+
+	PolicyActionOrgRoleRead PolicyAction = "org-role-read"
+
+	PolicyActionOrgRoleWrite PolicyAction = "org-role-write"
+
+	PolicyActionOrgTokenRead PolicyAction = "org-token-read"
+
+	PolicyActionOrgTokenWrite PolicyAction = "org-token-write"
+
+	PolicyActionOrgUserRead PolicyAction = "org-user-read"
+
+	PolicyActionOrgUserWrite PolicyAction = "org-user-write"
+
+	PolicyActionOrgWrite PolicyAction = "org-write"
 )
 
 // Defines values for PrivateLinkEndpointStatus.
@@ -271,6 +222,35 @@ const (
 	StatusEnumUNKNOWN StatusEnum = "UNKNOWN"
 
 	StatusEnumUNPARKING StatusEnum = "UNPARKING"
+)
+
+// Defines values for Tier.
+const (
+	TierA10 Tier = "A10"
+
+	TierA20 Tier = "A20"
+
+	TierA40 Tier = "A40"
+
+	TierA5 Tier = "A5"
+
+	TierC10 Tier = "C10"
+
+	TierC20 Tier = "C20"
+
+	TierC40 Tier = "C40"
+
+	TierCloudnative Tier = "cloudnative"
+
+	TierD10 Tier = "D10"
+
+	TierD20 Tier = "D20"
+
+	TierD40 Tier = "D40"
+
+	TierDeveloper Tier = "developer"
+
+	TierServerless Tier = "serverless"
 )
 
 // AccessListConfigurations defines model for AccessListConfigurations.
@@ -330,15 +310,20 @@ type AllowedPrincipals []string
 
 // AvailableRegionCombination defines a Tier, cloud provider, region combination
 type AvailableRegionCombination struct {
-	CapacityUnitsLimit              int    `json:"capacityUnitsLimit"`
-	CapacityUnitsUsed               int    `json:"capacityUnitsUsed"`
-	CloudProvider                   string `json:"cloudProvider"`
-	Cost                            Costs  `json:"cost"`
-	DatabaseCountLimit              int    `json:"databaseCountLimit"`
-	DatabaseCountUsed               int    `json:"databaseCountUsed"`
-	DefaultStoragePerCapacityUnitGb int    `json:"defaultStoragePerCapacityUnitGb"`
-	Region                          string `json:"region"`
-	Tier                            string `json:"tier"`
+	CapacityUnitsLimit int `json:"capacityUnitsLimit"`
+	CapacityUnitsUsed  int `json:"capacityUnitsUsed"`
+
+	// Cloud hosting provider
+	CloudProvider                   CloudProvider `json:"cloudProvider"`
+	Cost                            Costs         `json:"cost"`
+	DatabaseCountLimit              int           `json:"databaseCountLimit"`
+	DatabaseCountUsed               int           `json:"databaseCountUsed"`
+	DefaultStoragePerCapacityUnitGb int           `json:"defaultStoragePerCapacityUnitGb"`
+	Description                     *string       `json:"description,omitempty"`
+	Region                          string        `json:"region"`
+
+	// Tier defines the compute power (vertical scaling) for the database
+	Tier Tier `json:"tier"`
 }
 
 // CapacityUnits is used to horizontally scale a database.
@@ -359,6 +344,9 @@ type ClientRoleList struct {
 	// a list of clientId and associated soles
 	Clients *[]ClientRole `json:"clients,omitempty"`
 }
+
+// Cloud hosting provider
+type CloudProvider string
 
 // Costs defines model for Costs.
 type Costs struct {
@@ -435,9 +423,9 @@ type DatabaseInfo struct {
 	// CapacityUnits is the amount of space available (horizontal scaling) for the database. For free tier the max CU's is 1, and 12 for C10 the max is 12 on startup.
 	CapacityUnits *int `json:"capacityUnits,omitempty"`
 
-	// CloudProvider where the database lives
-	CloudProvider *DatabaseInfoCloudProvider `json:"cloudProvider,omitempty"`
-	Datacenters   *[]Datacenter              `json:"datacenters,omitempty"`
+	// Cloud hosting provider
+	CloudProvider *CloudProvider `json:"cloudProvider,omitempty"`
+	Datacenters   *[]Datacenter  `json:"datacenters,omitempty"`
 
 	// Keyspace name in database
 	Keyspace *string `json:"keyspace,omitempty"`
@@ -452,25 +440,19 @@ type DatabaseInfo struct {
 	Region *string `json:"region,omitempty"`
 
 	// Tier defines the compute power (vertical scaling) for the database
-	Tier *DatabaseInfoTier `json:"tier,omitempty"`
+	Tier *Tier `json:"tier,omitempty"`
 
 	// User is the user to access the database
 	User *string `json:"user,omitempty"`
 }
-
-// CloudProvider where the database lives
-type DatabaseInfoCloudProvider string
-
-// Tier defines the compute power (vertical scaling) for the database
-type DatabaseInfoTier string
 
 // DatabaseInfo is the user-provided information describing a database
 type DatabaseInfoCreate struct {
 	// CapacityUnits is the amount of space available (horizontal scaling) for the database. For free tier the max CU's is 1, and 100 for CXX/DXX the max is 12 on startup.
 	CapacityUnits int `json:"capacityUnits"`
 
-	// CloudProvider where the database lives
-	CloudProvider DatabaseInfoCreateCloudProvider `json:"cloudProvider"`
+	// Cloud hosting provider
+	CloudProvider CloudProvider `json:"cloudProvider"`
 
 	// Keyspace name in database
 	Keyspace string `json:"keyspace"`
@@ -479,29 +461,25 @@ type DatabaseInfoCreate struct {
 	Name string `json:"name"`
 
 	// Password for the user to access the database
-	Password string `json:"password"`
+	Password *string `json:"password,omitempty"`
 
 	// Region refers to the cloud region.
 	Region string `json:"region"`
 
-	// Tier defines the compute power (vertical scaling) for the database, developer gcp is the free tier.
-	Tier DatabaseInfoCreateTier `json:"tier"`
+	// Tier defines the compute power (vertical scaling) for the database
+	Tier Tier `json:"tier"`
 
 	// User is the user to access the database
-	User string `json:"user"`
+	User *string `json:"user,omitempty"`
 }
-
-// CloudProvider where the database lives
-type DatabaseInfoCreateCloudProvider string
-
-// Tier defines the compute power (vertical scaling) for the database, developer gcp is the free tier.
-type DatabaseInfoCreateTier string
 
 // Datacenter is the definition of a cassandra datacenter
 type Datacenter struct {
 	// CapacityUnits is the amount of space available (horizontal scaling) for the database
-	CapacityUnits                         *int                            `json:"capacityUnits,omitempty"`
-	CloudProvider                         string                          `json:"cloudProvider"`
+	CapacityUnits *int `json:"capacityUnits,omitempty"`
+
+	// Cloud hosting provider
+	CloudProvider                         CloudProvider                   `json:"cloudProvider"`
 	CqlshUrl                              *string                         `json:"cqlshUrl,omitempty"`
 	DataEndpointUrl                       *string                         `json:"dataEndpointUrl,omitempty"`
 	GrafanaUrl                            *string                         `json:"grafanaUrl,omitempty"`
@@ -517,7 +495,9 @@ type Datacenter struct {
 	SecureBundleUrl                       *string                         `json:"secureBundleUrl,omitempty"`
 	Status                                string                          `json:"status"`
 	StudioUrl                             *string                         `json:"studioUrl,omitempty"`
-	Tier                                  string                          `json:"tier"`
+
+	// Tier defines the compute power (vertical scaling) for the database
+	Tier Tier `json:"tier"`
 }
 
 // DatacenterRegionClassification defines model for Datacenter.RegionClassification.
@@ -608,7 +588,7 @@ type OrganizationUsers struct {
 // A policy for a role in Astra.
 type Policy struct {
 	// The actions this policy can take. Example Actions: 'org-billing-write' 'db-keyspace-create'
-	Actions []PolicyActions `json:"actions"`
+	Actions []PolicyAction `json:"actions"`
 
 	// A description of this policy
 	Description string `json:"description"`
@@ -620,11 +600,11 @@ type Policy struct {
 	Resources []string `json:"resources"`
 }
 
-// PolicyActions defines model for Policy.Actions.
-type PolicyActions string
-
 // Effect this policy will have on the provided resource
 type PolicyEffect string
+
+// Actions permitted by a Policy
+type PolicyAction string
 
 // PrivateLinkClusterOutput defines model for PrivateLinkClusterOutput.
 type PrivateLinkClusterOutput struct {
@@ -736,16 +716,15 @@ type RoleInviteRequest struct {
 	Roles []string `json:"roles"`
 }
 
-// an array of roles
-type Roles []Role
-
 // Serverless region information
 type ServerlessRegion struct {
 	Classification string `json:"classification"`
-	CloudProvider  string `json:"cloudProvider"`
-	DisplayName    string `json:"displayName"`
-	Name           string `json:"name"`
-	Zone           string `json:"zone"`
+
+	// Cloud hosting provider
+	CloudProvider CloudProvider `json:"cloudProvider"`
+	DisplayName   string        `json:"displayName"`
+	Name          string        `json:"name"`
+	Zone          string        `json:"zone"`
 }
 
 // ServiceAccountTokenInput defines model for ServiceAccountTokenInput.
@@ -786,6 +765,9 @@ type Storage struct {
 	// UsedStorage in GB
 	UsedStorage *int `json:"usedStorage,omitempty"`
 }
+
+// Tier defines the compute power (vertical scaling) for the database
+type Tier string
 
 // The updateRole model
 type UpdateRoleRequest struct {
@@ -1147,75 +1129,75 @@ type ClientInterface interface {
 	CreateDatabase(ctx context.Context, body CreateDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetDatabase request
-	GetDatabase(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteAddressesOrAccessListForDatabase request
-	DeleteAddressesOrAccessListForDatabase(ctx context.Context, databaseID DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteAddressesOrAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetAccessListForDatabase request
-	GetAccessListForDatabase(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateAccessListForDatabase request with any body
-	UpdateAccessListForDatabaseWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateAccessListForDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateAccessListForDatabase(ctx context.Context, databaseID DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AddAddressesToAccessListForDatabase request with any body
-	AddAddressesToAccessListForDatabaseWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	AddAddressesToAccessListForDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	AddAddressesToAccessListForDatabase(ctx context.Context, databaseID DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	AddAddressesToAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpsertAccessListForDatabase request with any body
-	UpsertAccessListForDatabaseWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpsertAccessListForDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpsertAccessListForDatabase(ctx context.Context, databaseID DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpsertAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListDatacenters request
-	ListDatacenters(ctx context.Context, databaseID DatabaseIdParam, params *ListDatacentersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListDatacenters(ctx context.Context, databaseId DatabaseIdParam, params *ListDatacentersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AddDatacenters request with any body
-	AddDatacentersWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	AddDatacentersWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	AddDatacenters(ctx context.Context, databaseID DatabaseIdParam, body AddDatacentersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	AddDatacenters(ctx context.Context, databaseId DatabaseIdParam, body AddDatacentersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// TerminateDatacenter request
-	TerminateDatacenter(ctx context.Context, databaseID DatabaseIdParam, datacenterID DatacenterIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+	TerminateDatacenter(ctx context.Context, databaseId DatabaseIdParam, datacenterId DatacenterIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AddKeyspace request
-	AddKeyspace(ctx context.Context, databaseID DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+	AddKeyspace(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// RemoveMigrationProxy request
-	RemoveMigrationProxy(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+	RemoveMigrationProxy(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// LaunchMigrationProxy request with any body
-	LaunchMigrationProxyWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	LaunchMigrationProxyWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	LaunchMigrationProxy(ctx context.Context, databaseID DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	LaunchMigrationProxy(ctx context.Context, databaseId DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ParkDatabase request
-	ParkDatabase(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ParkDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ResetPassword request with any body
-	ResetPasswordWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ResetPasswordWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	ResetPassword(ctx context.Context, databaseID DatabaseIdParam, body ResetPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ResetPassword(ctx context.Context, databaseId DatabaseIdParam, body ResetPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ResizeDatabase request with any body
-	ResizeDatabaseWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ResizeDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	ResizeDatabase(ctx context.Context, databaseID DatabaseIdParam, body ResizeDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ResizeDatabase(ctx context.Context, databaseId DatabaseIdParam, body ResizeDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GenerateSecureBundleURL request
-	GenerateSecureBundleURL(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GenerateSecureBundleURL(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SuspendDatabase request
-	SuspendDatabase(ctx context.Context, databaseID DatabaseIdParam, params *SuspendDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	SuspendDatabase(ctx context.Context, databaseId DatabaseIdParam, params *SuspendDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// TerminateDatabase request
-	TerminateDatabase(ctx context.Context, databaseID DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	TerminateDatabase(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UnparkDatabase request
-	UnparkDatabase(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UnparkDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// RemoveAllowedPrincipalFromService request with any body
 	RemoveAllowedPrincipalFromServiceWithBody(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1467,8 +1449,8 @@ func (c *Client) CreateDatabase(ctx context.Context, body CreateDatabaseJSONRequ
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetDatabase(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetDatabaseRequest(c.Server, databaseID)
+func (c *Client) GetDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDatabaseRequest(c.Server, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -1479,8 +1461,8 @@ func (c *Client) GetDatabase(ctx context.Context, databaseID DatabaseIdParam, re
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteAddressesOrAccessListForDatabase(ctx context.Context, databaseID DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteAddressesOrAccessListForDatabaseRequest(c.Server, databaseID, params)
+func (c *Client) DeleteAddressesOrAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteAddressesOrAccessListForDatabaseRequest(c.Server, databaseId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1491,8 +1473,8 @@ func (c *Client) DeleteAddressesOrAccessListForDatabase(ctx context.Context, dat
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetAccessListForDatabase(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetAccessListForDatabaseRequest(c.Server, databaseID)
+func (c *Client) GetAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAccessListForDatabaseRequest(c.Server, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -1503,8 +1485,8 @@ func (c *Client) GetAccessListForDatabase(ctx context.Context, databaseID Databa
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateAccessListForDatabaseWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateAccessListForDatabaseRequestWithBody(c.Server, databaseID, contentType, body)
+func (c *Client) UpdateAccessListForDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAccessListForDatabaseRequestWithBody(c.Server, databaseId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1515,8 +1497,8 @@ func (c *Client) UpdateAccessListForDatabaseWithBody(ctx context.Context, databa
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateAccessListForDatabase(ctx context.Context, databaseID DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateAccessListForDatabaseRequest(c.Server, databaseID, body)
+func (c *Client) UpdateAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAccessListForDatabaseRequest(c.Server, databaseId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1527,8 +1509,8 @@ func (c *Client) UpdateAccessListForDatabase(ctx context.Context, databaseID Dat
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddAddressesToAccessListForDatabaseWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddAddressesToAccessListForDatabaseRequestWithBody(c.Server, databaseID, contentType, body)
+func (c *Client) AddAddressesToAccessListForDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddAddressesToAccessListForDatabaseRequestWithBody(c.Server, databaseId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1539,8 +1521,8 @@ func (c *Client) AddAddressesToAccessListForDatabaseWithBody(ctx context.Context
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddAddressesToAccessListForDatabase(ctx context.Context, databaseID DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddAddressesToAccessListForDatabaseRequest(c.Server, databaseID, body)
+func (c *Client) AddAddressesToAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddAddressesToAccessListForDatabaseRequest(c.Server, databaseId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1551,8 +1533,8 @@ func (c *Client) AddAddressesToAccessListForDatabase(ctx context.Context, databa
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpsertAccessListForDatabaseWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpsertAccessListForDatabaseRequestWithBody(c.Server, databaseID, contentType, body)
+func (c *Client) UpsertAccessListForDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpsertAccessListForDatabaseRequestWithBody(c.Server, databaseId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1563,8 +1545,8 @@ func (c *Client) UpsertAccessListForDatabaseWithBody(ctx context.Context, databa
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpsertAccessListForDatabase(ctx context.Context, databaseID DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpsertAccessListForDatabaseRequest(c.Server, databaseID, body)
+func (c *Client) UpsertAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpsertAccessListForDatabaseRequest(c.Server, databaseId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1575,8 +1557,8 @@ func (c *Client) UpsertAccessListForDatabase(ctx context.Context, databaseID Dat
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListDatacenters(ctx context.Context, databaseID DatabaseIdParam, params *ListDatacentersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListDatacentersRequest(c.Server, databaseID, params)
+func (c *Client) ListDatacenters(ctx context.Context, databaseId DatabaseIdParam, params *ListDatacentersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListDatacentersRequest(c.Server, databaseId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1587,8 +1569,8 @@ func (c *Client) ListDatacenters(ctx context.Context, databaseID DatabaseIdParam
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddDatacentersWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddDatacentersRequestWithBody(c.Server, databaseID, contentType, body)
+func (c *Client) AddDatacentersWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddDatacentersRequestWithBody(c.Server, databaseId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1599,8 +1581,8 @@ func (c *Client) AddDatacentersWithBody(ctx context.Context, databaseID Database
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddDatacenters(ctx context.Context, databaseID DatabaseIdParam, body AddDatacentersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddDatacentersRequest(c.Server, databaseID, body)
+func (c *Client) AddDatacenters(ctx context.Context, databaseId DatabaseIdParam, body AddDatacentersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddDatacentersRequest(c.Server, databaseId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1611,8 +1593,8 @@ func (c *Client) AddDatacenters(ctx context.Context, databaseID DatabaseIdParam,
 	return c.Client.Do(req)
 }
 
-func (c *Client) TerminateDatacenter(ctx context.Context, databaseID DatabaseIdParam, datacenterID DatacenterIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewTerminateDatacenterRequest(c.Server, databaseID, datacenterID)
+func (c *Client) TerminateDatacenter(ctx context.Context, databaseId DatabaseIdParam, datacenterId DatacenterIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTerminateDatacenterRequest(c.Server, databaseId, datacenterId)
 	if err != nil {
 		return nil, err
 	}
@@ -1623,8 +1605,8 @@ func (c *Client) TerminateDatacenter(ctx context.Context, databaseID DatabaseIdP
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddKeyspace(ctx context.Context, databaseID DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddKeyspaceRequest(c.Server, databaseID, keyspaceName)
+func (c *Client) AddKeyspace(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddKeyspaceRequest(c.Server, databaseId, keyspaceName)
 	if err != nil {
 		return nil, err
 	}
@@ -1635,8 +1617,8 @@ func (c *Client) AddKeyspace(ctx context.Context, databaseID DatabaseIdParam, ke
 	return c.Client.Do(req)
 }
 
-func (c *Client) RemoveMigrationProxy(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewRemoveMigrationProxyRequest(c.Server, databaseID)
+func (c *Client) RemoveMigrationProxy(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRemoveMigrationProxyRequest(c.Server, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -1647,8 +1629,8 @@ func (c *Client) RemoveMigrationProxy(ctx context.Context, databaseID DatabaseId
 	return c.Client.Do(req)
 }
 
-func (c *Client) LaunchMigrationProxyWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewLaunchMigrationProxyRequestWithBody(c.Server, databaseID, contentType, body)
+func (c *Client) LaunchMigrationProxyWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLaunchMigrationProxyRequestWithBody(c.Server, databaseId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1659,8 +1641,8 @@ func (c *Client) LaunchMigrationProxyWithBody(ctx context.Context, databaseID Da
 	return c.Client.Do(req)
 }
 
-func (c *Client) LaunchMigrationProxy(ctx context.Context, databaseID DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewLaunchMigrationProxyRequest(c.Server, databaseID, body)
+func (c *Client) LaunchMigrationProxy(ctx context.Context, databaseId DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewLaunchMigrationProxyRequest(c.Server, databaseId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1671,8 +1653,8 @@ func (c *Client) LaunchMigrationProxy(ctx context.Context, databaseID DatabaseId
 	return c.Client.Do(req)
 }
 
-func (c *Client) ParkDatabase(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewParkDatabaseRequest(c.Server, databaseID)
+func (c *Client) ParkDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewParkDatabaseRequest(c.Server, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -1683,8 +1665,8 @@ func (c *Client) ParkDatabase(ctx context.Context, databaseID DatabaseIdParam, r
 	return c.Client.Do(req)
 }
 
-func (c *Client) ResetPasswordWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewResetPasswordRequestWithBody(c.Server, databaseID, contentType, body)
+func (c *Client) ResetPasswordWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResetPasswordRequestWithBody(c.Server, databaseId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1695,8 +1677,8 @@ func (c *Client) ResetPasswordWithBody(ctx context.Context, databaseID DatabaseI
 	return c.Client.Do(req)
 }
 
-func (c *Client) ResetPassword(ctx context.Context, databaseID DatabaseIdParam, body ResetPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewResetPasswordRequest(c.Server, databaseID, body)
+func (c *Client) ResetPassword(ctx context.Context, databaseId DatabaseIdParam, body ResetPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResetPasswordRequest(c.Server, databaseId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1707,8 +1689,8 @@ func (c *Client) ResetPassword(ctx context.Context, databaseID DatabaseIdParam, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) ResizeDatabaseWithBody(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewResizeDatabaseRequestWithBody(c.Server, databaseID, contentType, body)
+func (c *Client) ResizeDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResizeDatabaseRequestWithBody(c.Server, databaseId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1719,8 +1701,8 @@ func (c *Client) ResizeDatabaseWithBody(ctx context.Context, databaseID Database
 	return c.Client.Do(req)
 }
 
-func (c *Client) ResizeDatabase(ctx context.Context, databaseID DatabaseIdParam, body ResizeDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewResizeDatabaseRequest(c.Server, databaseID, body)
+func (c *Client) ResizeDatabase(ctx context.Context, databaseId DatabaseIdParam, body ResizeDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResizeDatabaseRequest(c.Server, databaseId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1731,8 +1713,8 @@ func (c *Client) ResizeDatabase(ctx context.Context, databaseID DatabaseIdParam,
 	return c.Client.Do(req)
 }
 
-func (c *Client) GenerateSecureBundleURL(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGenerateSecureBundleURLRequest(c.Server, databaseID)
+func (c *Client) GenerateSecureBundleURL(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateSecureBundleURLRequest(c.Server, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -1743,8 +1725,8 @@ func (c *Client) GenerateSecureBundleURL(ctx context.Context, databaseID Databas
 	return c.Client.Do(req)
 }
 
-func (c *Client) SuspendDatabase(ctx context.Context, databaseID DatabaseIdParam, params *SuspendDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSuspendDatabaseRequest(c.Server, databaseID, params)
+func (c *Client) SuspendDatabase(ctx context.Context, databaseId DatabaseIdParam, params *SuspendDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSuspendDatabaseRequest(c.Server, databaseId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1755,8 +1737,8 @@ func (c *Client) SuspendDatabase(ctx context.Context, databaseID DatabaseIdParam
 	return c.Client.Do(req)
 }
 
-func (c *Client) TerminateDatabase(ctx context.Context, databaseID DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewTerminateDatabaseRequest(c.Server, databaseID, params)
+func (c *Client) TerminateDatabase(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTerminateDatabaseRequest(c.Server, databaseId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1767,8 +1749,8 @@ func (c *Client) TerminateDatabase(ctx context.Context, databaseID DatabaseIdPar
 	return c.Client.Do(req)
 }
 
-func (c *Client) UnparkDatabase(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUnparkDatabaseRequest(c.Server, databaseID)
+func (c *Client) UnparkDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUnparkDatabaseRequest(c.Server, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -2551,12 +2533,12 @@ func NewCreateDatabaseRequestWithBody(server string, contentType string, body io
 }
 
 // NewGetDatabaseRequest generates requests for GetDatabase
-func NewGetDatabaseRequest(server string, databaseID DatabaseIdParam) (*http.Request, error) {
+func NewGetDatabaseRequest(server string, databaseId DatabaseIdParam) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -2585,12 +2567,12 @@ func NewGetDatabaseRequest(server string, databaseID DatabaseIdParam) (*http.Req
 }
 
 // NewDeleteAddressesOrAccessListForDatabaseRequest generates requests for DeleteAddressesOrAccessListForDatabase
-func NewDeleteAddressesOrAccessListForDatabaseRequest(server string, databaseID DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams) (*http.Request, error) {
+func NewDeleteAddressesOrAccessListForDatabaseRequest(server string, databaseId DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -2639,12 +2621,12 @@ func NewDeleteAddressesOrAccessListForDatabaseRequest(server string, databaseID 
 }
 
 // NewGetAccessListForDatabaseRequest generates requests for GetAccessListForDatabase
-func NewGetAccessListForDatabaseRequest(server string, databaseID DatabaseIdParam) (*http.Request, error) {
+func NewGetAccessListForDatabaseRequest(server string, databaseId DatabaseIdParam) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -2673,23 +2655,23 @@ func NewGetAccessListForDatabaseRequest(server string, databaseID DatabaseIdPara
 }
 
 // NewUpdateAccessListForDatabaseRequest calls the generic UpdateAccessListForDatabase builder with application/json body
-func NewUpdateAccessListForDatabaseRequest(server string, databaseID DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody) (*http.Request, error) {
+func NewUpdateAccessListForDatabaseRequest(server string, databaseId DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewUpdateAccessListForDatabaseRequestWithBody(server, databaseID, "application/json", bodyReader)
+	return NewUpdateAccessListForDatabaseRequestWithBody(server, databaseId, "application/json", bodyReader)
 }
 
 // NewUpdateAccessListForDatabaseRequestWithBody generates requests for UpdateAccessListForDatabase with any type of body
-func NewUpdateAccessListForDatabaseRequestWithBody(server string, databaseID DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateAccessListForDatabaseRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -2720,23 +2702,23 @@ func NewUpdateAccessListForDatabaseRequestWithBody(server string, databaseID Dat
 }
 
 // NewAddAddressesToAccessListForDatabaseRequest calls the generic AddAddressesToAccessListForDatabase builder with application/json body
-func NewAddAddressesToAccessListForDatabaseRequest(server string, databaseID DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody) (*http.Request, error) {
+func NewAddAddressesToAccessListForDatabaseRequest(server string, databaseId DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewAddAddressesToAccessListForDatabaseRequestWithBody(server, databaseID, "application/json", bodyReader)
+	return NewAddAddressesToAccessListForDatabaseRequestWithBody(server, databaseId, "application/json", bodyReader)
 }
 
 // NewAddAddressesToAccessListForDatabaseRequestWithBody generates requests for AddAddressesToAccessListForDatabase with any type of body
-func NewAddAddressesToAccessListForDatabaseRequestWithBody(server string, databaseID DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+func NewAddAddressesToAccessListForDatabaseRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -2767,23 +2749,23 @@ func NewAddAddressesToAccessListForDatabaseRequestWithBody(server string, databa
 }
 
 // NewUpsertAccessListForDatabaseRequest calls the generic UpsertAccessListForDatabase builder with application/json body
-func NewUpsertAccessListForDatabaseRequest(server string, databaseID DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody) (*http.Request, error) {
+func NewUpsertAccessListForDatabaseRequest(server string, databaseId DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewUpsertAccessListForDatabaseRequestWithBody(server, databaseID, "application/json", bodyReader)
+	return NewUpsertAccessListForDatabaseRequestWithBody(server, databaseId, "application/json", bodyReader)
 }
 
 // NewUpsertAccessListForDatabaseRequestWithBody generates requests for UpsertAccessListForDatabase with any type of body
-func NewUpsertAccessListForDatabaseRequestWithBody(server string, databaseID DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpsertAccessListForDatabaseRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -2814,12 +2796,12 @@ func NewUpsertAccessListForDatabaseRequestWithBody(server string, databaseID Dat
 }
 
 // NewListDatacentersRequest generates requests for ListDatacenters
-func NewListDatacentersRequest(server string, databaseID DatabaseIdParam, params *ListDatacentersParams) (*http.Request, error) {
+func NewListDatacentersRequest(server string, databaseId DatabaseIdParam, params *ListDatacentersParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -2868,23 +2850,23 @@ func NewListDatacentersRequest(server string, databaseID DatabaseIdParam, params
 }
 
 // NewAddDatacentersRequest calls the generic AddDatacenters builder with application/json body
-func NewAddDatacentersRequest(server string, databaseID DatabaseIdParam, body AddDatacentersJSONRequestBody) (*http.Request, error) {
+func NewAddDatacentersRequest(server string, databaseId DatabaseIdParam, body AddDatacentersJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewAddDatacentersRequestWithBody(server, databaseID, "application/json", bodyReader)
+	return NewAddDatacentersRequestWithBody(server, databaseId, "application/json", bodyReader)
 }
 
 // NewAddDatacentersRequestWithBody generates requests for AddDatacenters with any type of body
-func NewAddDatacentersRequestWithBody(server string, databaseID DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+func NewAddDatacentersRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -2915,19 +2897,19 @@ func NewAddDatacentersRequestWithBody(server string, databaseID DatabaseIdParam,
 }
 
 // NewTerminateDatacenterRequest generates requests for TerminateDatacenter
-func NewTerminateDatacenterRequest(server string, databaseID DatabaseIdParam, datacenterID DatacenterIdParam) (*http.Request, error) {
+func NewTerminateDatacenterRequest(server string, databaseId DatabaseIdParam, datacenterId DatacenterIdParam) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterID", runtime.ParamLocationPath, datacenterID)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterId", runtime.ParamLocationPath, datacenterId)
 	if err != nil {
 		return nil, err
 	}
@@ -2956,12 +2938,12 @@ func NewTerminateDatacenterRequest(server string, databaseID DatabaseIdParam, da
 }
 
 // NewAddKeyspaceRequest generates requests for AddKeyspace
-func NewAddKeyspaceRequest(server string, databaseID DatabaseIdParam, keyspaceName KeyspaceNameParam) (*http.Request, error) {
+func NewAddKeyspaceRequest(server string, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -2997,12 +2979,12 @@ func NewAddKeyspaceRequest(server string, databaseID DatabaseIdParam, keyspaceNa
 }
 
 // NewRemoveMigrationProxyRequest generates requests for RemoveMigrationProxy
-func NewRemoveMigrationProxyRequest(server string, databaseID DatabaseIdParam) (*http.Request, error) {
+func NewRemoveMigrationProxyRequest(server string, databaseId DatabaseIdParam) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -3031,23 +3013,23 @@ func NewRemoveMigrationProxyRequest(server string, databaseID DatabaseIdParam) (
 }
 
 // NewLaunchMigrationProxyRequest calls the generic LaunchMigrationProxy builder with application/json body
-func NewLaunchMigrationProxyRequest(server string, databaseID DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody) (*http.Request, error) {
+func NewLaunchMigrationProxyRequest(server string, databaseId DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewLaunchMigrationProxyRequestWithBody(server, databaseID, "application/json", bodyReader)
+	return NewLaunchMigrationProxyRequestWithBody(server, databaseId, "application/json", bodyReader)
 }
 
 // NewLaunchMigrationProxyRequestWithBody generates requests for LaunchMigrationProxy with any type of body
-func NewLaunchMigrationProxyRequestWithBody(server string, databaseID DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+func NewLaunchMigrationProxyRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -3078,12 +3060,12 @@ func NewLaunchMigrationProxyRequestWithBody(server string, databaseID DatabaseId
 }
 
 // NewParkDatabaseRequest generates requests for ParkDatabase
-func NewParkDatabaseRequest(server string, databaseID DatabaseIdParam) (*http.Request, error) {
+func NewParkDatabaseRequest(server string, databaseId DatabaseIdParam) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -3112,23 +3094,23 @@ func NewParkDatabaseRequest(server string, databaseID DatabaseIdParam) (*http.Re
 }
 
 // NewResetPasswordRequest calls the generic ResetPassword builder with application/json body
-func NewResetPasswordRequest(server string, databaseID DatabaseIdParam, body ResetPasswordJSONRequestBody) (*http.Request, error) {
+func NewResetPasswordRequest(server string, databaseId DatabaseIdParam, body ResetPasswordJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewResetPasswordRequestWithBody(server, databaseID, "application/json", bodyReader)
+	return NewResetPasswordRequestWithBody(server, databaseId, "application/json", bodyReader)
 }
 
 // NewResetPasswordRequestWithBody generates requests for ResetPassword with any type of body
-func NewResetPasswordRequestWithBody(server string, databaseID DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+func NewResetPasswordRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -3159,23 +3141,23 @@ func NewResetPasswordRequestWithBody(server string, databaseID DatabaseIdParam, 
 }
 
 // NewResizeDatabaseRequest calls the generic ResizeDatabase builder with application/json body
-func NewResizeDatabaseRequest(server string, databaseID DatabaseIdParam, body ResizeDatabaseJSONRequestBody) (*http.Request, error) {
+func NewResizeDatabaseRequest(server string, databaseId DatabaseIdParam, body ResizeDatabaseJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewResizeDatabaseRequestWithBody(server, databaseID, "application/json", bodyReader)
+	return NewResizeDatabaseRequestWithBody(server, databaseId, "application/json", bodyReader)
 }
 
 // NewResizeDatabaseRequestWithBody generates requests for ResizeDatabase with any type of body
-func NewResizeDatabaseRequestWithBody(server string, databaseID DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+func NewResizeDatabaseRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -3206,12 +3188,12 @@ func NewResizeDatabaseRequestWithBody(server string, databaseID DatabaseIdParam,
 }
 
 // NewGenerateSecureBundleURLRequest generates requests for GenerateSecureBundleURL
-func NewGenerateSecureBundleURLRequest(server string, databaseID DatabaseIdParam) (*http.Request, error) {
+func NewGenerateSecureBundleURLRequest(server string, databaseId DatabaseIdParam) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -3240,12 +3222,12 @@ func NewGenerateSecureBundleURLRequest(server string, databaseID DatabaseIdParam
 }
 
 // NewSuspendDatabaseRequest generates requests for SuspendDatabase
-func NewSuspendDatabaseRequest(server string, databaseID DatabaseIdParam, params *SuspendDatabaseParams) (*http.Request, error) {
+func NewSuspendDatabaseRequest(server string, databaseId DatabaseIdParam, params *SuspendDatabaseParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -3294,12 +3276,12 @@ func NewSuspendDatabaseRequest(server string, databaseID DatabaseIdParam, params
 }
 
 // NewTerminateDatabaseRequest generates requests for TerminateDatabase
-func NewTerminateDatabaseRequest(server string, databaseID DatabaseIdParam, params *TerminateDatabaseParams) (*http.Request, error) {
+func NewTerminateDatabaseRequest(server string, databaseId DatabaseIdParam, params *TerminateDatabaseParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -3348,12 +3330,12 @@ func NewTerminateDatabaseRequest(server string, databaseID DatabaseIdParam, para
 }
 
 // NewUnparkDatabaseRequest generates requests for UnparkDatabase
-func NewUnparkDatabaseRequest(server string, databaseID DatabaseIdParam) (*http.Request, error) {
+func NewUnparkDatabaseRequest(server string, databaseId DatabaseIdParam) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseID", runtime.ParamLocationPath, databaseID)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
 	if err != nil {
 		return nil, err
 	}
@@ -4330,75 +4312,75 @@ type ClientWithResponsesInterface interface {
 	CreateDatabaseWithResponse(ctx context.Context, body CreateDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDatabaseResponse, error)
 
 	// GetDatabase request
-	GetDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*GetDatabaseResponse, error)
+	GetDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GetDatabaseResponse, error)
 
 	// DeleteAddressesOrAccessListForDatabase request
-	DeleteAddressesOrAccessListForDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams, reqEditors ...RequestEditorFn) (*DeleteAddressesOrAccessListForDatabaseResponse, error)
+	DeleteAddressesOrAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams, reqEditors ...RequestEditorFn) (*DeleteAddressesOrAccessListForDatabaseResponse, error)
 
 	// GetAccessListForDatabase request
-	GetAccessListForDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*GetAccessListForDatabaseResponse, error)
+	GetAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GetAccessListForDatabaseResponse, error)
 
 	// UpdateAccessListForDatabase request with any body
-	UpdateAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAccessListForDatabaseResponse, error)
+	UpdateAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAccessListForDatabaseResponse, error)
 
-	UpdateAccessListForDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAccessListForDatabaseResponse, error)
+	UpdateAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAccessListForDatabaseResponse, error)
 
 	// AddAddressesToAccessListForDatabase request with any body
-	AddAddressesToAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAddressesToAccessListForDatabaseResponse, error)
+	AddAddressesToAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAddressesToAccessListForDatabaseResponse, error)
 
-	AddAddressesToAccessListForDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAddressesToAccessListForDatabaseResponse, error)
+	AddAddressesToAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAddressesToAccessListForDatabaseResponse, error)
 
 	// UpsertAccessListForDatabase request with any body
-	UpsertAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertAccessListForDatabaseResponse, error)
+	UpsertAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertAccessListForDatabaseResponse, error)
 
-	UpsertAccessListForDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertAccessListForDatabaseResponse, error)
+	UpsertAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertAccessListForDatabaseResponse, error)
 
 	// ListDatacenters request
-	ListDatacentersWithResponse(ctx context.Context, databaseID DatabaseIdParam, params *ListDatacentersParams, reqEditors ...RequestEditorFn) (*ListDatacentersResponse, error)
+	ListDatacentersWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *ListDatacentersParams, reqEditors ...RequestEditorFn) (*ListDatacentersResponse, error)
 
 	// AddDatacenters request with any body
-	AddDatacentersWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddDatacentersResponse, error)
+	AddDatacentersWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddDatacentersResponse, error)
 
-	AddDatacentersWithResponse(ctx context.Context, databaseID DatabaseIdParam, body AddDatacentersJSONRequestBody, reqEditors ...RequestEditorFn) (*AddDatacentersResponse, error)
+	AddDatacentersWithResponse(ctx context.Context, databaseId DatabaseIdParam, body AddDatacentersJSONRequestBody, reqEditors ...RequestEditorFn) (*AddDatacentersResponse, error)
 
 	// TerminateDatacenter request
-	TerminateDatacenterWithResponse(ctx context.Context, databaseID DatabaseIdParam, datacenterID DatacenterIdParam, reqEditors ...RequestEditorFn) (*TerminateDatacenterResponse, error)
+	TerminateDatacenterWithResponse(ctx context.Context, databaseId DatabaseIdParam, datacenterId DatacenterIdParam, reqEditors ...RequestEditorFn) (*TerminateDatacenterResponse, error)
 
 	// AddKeyspace request
-	AddKeyspaceWithResponse(ctx context.Context, databaseID DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*AddKeyspaceResponse, error)
+	AddKeyspaceWithResponse(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*AddKeyspaceResponse, error)
 
 	// RemoveMigrationProxy request
-	RemoveMigrationProxyWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*RemoveMigrationProxyResponse, error)
+	RemoveMigrationProxyWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*RemoveMigrationProxyResponse, error)
 
 	// LaunchMigrationProxy request with any body
-	LaunchMigrationProxyWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LaunchMigrationProxyResponse, error)
+	LaunchMigrationProxyWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LaunchMigrationProxyResponse, error)
 
-	LaunchMigrationProxyWithResponse(ctx context.Context, databaseID DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody, reqEditors ...RequestEditorFn) (*LaunchMigrationProxyResponse, error)
+	LaunchMigrationProxyWithResponse(ctx context.Context, databaseId DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody, reqEditors ...RequestEditorFn) (*LaunchMigrationProxyResponse, error)
 
 	// ParkDatabase request
-	ParkDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*ParkDatabaseResponse, error)
+	ParkDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*ParkDatabaseResponse, error)
 
 	// ResetPassword request with any body
-	ResetPasswordWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResetPasswordResponse, error)
+	ResetPasswordWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResetPasswordResponse, error)
 
-	ResetPasswordWithResponse(ctx context.Context, databaseID DatabaseIdParam, body ResetPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*ResetPasswordResponse, error)
+	ResetPasswordWithResponse(ctx context.Context, databaseId DatabaseIdParam, body ResetPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*ResetPasswordResponse, error)
 
 	// ResizeDatabase request with any body
-	ResizeDatabaseWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResizeDatabaseResponse, error)
+	ResizeDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResizeDatabaseResponse, error)
 
-	ResizeDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, body ResizeDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*ResizeDatabaseResponse, error)
+	ResizeDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body ResizeDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*ResizeDatabaseResponse, error)
 
 	// GenerateSecureBundleURL request
-	GenerateSecureBundleURLWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*GenerateSecureBundleURLResponse, error)
+	GenerateSecureBundleURLWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GenerateSecureBundleURLResponse, error)
 
 	// SuspendDatabase request
-	SuspendDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, params *SuspendDatabaseParams, reqEditors ...RequestEditorFn) (*SuspendDatabaseResponse, error)
+	SuspendDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *SuspendDatabaseParams, reqEditors ...RequestEditorFn) (*SuspendDatabaseResponse, error)
 
 	// TerminateDatabase request
-	TerminateDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*TerminateDatabaseResponse, error)
+	TerminateDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*TerminateDatabaseResponse, error)
 
 	// UnparkDatabase request
-	UnparkDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*UnparkDatabaseResponse, error)
+	UnparkDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*UnparkDatabaseResponse, error)
 
 	// RemoveAllowedPrincipalFromService request with any body
 	RemoveAllowedPrincipalFromServiceWithBodyWithResponse(ctx context.Context, clusterID string, datacenterID string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RemoveAllowedPrincipalFromServiceResponse, error)
@@ -5493,7 +5475,7 @@ func (r ListPrivateLinksForOrgResponse) StatusCode() int {
 type GetOrganizationRolesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *interface{}
+	JSON200      *[]Role
 	JSON403      *Errors
 	JSON404      *Errors
 	JSON500      *Errors
@@ -5889,8 +5871,8 @@ func (c *ClientWithResponses) CreateDatabaseWithResponse(ctx context.Context, bo
 }
 
 // GetDatabaseWithResponse request returning *GetDatabaseResponse
-func (c *ClientWithResponses) GetDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*GetDatabaseResponse, error) {
-	rsp, err := c.GetDatabase(ctx, databaseID, reqEditors...)
+func (c *ClientWithResponses) GetDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GetDatabaseResponse, error) {
+	rsp, err := c.GetDatabase(ctx, databaseId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5898,8 +5880,8 @@ func (c *ClientWithResponses) GetDatabaseWithResponse(ctx context.Context, datab
 }
 
 // DeleteAddressesOrAccessListForDatabaseWithResponse request returning *DeleteAddressesOrAccessListForDatabaseResponse
-func (c *ClientWithResponses) DeleteAddressesOrAccessListForDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams, reqEditors ...RequestEditorFn) (*DeleteAddressesOrAccessListForDatabaseResponse, error) {
-	rsp, err := c.DeleteAddressesOrAccessListForDatabase(ctx, databaseID, params, reqEditors...)
+func (c *ClientWithResponses) DeleteAddressesOrAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams, reqEditors ...RequestEditorFn) (*DeleteAddressesOrAccessListForDatabaseResponse, error) {
+	rsp, err := c.DeleteAddressesOrAccessListForDatabase(ctx, databaseId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5907,8 +5889,8 @@ func (c *ClientWithResponses) DeleteAddressesOrAccessListForDatabaseWithResponse
 }
 
 // GetAccessListForDatabaseWithResponse request returning *GetAccessListForDatabaseResponse
-func (c *ClientWithResponses) GetAccessListForDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*GetAccessListForDatabaseResponse, error) {
-	rsp, err := c.GetAccessListForDatabase(ctx, databaseID, reqEditors...)
+func (c *ClientWithResponses) GetAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GetAccessListForDatabaseResponse, error) {
+	rsp, err := c.GetAccessListForDatabase(ctx, databaseId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5916,16 +5898,16 @@ func (c *ClientWithResponses) GetAccessListForDatabaseWithResponse(ctx context.C
 }
 
 // UpdateAccessListForDatabaseWithBodyWithResponse request with arbitrary body returning *UpdateAccessListForDatabaseResponse
-func (c *ClientWithResponses) UpdateAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAccessListForDatabaseResponse, error) {
-	rsp, err := c.UpdateAccessListForDatabaseWithBody(ctx, databaseID, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpdateAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAccessListForDatabaseResponse, error) {
+	rsp, err := c.UpdateAccessListForDatabaseWithBody(ctx, databaseId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpdateAccessListForDatabaseResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateAccessListForDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAccessListForDatabaseResponse, error) {
-	rsp, err := c.UpdateAccessListForDatabase(ctx, databaseID, body, reqEditors...)
+func (c *ClientWithResponses) UpdateAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAccessListForDatabaseResponse, error) {
+	rsp, err := c.UpdateAccessListForDatabase(ctx, databaseId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5933,16 +5915,16 @@ func (c *ClientWithResponses) UpdateAccessListForDatabaseWithResponse(ctx contex
 }
 
 // AddAddressesToAccessListForDatabaseWithBodyWithResponse request with arbitrary body returning *AddAddressesToAccessListForDatabaseResponse
-func (c *ClientWithResponses) AddAddressesToAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAddressesToAccessListForDatabaseResponse, error) {
-	rsp, err := c.AddAddressesToAccessListForDatabaseWithBody(ctx, databaseID, contentType, body, reqEditors...)
+func (c *ClientWithResponses) AddAddressesToAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAddressesToAccessListForDatabaseResponse, error) {
+	rsp, err := c.AddAddressesToAccessListForDatabaseWithBody(ctx, databaseId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseAddAddressesToAccessListForDatabaseResponse(rsp)
 }
 
-func (c *ClientWithResponses) AddAddressesToAccessListForDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAddressesToAccessListForDatabaseResponse, error) {
-	rsp, err := c.AddAddressesToAccessListForDatabase(ctx, databaseID, body, reqEditors...)
+func (c *ClientWithResponses) AddAddressesToAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAddressesToAccessListForDatabaseResponse, error) {
+	rsp, err := c.AddAddressesToAccessListForDatabase(ctx, databaseId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5950,16 +5932,16 @@ func (c *ClientWithResponses) AddAddressesToAccessListForDatabaseWithResponse(ct
 }
 
 // UpsertAccessListForDatabaseWithBodyWithResponse request with arbitrary body returning *UpsertAccessListForDatabaseResponse
-func (c *ClientWithResponses) UpsertAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertAccessListForDatabaseResponse, error) {
-	rsp, err := c.UpsertAccessListForDatabaseWithBody(ctx, databaseID, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpsertAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertAccessListForDatabaseResponse, error) {
+	rsp, err := c.UpsertAccessListForDatabaseWithBody(ctx, databaseId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpsertAccessListForDatabaseResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpsertAccessListForDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertAccessListForDatabaseResponse, error) {
-	rsp, err := c.UpsertAccessListForDatabase(ctx, databaseID, body, reqEditors...)
+func (c *ClientWithResponses) UpsertAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertAccessListForDatabaseResponse, error) {
+	rsp, err := c.UpsertAccessListForDatabase(ctx, databaseId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5967,8 +5949,8 @@ func (c *ClientWithResponses) UpsertAccessListForDatabaseWithResponse(ctx contex
 }
 
 // ListDatacentersWithResponse request returning *ListDatacentersResponse
-func (c *ClientWithResponses) ListDatacentersWithResponse(ctx context.Context, databaseID DatabaseIdParam, params *ListDatacentersParams, reqEditors ...RequestEditorFn) (*ListDatacentersResponse, error) {
-	rsp, err := c.ListDatacenters(ctx, databaseID, params, reqEditors...)
+func (c *ClientWithResponses) ListDatacentersWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *ListDatacentersParams, reqEditors ...RequestEditorFn) (*ListDatacentersResponse, error) {
+	rsp, err := c.ListDatacenters(ctx, databaseId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5976,16 +5958,16 @@ func (c *ClientWithResponses) ListDatacentersWithResponse(ctx context.Context, d
 }
 
 // AddDatacentersWithBodyWithResponse request with arbitrary body returning *AddDatacentersResponse
-func (c *ClientWithResponses) AddDatacentersWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddDatacentersResponse, error) {
-	rsp, err := c.AddDatacentersWithBody(ctx, databaseID, contentType, body, reqEditors...)
+func (c *ClientWithResponses) AddDatacentersWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddDatacentersResponse, error) {
+	rsp, err := c.AddDatacentersWithBody(ctx, databaseId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseAddDatacentersResponse(rsp)
 }
 
-func (c *ClientWithResponses) AddDatacentersWithResponse(ctx context.Context, databaseID DatabaseIdParam, body AddDatacentersJSONRequestBody, reqEditors ...RequestEditorFn) (*AddDatacentersResponse, error) {
-	rsp, err := c.AddDatacenters(ctx, databaseID, body, reqEditors...)
+func (c *ClientWithResponses) AddDatacentersWithResponse(ctx context.Context, databaseId DatabaseIdParam, body AddDatacentersJSONRequestBody, reqEditors ...RequestEditorFn) (*AddDatacentersResponse, error) {
+	rsp, err := c.AddDatacenters(ctx, databaseId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5993,8 +5975,8 @@ func (c *ClientWithResponses) AddDatacentersWithResponse(ctx context.Context, da
 }
 
 // TerminateDatacenterWithResponse request returning *TerminateDatacenterResponse
-func (c *ClientWithResponses) TerminateDatacenterWithResponse(ctx context.Context, databaseID DatabaseIdParam, datacenterID DatacenterIdParam, reqEditors ...RequestEditorFn) (*TerminateDatacenterResponse, error) {
-	rsp, err := c.TerminateDatacenter(ctx, databaseID, datacenterID, reqEditors...)
+func (c *ClientWithResponses) TerminateDatacenterWithResponse(ctx context.Context, databaseId DatabaseIdParam, datacenterId DatacenterIdParam, reqEditors ...RequestEditorFn) (*TerminateDatacenterResponse, error) {
+	rsp, err := c.TerminateDatacenter(ctx, databaseId, datacenterId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6002,8 +5984,8 @@ func (c *ClientWithResponses) TerminateDatacenterWithResponse(ctx context.Contex
 }
 
 // AddKeyspaceWithResponse request returning *AddKeyspaceResponse
-func (c *ClientWithResponses) AddKeyspaceWithResponse(ctx context.Context, databaseID DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*AddKeyspaceResponse, error) {
-	rsp, err := c.AddKeyspace(ctx, databaseID, keyspaceName, reqEditors...)
+func (c *ClientWithResponses) AddKeyspaceWithResponse(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*AddKeyspaceResponse, error) {
+	rsp, err := c.AddKeyspace(ctx, databaseId, keyspaceName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6011,8 +5993,8 @@ func (c *ClientWithResponses) AddKeyspaceWithResponse(ctx context.Context, datab
 }
 
 // RemoveMigrationProxyWithResponse request returning *RemoveMigrationProxyResponse
-func (c *ClientWithResponses) RemoveMigrationProxyWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*RemoveMigrationProxyResponse, error) {
-	rsp, err := c.RemoveMigrationProxy(ctx, databaseID, reqEditors...)
+func (c *ClientWithResponses) RemoveMigrationProxyWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*RemoveMigrationProxyResponse, error) {
+	rsp, err := c.RemoveMigrationProxy(ctx, databaseId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6020,16 +6002,16 @@ func (c *ClientWithResponses) RemoveMigrationProxyWithResponse(ctx context.Conte
 }
 
 // LaunchMigrationProxyWithBodyWithResponse request with arbitrary body returning *LaunchMigrationProxyResponse
-func (c *ClientWithResponses) LaunchMigrationProxyWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LaunchMigrationProxyResponse, error) {
-	rsp, err := c.LaunchMigrationProxyWithBody(ctx, databaseID, contentType, body, reqEditors...)
+func (c *ClientWithResponses) LaunchMigrationProxyWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LaunchMigrationProxyResponse, error) {
+	rsp, err := c.LaunchMigrationProxyWithBody(ctx, databaseId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseLaunchMigrationProxyResponse(rsp)
 }
 
-func (c *ClientWithResponses) LaunchMigrationProxyWithResponse(ctx context.Context, databaseID DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody, reqEditors ...RequestEditorFn) (*LaunchMigrationProxyResponse, error) {
-	rsp, err := c.LaunchMigrationProxy(ctx, databaseID, body, reqEditors...)
+func (c *ClientWithResponses) LaunchMigrationProxyWithResponse(ctx context.Context, databaseId DatabaseIdParam, body LaunchMigrationProxyJSONRequestBody, reqEditors ...RequestEditorFn) (*LaunchMigrationProxyResponse, error) {
+	rsp, err := c.LaunchMigrationProxy(ctx, databaseId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6037,8 +6019,8 @@ func (c *ClientWithResponses) LaunchMigrationProxyWithResponse(ctx context.Conte
 }
 
 // ParkDatabaseWithResponse request returning *ParkDatabaseResponse
-func (c *ClientWithResponses) ParkDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*ParkDatabaseResponse, error) {
-	rsp, err := c.ParkDatabase(ctx, databaseID, reqEditors...)
+func (c *ClientWithResponses) ParkDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*ParkDatabaseResponse, error) {
+	rsp, err := c.ParkDatabase(ctx, databaseId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6046,16 +6028,16 @@ func (c *ClientWithResponses) ParkDatabaseWithResponse(ctx context.Context, data
 }
 
 // ResetPasswordWithBodyWithResponse request with arbitrary body returning *ResetPasswordResponse
-func (c *ClientWithResponses) ResetPasswordWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResetPasswordResponse, error) {
-	rsp, err := c.ResetPasswordWithBody(ctx, databaseID, contentType, body, reqEditors...)
+func (c *ClientWithResponses) ResetPasswordWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResetPasswordResponse, error) {
+	rsp, err := c.ResetPasswordWithBody(ctx, databaseId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseResetPasswordResponse(rsp)
 }
 
-func (c *ClientWithResponses) ResetPasswordWithResponse(ctx context.Context, databaseID DatabaseIdParam, body ResetPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*ResetPasswordResponse, error) {
-	rsp, err := c.ResetPassword(ctx, databaseID, body, reqEditors...)
+func (c *ClientWithResponses) ResetPasswordWithResponse(ctx context.Context, databaseId DatabaseIdParam, body ResetPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*ResetPasswordResponse, error) {
+	rsp, err := c.ResetPassword(ctx, databaseId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6063,16 +6045,16 @@ func (c *ClientWithResponses) ResetPasswordWithResponse(ctx context.Context, dat
 }
 
 // ResizeDatabaseWithBodyWithResponse request with arbitrary body returning *ResizeDatabaseResponse
-func (c *ClientWithResponses) ResizeDatabaseWithBodyWithResponse(ctx context.Context, databaseID DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResizeDatabaseResponse, error) {
-	rsp, err := c.ResizeDatabaseWithBody(ctx, databaseID, contentType, body, reqEditors...)
+func (c *ClientWithResponses) ResizeDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResizeDatabaseResponse, error) {
+	rsp, err := c.ResizeDatabaseWithBody(ctx, databaseId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseResizeDatabaseResponse(rsp)
 }
 
-func (c *ClientWithResponses) ResizeDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, body ResizeDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*ResizeDatabaseResponse, error) {
-	rsp, err := c.ResizeDatabase(ctx, databaseID, body, reqEditors...)
+func (c *ClientWithResponses) ResizeDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body ResizeDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*ResizeDatabaseResponse, error) {
+	rsp, err := c.ResizeDatabase(ctx, databaseId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6080,8 +6062,8 @@ func (c *ClientWithResponses) ResizeDatabaseWithResponse(ctx context.Context, da
 }
 
 // GenerateSecureBundleURLWithResponse request returning *GenerateSecureBundleURLResponse
-func (c *ClientWithResponses) GenerateSecureBundleURLWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*GenerateSecureBundleURLResponse, error) {
-	rsp, err := c.GenerateSecureBundleURL(ctx, databaseID, reqEditors...)
+func (c *ClientWithResponses) GenerateSecureBundleURLWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GenerateSecureBundleURLResponse, error) {
+	rsp, err := c.GenerateSecureBundleURL(ctx, databaseId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6089,8 +6071,8 @@ func (c *ClientWithResponses) GenerateSecureBundleURLWithResponse(ctx context.Co
 }
 
 // SuspendDatabaseWithResponse request returning *SuspendDatabaseResponse
-func (c *ClientWithResponses) SuspendDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, params *SuspendDatabaseParams, reqEditors ...RequestEditorFn) (*SuspendDatabaseResponse, error) {
-	rsp, err := c.SuspendDatabase(ctx, databaseID, params, reqEditors...)
+func (c *ClientWithResponses) SuspendDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *SuspendDatabaseParams, reqEditors ...RequestEditorFn) (*SuspendDatabaseResponse, error) {
+	rsp, err := c.SuspendDatabase(ctx, databaseId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6098,8 +6080,8 @@ func (c *ClientWithResponses) SuspendDatabaseWithResponse(ctx context.Context, d
 }
 
 // TerminateDatabaseWithResponse request returning *TerminateDatabaseResponse
-func (c *ClientWithResponses) TerminateDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*TerminateDatabaseResponse, error) {
-	rsp, err := c.TerminateDatabase(ctx, databaseID, params, reqEditors...)
+func (c *ClientWithResponses) TerminateDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*TerminateDatabaseResponse, error) {
+	rsp, err := c.TerminateDatabase(ctx, databaseId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6107,8 +6089,8 @@ func (c *ClientWithResponses) TerminateDatabaseWithResponse(ctx context.Context,
 }
 
 // UnparkDatabaseWithResponse request returning *UnparkDatabaseResponse
-func (c *ClientWithResponses) UnparkDatabaseWithResponse(ctx context.Context, databaseID DatabaseIdParam, reqEditors ...RequestEditorFn) (*UnparkDatabaseResponse, error) {
-	rsp, err := c.UnparkDatabase(ctx, databaseID, reqEditors...)
+func (c *ClientWithResponses) UnparkDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*UnparkDatabaseResponse, error) {
+	rsp, err := c.UnparkDatabase(ctx, databaseId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -8327,7 +8309,7 @@ func ParseGetOrganizationRolesResponse(rsp *http.Response) (*GetOrganizationRole
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest interface{}
+		var dest []Role
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
