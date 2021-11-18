@@ -776,7 +776,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/ServerError'
-  /v2/organizations/users/{userID}/roles:    
+  /v2/organizations/users/{userID}/roles:
     put:
       tags:
         - "Users"
@@ -1185,7 +1185,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         500:
           $ref: '#/components/responses/ServerError'
-  /v2/access-lists:    
+  /v2/access-lists:
     get:
       tags:
         - "Access List"
@@ -1208,7 +1208,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseID}/access-list:    
+  /v2/databases/{databaseID}/access-list:
     get:
       tags:
         - "Access List"
@@ -1313,7 +1313,7 @@ paths:
     delete:
       tags:
         - "Access List"
-      summary: >- 
+      summary: >-
         Delete a list of addresses or the access list for a database. If the addresses
         query parameter is not present it will delete the entire access list. If the
         addresses query parameter is present it will delete only the given addresses
@@ -1333,7 +1333,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/ServerError'
-  /v2/access-list/validate:    
+  /v2/access-list/validate:
     post:
       tags:
         - "Access List"
@@ -1348,7 +1348,7 @@ paths:
                 $ref: '#/components/schemas/ValidationResponse'
         '500':
           $ref: '#/components/responses/ServerError'
-  /v2/access-list/template:    
+  /v2/access-list/template:
     post:
       tags:
         - "Access List"
@@ -1507,7 +1507,7 @@ components:
       required: false
       schema:
         type: array
-        items: 
+        items:
           type: string
       description: Array of addresses
   schemas:
@@ -1527,7 +1527,7 @@ components:
           description: "The unique system generated identifier of the organization"
         roles:
           type: "array"
-          items: 
+          items:
             type: "string"
     OrganizationUsers:
       type: "object"
@@ -1536,11 +1536,11 @@ components:
         - orgName
         - users
       properties:
-        orgID: 
+        orgID:
           type: "string"
-        orgName: 
+        orgName:
           type: "string"
-        users: 
+        users:
           type: "array"
           description: "an array of users in the organization"
           items:
@@ -1560,7 +1560,7 @@ components:
           type: "string"
           description: "The status of a user within an organization either active or invited"
           example: "active"
-        roles: 
+        roles:
           type: "array"
           description: "an array of roles the user belongs to for an organization"
           items:
@@ -2421,8 +2421,7 @@ components:
         lastUpdateDateTime:
           type: string
           description: The last update date/time for the access list
-          format: date-time
-          example: "2021-01-21T17:32:28Z"
+          example: "2021-01-21 17:32:28 +0000 UTC"
     AccessListConfigurations:
       required:
       - accessListEnabled
@@ -2577,7 +2576,7 @@ components:
   securitySchemes:
     BearerAuth:
       description: >-
-        An Application token must be passed in header in order to access the API. 
+        An Application token must be passed in header in order to access the API.
         https://docs.datastax.com/en/astra/docs/manage-application-tokens.html
       type: http
       scheme: bearer
