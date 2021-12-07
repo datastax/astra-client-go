@@ -437,6 +437,7 @@ type DatabaseInfo struct {
 
 	// CloudProvider where the database lives
 	CloudProvider *DatabaseInfoCloudProvider `json:"cloudProvider,omitempty"`
+	Datacenters   *[]Datacenter              `json:"datacenters,omitempty"`
 
 	// Keyspace name in database
 	Keyspace *string `json:"keyspace,omitempty"`
