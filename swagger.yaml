@@ -1830,6 +1830,10 @@ components:
           type: string
           example: us-west-2
           description: Region refers to the cloud region.
+        datacenters:
+          type: array
+          items:
+            $ref: '#/components/schemas/Datacenter'
         user:
           type: string
           example: db_admin
