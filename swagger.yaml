@@ -2078,31 +2078,9 @@ components:
           type: number
           format: double
           example: 0
-    Errors:
-      description: Errors is a collection of individual Error objects
-      type: object
-      required:
-        - errors
-      properties:
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/Error'
     Error:
       description: ModelError information that is returned to users
-      type: object
-      required:
-        - id
-        - message
-      properties:
-        ID:
-          type: integer
-          example: 123
-          description: API specific error code
-        message:
-          type: string
-          example: Something is broken
-          description: User-friendly description of error
+      type: string
     Role:
       type: "object"
       description: "Details of a user role and its policy details"
@@ -2523,28 +2501,28 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Errors'
+            $ref: '#/components/schemas/Error'
     # 401
     Unauthorized:
       description: The user is unauthorized to perform the operation
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Errors'
+            $ref: '#/components/schemas/Error'
     # 403
     Forbidden:
       description: The user is forbidden to perform the operation
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Errors'
+            $ref: '#/components/schemas/Error'
     # 404
     NotFound:
       description: The specified database was not found
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Errors'
+            $ref: '#/components/schemas/Error'
     # 404 Custom
     CustomNotFound:
       description: The specified database was not found
@@ -2558,21 +2536,21 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Errors'
+            $ref: '#/components/schemas/Error'
     # 422
     UnprocessableEntity:
       description: The structured data in the request could not be parsed
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Errors'
+            $ref: '#/components/schemas/Error'
     # 5XX
     ServerError:
       description: A server error occurred
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Errors'
+            $ref: '#/components/schemas/Error'
   securitySchemes:
     BearerAuth:
       description: >-
