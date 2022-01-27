@@ -624,15 +624,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/Role'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                type: string
         '403':
-          $ref: '#/components/responses/Forbidden'
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                type: string
         '404':
-          $ref: '#/components/responses/NotFound'
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                type: string
         '409':
-          $ref: '#/components/responses/Conflict'
+          description: "Conflict"
+          content:
+            application/json:
+              schema:
+                type: string
         '500':
-          $ref: '#/components/responses/ServerError'
+          description: "Server Error"
+          content:
+            application/json:
+              schema:
+                type: string
   /v2/organizations/roles/{roleID}:
     get:
       tags:
@@ -651,13 +671,29 @@ paths:
                 items:
                   $ref: '#/components/schemas/Role'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                type: string
         '403':
-          $ref: '#/components/responses/Forbidden'
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                type: string
         '404':
-          $ref: '#/components/responses/NotFound'
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                type: string
         '500':
-          $ref: '#/components/responses/ServerError'
+          description: "Server Error"
+          content:
+            application/json:
+              schema:
+                type: string
     put:
       tags:
         - "Roles"
@@ -676,13 +712,29 @@ paths:
         '200':
           description: successful operation
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                type: string
         '403':
-          $ref: '#/components/responses/Forbidden'
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                type: string
         '404':
-          $ref: '#/components/responses/NotFound'
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                type: string
         '500':
-          $ref: '#/components/responses/ServerError'
+          description: "Server Error"
+          content:
+            application/json:
+              schema:
+                type: string
     delete:
       tags:
         - "Roles"
@@ -694,11 +746,23 @@ paths:
         '204':
           $ref: '#/components/responses/NoContent'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                type: string
         '404':
-          $ref: '#/components/responses/NotFound'
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                type: string
         '500':
-          $ref: '#/components/responses/ServerError'
+          description: "Server Error"
+          content:
+            application/json:
+              schema:
+                type: string
   /v2/organizations/users:
     put:
       tags:
@@ -2078,9 +2142,31 @@ components:
           type: number
           format: double
           example: 0
+    Errors:
+      description: Errors is a collection of individual Error objects
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
     Error:
       description: ModelError information that is returned to users
-      type: string
+      type: object
+      required:
+        - id
+        - message
+      properties:
+        ID:
+          type: integer
+          example: 123
+          description: API specific error code
+        message:
+          type: string
+          example: Something is broken
+          description: User-friendly description of error
     Role:
       type: "object"
       description: "Details of a user role and its policy details"
@@ -2501,28 +2587,28 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/Errors'
     # 401
     Unauthorized:
       description: The user is unauthorized to perform the operation
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/Errors'
     # 403
     Forbidden:
       description: The user is forbidden to perform the operation
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/Errors'
     # 404
     NotFound:
       description: The specified database was not found
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/Errors'
     # 404 Custom
     CustomNotFound:
       description: The specified database was not found
@@ -2536,21 +2622,21 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/Errors'
     # 422
     UnprocessableEntity:
       description: The structured data in the request could not be parsed
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/Errors'
     # 5XX
     ServerError:
       description: A server error occurred
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/Errors'
   securitySchemes:
     BearerAuth:
       description: >-
