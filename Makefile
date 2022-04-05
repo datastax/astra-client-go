@@ -5,3 +5,6 @@ tools:
 
 generate-client: tools
 	oapi-codegen -generate types,client -package astra -o astra/astra.gen.go swagger.yaml
+
+generate-streaming-client: tools
+	oapi-codegen -generate types,client -package astrastreaming -o astra-streaming/astra-streaming.gen.go streaming-swagger.yaml

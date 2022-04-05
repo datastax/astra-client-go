@@ -1,0 +1,1211 @@
+openapi: 3.0.1
+info:
+  title: bellburnell
+  description: Astra Streaming DevOps API (1.0.0)
+  license:
+    name: bellburnell repo
+    url: https://github.com/riptano/bellburnell
+  version: 1.0.0
+servers:
+  - url: https://astra.api.streaming.datastax.com/
+paths:
+  /admin/v2/stats/namespaces/{tenant}:
+    get:
+      tags:
+        - namespace-stats-under-tenant
+      description: Get namespace stats under the specified tenant
+      operationId: idNamespaceStatsTenant
+      parameters:
+        - name: tenant
+          in: path
+          description: tenant
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: map of tenant's namespace stats, key is the tenant namespace
+            name, the value is the stats
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/statsResponse'
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        429:
+          description: over rate limit
+          content: {}
+        500:
+          description: ""
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /admin/v2/stats/namespaces/{tenant}/{namespace}:
+    get:
+      tags:
+        - namespace-stats-under-tenant-namespace
+      description: Get aggregated stats under the specified tenant and namespace
+      operationId: idNamespaceStatsTenantNamespace
+      parameters:
+        - name: tenant
+          in: path
+          description: tenant
+          required: true
+          schema:
+            type: string
+        - name: namespace
+          in: path
+          description: namespace
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: map of tenant's namespace stats, key is the tenant namespace
+            name, the value is the stats
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/statsResponse'
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        429:
+          description: over rate limit
+          content: {}
+        500:
+          description: ""
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /admin/v2/stats/topics/{tenant}:
+    get:
+      tags:
+        - topics-stats-under-tenant
+      description: Get topics stats under the specified tenant
+      operationId: idTopicStatsTenant
+      parameters:
+        - name: tenant
+          in: path
+          description: tenant
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: map of individual topics stats, key is the topic full name,
+            the value is the stats
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/statsResponse'
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        429:
+          description: over rate limit
+          content: {}
+        500:
+          description: ""
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /admin/v2/stats/topics/{tenant}/{namespace}:
+    get:
+      tags:
+        - topics-stats-under-tenant-namespace
+      description: Get topics stats under the specified tenant and namespace
+      operationId: idTopicStatsTenantNamespace
+      parameters:
+        - name: tenant
+          in: path
+          description: tenant
+          required: true
+          schema:
+            type: string
+        - name: namespace
+          in: path
+          description: namespace
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: map of individual topics stats, key is the topic full name,
+            the value is the stats
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/statsResponse'
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        429:
+          description: over rate limit
+          content: {}
+        500:
+          description: ""
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /v2/streaming/astra-cdc/databases/{databaseId}:
+    get:
+      tags:
+        - get-cdc-enabled-tables-under-database
+      description: Gets a list of tables' CDC config with CDC enabled under an Astra
+        database
+      operationId: idOfTenant
+      parameters:
+        - name: databaseId
+          in: path
+          description: database id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Pulsar cluster list successfully returned
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/cdcTableConfigResponse'
+        401:
+          description: Authentication failure
+          content: {}
+        429:
+          description: Over rate limit
+          content: {}
+        500:
+          description: backend internal error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /v2/streaming/clusters:
+    get:
+      tags:
+        - get-all-pulsar-clusters
+      description: Gets a list of Pulsar clusters under a Pulsar instance
+      responses:
+        200:
+          description: Pulsar cluster list successfully returned
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/pulsarClustersResponse'
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        404:
+          description: Cloud provider or region not found
+          content: {}
+        429:
+          description: Over rate limit
+          content: {}
+        500:
+          description: Failed to read the HTTP body
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /v2/streaming/orgs/{org}/tenants:
+    get:
+      tags:
+        - list-tenants-for-an-org
+      description: Lists all Pulsar tenants under the specified organization
+      operationId: idTenant
+      parameters:
+        - name: org
+          in: path
+          description: org
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: List of tenants successfully retrieved
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/tenantClusterPlansResponse'
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        429:
+          description: Over rate limit
+          content: {}
+        500:
+          description: Failed to read the HTTP body
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /v2/streaming/orgs/{org}/tenants/{tenant}:
+    get:
+      tags:
+        - list-the-tenant-under-the-org
+      description: Lists the specified tenant under the specified organization
+      parameters:
+        - name: org
+          in: path
+          description: org
+          required: true
+          schema:
+            type: string
+        - name: tenant
+          in: path
+          description: tenant
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: List of tenants successfully retrieved
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/tenantClusterPlanResponse'
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        429:
+          description: Over rate limit
+          content: {}
+        500:
+          description: Failed to read the HTTP body
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /v2/streaming/providers:
+    get:
+      tags:
+        - get-cloud-providers-regions
+      description: Returns all available providers and all regions under each provider
+      responses:
+        200:
+          description: All providers and regions under each provider
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/providerRegionsResponse'
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        429:
+          description: Over rate limit
+          content: {}
+        500:
+          description: Failed to read the HTTP body
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /v2/streaming/serverless-regions:
+    get:
+      tags:
+        - get-serverless-regions
+      description: Returns all available serverless regions for each provider
+      responses:
+        200:
+          description: All providers' serverless regions
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/serverlessRegionsResponse'
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        429:
+          description: Over rate limit
+          content: {}
+        500:
+          description: Failed to read the HTTP body
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /v2/streaming/tenants:
+    get:
+      tags:
+        - list-tenants-under-the-org-in-token
+      description: Lists all Pulsar tenants under the organization that is retrieved
+        from the token in the authorization header
+      responses:
+        200:
+          description: List of tenants successfully retrieved
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/tenantClusterPlansResponse'
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        429:
+          description: over rate limit
+          content: {}
+        500:
+          description: Failed to read the HTTP body
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+    post:
+      tags:
+        - create-tenant-namespace-JWT
+      description: Creates a tenant, the default namespace, a plan policy, and a Pulsar
+        JWT
+      operationId: idOfCreateTenantEndpoint
+      parameters:
+        - name: topic
+          in: query
+          description: A topic name for auto-creation (if not specified, no topic is
+            created)
+          schema:
+            type: string
+      requestBody:
+        description: Request body for tenant creation
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/tenantRequest'
+        required: false
+      responses:
+        200:
+          description: Tenant successfully created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/createdTenantResponse'
+        400:
+          description: Missing or malformed input
+          content: {}
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        409:
+          description: Tenant already exists
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        422:
+          description: Validation errors while processing tenant request
+          content: {}
+        500:
+          description: Failed to read the HTTP body
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+      x-codegen-request-body-name: request body
+  /v2/streaming/tenants/{tenant}/clusters/{cluster}:
+    delete:
+      tags:
+        - delete-tenant-from-cluster
+      description: Deletes a tenant from a cluster
+      parameters:
+        - name: opt
+          in: query
+          description: Performs a soft delete that only marks the tenant as deleted
+            in the database (opt=soft)
+          schema:
+            type: string
+        - name: tenant
+          in: path
+          description: tenant
+          required: true
+          schema:
+            type: string
+        - name: cluster
+          in: path
+          description: cluster
+          required: true
+          schema:
+            type: string
+      responses:
+        202:
+          description: Tenant deleted successfully
+          content: {}
+        400:
+          description: Bad request, for example missing required parameters
+          content: {}
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                type: string
+        409:
+          description: Conflict.  For example, if a CDC config exists for the tenant,
+            then the tenant cannot be deleted
+          content:
+            '*/*':
+              schema:
+                type: string
+        429:
+          description: over rate limit
+          content: {}
+        500:
+          description: Failed to read the HTTP body
+          content:
+            '*/*':
+              schema:
+                type: string
+  /v2/streaming/tenants/{tenant}/limits:
+    get:
+      tags:
+        - get-tenant-limit-usage
+      description: For the specified tenant, returns the current number of namespaces
+        and topics, and the limits for both
+      parameters:
+        - name: tenant
+          in: path
+          description: tenant
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: List of tenant namespaces, topics, and the limits for both
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/tenantLimitResponse'
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        429:
+          description: Over rate limit
+          content: {}
+        500:
+          description: Failed to read the HTTP body
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /v2/streaming/tenants/{tenantName}:
+    head:
+      tags:
+        - evaluate-the-tenant-is-reserved
+      description: Returns 200 if the tenant is reserved under the specified query
+        parameters
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer Astra Keycloak token or AstraCS token.
+          required: true
+          schema:
+            type: string
+        - name: X-DataStax-Current-Org
+          in: header
+          description: the Astra Org ID
+          required: true
+          schema:
+            type: string
+        - name: provider
+          in: query
+          description: Cloud provider, for example, aws, gcp, azure; this is required
+            to evaluate whether a tenant has been reserved by its org owner
+          schema:
+            type: string
+        - name: region
+          in: query
+          description: Cloud provider region, for example, us-east1, us-west1; this
+            is required to evaluate whether a tenant has been reserved by its org owner
+          schema:
+            type: string
+        - name: tenantName
+          in: path
+          description: tenantName
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Tenant name is reserved and cannot be used again
+          content: {}
+        400:
+          description: incorrect or incomplete cloud provider and region in the query
+            parameters
+          content: {}
+        401:
+          description: Authentication failure
+          content: {}
+        404:
+          description: Tenant name is available either globally or for the specified
+            query parameters
+          content: {}
+        429:
+          description: Over rate limit
+          content: {}
+        500:
+          description: Failed to read the HTTP body
+          content: {}
+  /v2/streaming/tenants/{tenantName}/tokens:
+    get:
+      tags:
+        - list-tokens-by-tenant
+      description: Lists all Pulsar tokens under the specified tenant
+      operationId: idListTenantTokens
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer Astra Keycloak token or AstraCS token.
+          required: true
+          schema:
+            type: string
+        - name: X-DataStax-Current-Org
+          in: header
+          description: Astra Org ID.
+          required: true
+          schema:
+            type: string
+        - name: X-DataStax-Pulsar-Cluster
+          in: header
+          description: Astra Streaming Cluster Name.
+          required: true
+          schema:
+            type: string
+        - name: tenantName
+          in: path
+          description: Name of the pulsar tenant
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: List of pulsar JWT token payloads under the given tenant. Returns
+            a list of json objects each representing the payload portion of the token.
+            The claims included in the payload can include (but are not limited to)
+            the standard claims defined in https://datatracker.ietf.org/doc/html/rfc7519.html
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/listOfMaps'
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        404:
+          description: Tenant not found
+          content: {}
+        500:
+          description: Failed to retreive tokens
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+    post:
+      tags:
+        - create-token-by-tenant
+      description: Create new pulsar token for the given tenant
+      operationId: idCreateTenantToken
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer Astra Keycloak token or AstraCS token.
+          required: true
+          schema:
+            type: string
+        - name: X-DataStax-Current-Org
+          in: header
+          description: Astra Org ID.
+          required: true
+          schema:
+            type: string
+        - name: X-DataStax-Pulsar-Cluster
+          in: header
+          description: Astra Streaming Cluster Name.
+          required: true
+          schema:
+            type: string
+        - name: tenantName
+          in: path
+          description: Name of the pulsar tenant
+          required: true
+          schema:
+            type: string
+      responses:
+        201:
+          description: New token created.  Returns the JWT token string which can
+            be decoded to get the payload information such as creation time (iat),
+            expiration (exp) and token id (tokenid). More information on the JWT format
+            available on [wikipedia](https://en.wikipedia.org/wiki/JSON_Web_Token)
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: header.payload.signature
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        404:
+          description: Tenant not found
+          content: {}
+        409:
+          description: Exceeded the token limit for this tenant
+          content: {}
+        500:
+          description: Failed to create token
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /v2/streaming/tenants/{tenantName}/tokens/{tokenID}:
+    get:
+      tags:
+        - get-token-by-tenant
+      description: Get the given token from the given tenant
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer Astra Keycloak token or AstraCS token.
+          required: true
+          schema:
+            type: string
+        - name: X-DataStax-Current-Org
+          in: header
+          description: Astra Org ID.
+          required: true
+          schema:
+            type: string
+        - name: X-DataStax-Pulsar-Cluster
+          in: header
+          description: Astra Streaming Cluster Name.
+          required: true
+          schema:
+            type: string
+        - name: tenantName
+          in: path
+          description: Name of the pulsar tenant
+          required: true
+          schema:
+            type: string
+        - name: tokenID
+          in: path
+          description: ID of the token
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+          content: {}
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        404:
+          description: Tenant not found or token not found
+          content: {}
+        500:
+          description: Failed to get token
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+    delete:
+      tags:
+        - delete-token-by-tenant
+      description: Delete the given token from the given tenant
+      operationId: idDeleteTenantToken
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer Astra Keycloak token or AstraCS token.
+          required: true
+          schema:
+            type: string
+        - name: X-DataStax-Current-Org
+          in: header
+          description: Astra Org ID.
+          required: true
+          schema:
+            type: string
+        - name: X-DataStax-Pulsar-Cluster
+          in: header
+          description: Astra Streaming Cluster Name.
+          required: true
+          schema:
+            type: string
+        - name: tenantName
+          in: path
+          description: Name of the pulsar tenant
+          required: true
+          schema:
+            type: string
+        - name: tokenID
+          in: path
+          description: ID of the token to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Token deleted
+          content: {}
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        404:
+          description: Tenant not found
+          content: {}
+        500:
+          description: Failed to delete token
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+components:
+  schemas:
+    CassandraCDCConfig:
+      type: object
+      properties:
+        cdcStatus:
+          type: string
+          x-go-name: CDCStatus
+        clusterName:
+          type: string
+          x-go-name: ClusterName
+        codStatus:
+          type: string
+          x-go-name: CODStatus
+        configType:
+          type: string
+          x-go-name: ConfigType
+        connectorName:
+          type: string
+          x-go-name: ConnectorName
+        connectorStatus:
+          type: string
+          x-go-name: ConnectorStatus
+        cpu:
+          type: integer
+          format: int64
+          x-go-name: CPU
+        createdAt:
+          type: string
+          format: date-time
+          x-go-name: CreatedAt
+        dataTopic:
+          type: string
+          x-go-name: DataTopic
+        databaseId:
+          type: string
+          x-go-name: DatabaseID
+        databaseName:
+          type: string
+          x-go-name: DatabaseName
+        databaseTable:
+          type: string
+          x-go-name: DatabaseTable
+        eventTopic:
+          type: string
+          x-go-name: EventTopic
+        instances:
+          type: integer
+          format: int64
+          x-go-name: Instances
+        keyspace:
+          type: string
+          x-go-name: Keyspace
+        memory:
+          type: integer
+          format: int64
+          x-go-name: Memory
+        namespace:
+          type: string
+          x-go-name: Namespace
+        orgId:
+          type: string
+          x-go-name: OrgID
+        tenant:
+          type: string
+          x-go-name: Tenant
+        updatedAt:
+          type: string
+          format: date-time
+          x-go-name: UpdatedAt
+      description: CassandraCDCConfig is the response struct for C* CDC table tracking
+      x-go-package: github.com/riptano/bellburnell/src/policy
+    ClusterResponse:
+      type: object
+      properties:
+        brokerServiceUrl:
+          type: string
+          x-go-name: PulsarURL
+        cloudProvider:
+          type: string
+          x-go-name: CloudProvider
+        cloudRegion:
+          type: string
+          x-go-name: CloudProviderRegion
+        clusterName:
+          type: string
+          x-go-name: ClusterName
+        clusterType:
+          type: string
+          x-go-name: ClusterType
+        webServiceUrl:
+          type: string
+          x-go-name: AdminURL
+        websocketUrl:
+          type: string
+          x-go-name: WebsocketURL
+      description: ClusterResponse is the response struct for a cluster
+      x-go-package: github.com/riptano/bellburnell/src/policy
+    LimitResponse:
+      type: object
+      properties:
+        namespace_limit:
+          type: integer
+          format: int64
+          x-go-name: NamespaceLimit
+        topic_per_namespace_limit:
+          type: integer
+          format: int64
+          x-go-name: TopicPerNamespaceLimit
+        usage:
+          type: array
+          items:
+            $ref: '#/components/schemas/TenantNamespaceLimitUsage'
+          x-go-name: Usage
+      description: LimitResponse is a response for tenant limits
+      x-go-package: github.com/riptano/bellburnell/src/route
+    NewTokenResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          x-go-name: ID
+        subject:
+          type: string
+          x-go-name: Subject
+        token:
+          type: string
+          x-go-name: Token
+      description: NewTokenResponse is the json object for token server response
+      x-go-package: github.com/riptano/bellburnell/src/route
+    ResponseErr:
+      type: object
+      properties:
+        reason:
+          type: string
+          x-go-name: Error
+      description: ResponseErr error struct for Pulsar compliant HTTP responses
+      x-go-package: github.com/riptano/bellburnell/src/util
+    TenantClusterPlanResponse:
+      type: object
+      properties:
+        Email:
+          type: string
+        astraOrgGUID:
+          type: string
+          x-go-name: OrgName
+        brokerServiceUrl:
+          type: string
+          x-go-name: PulsarURL
+        cloudProvider:
+          type: string
+          x-go-name: CloudProvider
+        cloudProviderCode:
+          type: string
+          x-go-name: CloudProviderCode
+        cloudRegion:
+          type: string
+          x-go-name: CloudProviderRegion
+        clusterName:
+          type: string
+          x-go-name: ClusterName
+        id:
+          type: string
+          x-go-name: ID
+        jvmVersion:
+          type: string
+          x-go-name: PulsarJVMVersion
+        plan:
+          type: string
+          x-go-name: Plan
+        planCode:
+          type: string
+          x-go-name: PlanCode
+        pulsarToken:
+          type: string
+          x-go-name: TenantPulsarToken
+        pulsarVersion:
+          type: string
+          x-go-name: PulsarVersion
+        status:
+          type: string
+          x-go-name: Status
+        tenantName:
+          type: string
+          x-go-name: TenantName
+        webServiceUrl:
+          type: string
+          x-go-name: AdminURL
+        websocketQueryParamUrl:
+          type: string
+          x-go-name: WebsocketQueryParamURL
+        websocketUrl:
+          type: string
+          x-go-name: WebsocketURL
+      description: TenantClusterPlanResponse is the tenant plan on a cluster
+      x-go-package: github.com/riptano/bellburnell/src/policy
+    TenantNamespaceLimitUsage:
+      type: object
+      properties:
+        namespace:
+          type: string
+          x-go-name: Namespace
+        topics:
+          type: array
+          items:
+            type: string
+          x-go-name: Topics
+      description: TenantNamespaceLimitUsage holds usages for enforcing limits
+      x-go-package: github.com/riptano/bellburnell/src/route
+    Usage:
+      type: object
+      properties:
+        backlogStorageByteSize:
+          type: number
+          format: double
+          x-go-name: BacklogStorageSize
+        consumerCount:
+          type: number
+          format: double
+          x-go-name: ConsumerCount
+        msgBacklogNumber:
+          type: number
+          format: double
+          x-go-name: MsgBacklog
+        msgRateIn:
+          type: number
+          format: double
+          x-go-name: MsgRateIn
+        msgRateOut:
+          type: number
+          format: double
+          x-go-name: MsgRateOut
+        name:
+          type: string
+          x-go-name: Name
+        producerCount:
+          type: number
+          format: double
+          x-go-name: ProducerCount
+        storageSize:
+          type: number
+          format: double
+          x-go-name: StorageSize
+        subscriptionCount:
+          type: number
+          format: double
+          x-go-name: SubscriptionCount
+        subscriptionDelayed:
+          type: number
+          format: double
+          x-go-name: SubscriptionDelayed
+        throughputIn:
+          type: number
+          format: double
+          x-go-name: ThroughputIn
+        throughputOut:
+          type: number
+          format: double
+          x-go-name: ThroughputOut
+        totalBytesIn:
+          type: number
+          format: double
+          x-go-name: TotalBytesIn
+        totalBytesOut:
+          type: number
+          format: double
+          x-go-name: TotalBytesOut
+        totalMessagesIn:
+          type: number
+          format: double
+          x-go-name: TotalMessagesIn
+        totalMessagesOut:
+          type: number
+          format: double
+          x-go-name: TotalMessagesOut
+        updatedAt:
+          type: string
+          format: date-time
+          x-go-name: UpdatedAt
+      description: Usage is the data usage per single tenant
+      x-go-package: github.com/riptano/bellburnell/src/metrics
+    cdcTableConfigResponse:
+      type: object
+      properties:
+        Body:
+          type: array
+          items:
+            $ref: '#/components/schemas/CassandraCDCConfig'
+      x-go-package: github.com/riptano/bellburnell/src/docs
+    createdTenantResponse:
+      type: object
+      properties:
+        Body:
+          $ref: '#/components/schemas/TenantClusterPlanResponse'
+      x-go-package: github.com/riptano/bellburnell/src/docs
+    errorResponse:
+      type: object
+      properties:
+        reason:
+          type: string
+          x-go-name: Error
+      x-go-package: github.com/riptano/bellburnell/src/docs
+    listOfMaps:
+      type: array
+      items:
+        type: object
+        additionalProperties:
+          type: string
+      x-go-package: github.com/riptano/bellburnell/src/docs
+    listOfString:
+      type: object
+      properties:
+        Body:
+          type: array
+          items:
+            type: string
+      x-go-package: github.com/riptano/bellburnell/src/docs
+    providerRegionsResponse:
+      type: object
+      properties:
+        Body:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      x-go-package: github.com/riptano/bellburnell/src/docs
+    pulsarClustersResponse:
+      type: object
+      properties:
+        Body:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClusterResponse'
+      x-go-package: github.com/riptano/bellburnell/src/docs
+    statsResponse:
+      type: object
+      properties:
+        Body:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Usage'
+      x-go-package: github.com/riptano/bellburnell/src/docs
+    tenantClusterPlanResponse:
+      type: object
+      properties:
+        Body:
+          $ref: '#/components/schemas/TenantClusterPlanResponse'
+      x-go-package: github.com/riptano/bellburnell/src/docs
+    tenantClusterPlansResponse:
+      type: object
+      properties:
+        Body:
+          type: array
+          items:
+            $ref: '#/components/schemas/TenantClusterPlanResponse'
+      x-go-package: github.com/riptano/bellburnell/src/docs
+    serverlessRegionsResponse:
+      type: object
+      properties:
+        Body:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      x-go-package: objectub.com/riptano/bellburnell/src/docs
+    tenantLimitResponse:
+      type: object
+      properties:
+        Body:
+          $ref: '#/components/schemas/LimitResponse'
+      x-go-package: github.com/riptano/bellburnell/src/docs
+    tenantRequest:
+      type: object
+      properties:
+        cloudProvider:
+          type: string
+          x-go-name: CloudProvider
+        cloudRegion:
+          type: string
+          x-go-name: CloudRegion
+        orgID:
+          type: string
+          x-go-name: OrgID
+        orgName:
+          type: string
+          x-go-name: OrgName
+        tenantName:
+          type: string
+          x-go-name: TenantName
+        userEmail:
+          type: string
+          x-go-name: UserEmail
+      x-go-package: github.com/riptano/bellburnell/src/docs
+    tokenResponse:
+      type: object
+      properties:
+        Body:
+          $ref: '#/components/schemas/NewTokenResponse'
+      x-go-package: github.com/riptano/bellburnell/src/docs
