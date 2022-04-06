@@ -648,7 +648,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetOrganizationUsersResponse'
+                $ref: '#/components/schemas/GetOrgUsersResponse'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -1603,7 +1603,7 @@ components:
           items:
             type: "string"
 
-    GetOrganizationUsersResponse:
+    GetOrgUsersResponse:
       type: "object"
       required:
         - orgID

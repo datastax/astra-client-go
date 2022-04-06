@@ -470,8 +470,8 @@ type GenerateTokenResponse struct {
 	Token *string `json:"token,omitempty"`
 }
 
-// GetOrganizationUsersResponse defines model for GetOrganizationUsersResponse.
-type GetOrganizationUsersResponse struct {
+// GetOrgUsersResponse defines model for GetOrgUsersResponse.
+type GetOrgUsersResponse struct {
 	OrgID   string `json:"orgID"`
 	OrgName string `json:"orgName"`
 
@@ -4781,7 +4781,7 @@ func (r UpdateRoleResponse) StatusCode() int {
 type GetOrganizationUsersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *GetOrganizationUsersResponse
+	JSON200      *GetOrgUsersResponse
 	JSON404      *Errors
 	JSON500      *Errors
 }
@@ -7031,7 +7031,7 @@ func ParseGetOrganizationUsersResponse(rsp *http.Response) (*GetOrganizationUser
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest GetOrganizationUsersResponse
+		var dest GetOrgUsersResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
