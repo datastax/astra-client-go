@@ -4,6 +4,7 @@
 package astrastreaming
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -17,28 +18,276 @@ import (
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 )
 
-// CassandraCDCConfig is the response struct for C* CDC table tracking
-type CassandraCDCConfig struct {
-	CdcStatus       *string    `json:"cdcStatus,omitempty"`
-	ClusterName     *string    `json:"clusterName,omitempty"`
-	CodStatus       *string    `json:"codStatus,omitempty"`
-	ConfigType      *string    `json:"configType,omitempty"`
-	ConnectorName   *string    `json:"connectorName,omitempty"`
-	ConnectorStatus *string    `json:"connectorStatus,omitempty"`
-	Cpu             *int64     `json:"cpu,omitempty"`
-	CreatedAt       *time.Time `json:"createdAt,omitempty"`
-	DataTopic       *string    `json:"dataTopic,omitempty"`
-	DatabaseId      *string    `json:"databaseId,omitempty"`
-	DatabaseName    *string    `json:"databaseName,omitempty"`
-	DatabaseTable   *string    `json:"databaseTable,omitempty"`
-	EventTopic      *string    `json:"eventTopic,omitempty"`
-	Instances       *int64     `json:"instances,omitempty"`
-	Keyspace        *string    `json:"keyspace,omitempty"`
-	Memory          *int64     `json:"memory,omitempty"`
-	Namespace       *string    `json:"namespace,omitempty"`
-	OrgId           *string    `json:"orgId,omitempty"`
-	Tenant          *string    `json:"tenant,omitempty"`
-	UpdatedAt       *time.Time `json:"updatedAt,omitempty"`
+const (
+	BearerScopes = "Bearer.Scopes"
+)
+
+// Defines values for DatabaseAvailableActions.
+const (
+	DatabaseAvailableActionsAddDatacenters DatabaseAvailableActions = "addDatacenters"
+
+	DatabaseAvailableActionsAddKeyspace DatabaseAvailableActions = "addKeyspace"
+
+	DatabaseAvailableActionsAddTable DatabaseAvailableActions = "addTable"
+
+	DatabaseAvailableActionsGetCreds DatabaseAvailableActions = "getCreds"
+
+	DatabaseAvailableActionsLaunchMigrationProxy DatabaseAvailableActions = "launchMigrationProxy"
+
+	DatabaseAvailableActionsPark DatabaseAvailableActions = "park"
+
+	DatabaseAvailableActionsRemoveKeyspace DatabaseAvailableActions = "removeKeyspace"
+
+	DatabaseAvailableActionsRemoveMigrationProxy DatabaseAvailableActions = "removeMigrationProxy"
+
+	DatabaseAvailableActionsResetPassword DatabaseAvailableActions = "resetPassword"
+
+	DatabaseAvailableActionsResize DatabaseAvailableActions = "resize"
+
+	DatabaseAvailableActionsTerminate DatabaseAvailableActions = "terminate"
+
+	DatabaseAvailableActionsTerminateDatacenter DatabaseAvailableActions = "terminateDatacenter"
+
+	DatabaseAvailableActionsUnpark DatabaseAvailableActions = "unpark"
+)
+
+// Defines values for DatabaseInfoCloudProvider.
+const (
+	DatabaseInfoCloudProviderAWS DatabaseInfoCloudProvider = "AWS"
+
+	DatabaseInfoCloudProviderGCP DatabaseInfoCloudProvider = "GCP"
+)
+
+// Defines values for DatabaseInfoTier.
+const (
+	DatabaseInfoTierServerless DatabaseInfoTier = "serverless"
+)
+
+// Defines values for DatabaseInfoCreateCloudProvider.
+const (
+	DatabaseInfoCreateCloudProviderAWS DatabaseInfoCreateCloudProvider = "AWS"
+
+	DatabaseInfoCreateCloudProviderGCP DatabaseInfoCreateCloudProvider = "GCP"
+)
+
+// Defines values for DatabaseInfoCreateTier.
+const (
+	DatabaseInfoCreateTierServerless DatabaseInfoCreateTier = "serverless"
+)
+
+// Defines values for PolicyActions.
+const (
+	PolicyActionsDbAllKeyspaceCreate PolicyActions = "db-all-keyspace-create"
+
+	PolicyActionsDbAllKeyspaceDescribe PolicyActions = "db-all-keyspace-describe"
+
+	PolicyActionsDbCql PolicyActions = "db-cql"
+
+	PolicyActionsDbGraphql PolicyActions = "db-graphql"
+
+	PolicyActionsDbKeyspaceAlter PolicyActions = "db-keyspace-alter"
+
+	PolicyActionsDbKeyspaceAuthorize PolicyActions = "db-keyspace-authorize"
+
+	PolicyActionsDbKeyspaceCreate PolicyActions = "db-keyspace-create"
+
+	PolicyActionsDbKeyspaceDescribe PolicyActions = "db-keyspace-describe"
+
+	PolicyActionsDbKeyspaceDrop PolicyActions = "db-keyspace-drop"
+
+	PolicyActionsDbKeyspaceGrant PolicyActions = "db-keyspace-grant"
+
+	PolicyActionsDbKeyspaceModify PolicyActions = "db-keyspace-modify"
+
+	PolicyActionsDbRest PolicyActions = "db-rest"
+
+	PolicyActionsDbTableAlter PolicyActions = "db-table-alter"
+
+	PolicyActionsDbTableAuthorize PolicyActions = "db-table-authorize"
+
+	PolicyActionsDbTableCreate PolicyActions = "db-table-create"
+
+	PolicyActionsDbTableDescribe PolicyActions = "db-table-describe"
+
+	PolicyActionsDbTableDrop PolicyActions = "db-table-drop"
+
+	PolicyActionsDbTableGrant PolicyActions = "db-table-grant"
+
+	PolicyActionsDbTableModify PolicyActions = "db-table-modify"
+
+	PolicyActionsDbTableSelect PolicyActions = "db-table-select"
+
+	PolicyActionsOrgAuditsRead PolicyActions = "org-audits-read"
+
+	PolicyActionsOrgBillingRead PolicyActions = "org-billing-read"
+
+	PolicyActionsOrgBillingWrite PolicyActions = "org-billing-write"
+
+	PolicyActionsOrgDbAddpeering PolicyActions = "org-db-addpeering"
+
+	PolicyActionsOrgDbCreate PolicyActions = "org-db-create"
+
+	PolicyActionsOrgDbExpand PolicyActions = "org-db-expand"
+
+	PolicyActionsOrgDbManagemigratorproxy PolicyActions = "org-db-managemigratorproxy"
+
+	PolicyActionsOrgDbPasswordreset PolicyActions = "org-db-passwordreset"
+
+	PolicyActionsOrgDbSuspend PolicyActions = "org-db-suspend"
+
+	PolicyActionsOrgDbTerminate PolicyActions = "org-db-terminate"
+
+	PolicyActionsOrgDbView PolicyActions = "org-db-view"
+
+	PolicyActionsOrgExternalAuthRead PolicyActions = "org-external-auth-read"
+
+	PolicyActionsOrgExternalAuthWrite PolicyActions = "org-external-auth-write"
+
+	PolicyActionsOrgNotificationWrite PolicyActions = "org-notification-write"
+
+	PolicyActionsOrgRead PolicyActions = "org-read"
+
+	PolicyActionsOrgRoleDelete PolicyActions = "org-role-delete"
+
+	PolicyActionsOrgRoleRead PolicyActions = "org-role-read"
+
+	PolicyActionsOrgRoleWrite PolicyActions = "org-role-write"
+
+	PolicyActionsOrgTokenRead PolicyActions = "org-token-read"
+
+	PolicyActionsOrgTokenWrite PolicyActions = "org-token-write"
+
+	PolicyActionsOrgUserRead PolicyActions = "org-user-read"
+
+	PolicyActionsOrgUserWrite PolicyActions = "org-user-write"
+
+	PolicyActionsOrgWrite PolicyActions = "org-write"
+)
+
+// Defines values for PolicyEffect.
+const (
+	PolicyEffectAllow PolicyEffect = "allow"
+)
+
+// Defines values for StatusEnum.
+const (
+	StatusEnumACTIVE StatusEnum = "ACTIVE"
+
+	StatusEnumERROR StatusEnum = "ERROR"
+
+	StatusEnumHIBERNATED StatusEnum = "HIBERNATED"
+
+	StatusEnumHIBERNATING StatusEnum = "HIBERNATING"
+
+	StatusEnumINITIALIZING StatusEnum = "INITIALIZING"
+
+	StatusEnumMAINTENANCE StatusEnum = "MAINTENANCE"
+
+	StatusEnumPARKED StatusEnum = "PARKED"
+
+	StatusEnumPARKING StatusEnum = "PARKING"
+
+	StatusEnumPENDING StatusEnum = "PENDING"
+
+	StatusEnumPREPARED StatusEnum = "PREPARED"
+
+	StatusEnumPREPARING StatusEnum = "PREPARING"
+
+	StatusEnumRESIZING StatusEnum = "RESIZING"
+
+	StatusEnumRESUMING StatusEnum = "RESUMING"
+
+	StatusEnumTERMINATED StatusEnum = "TERMINATED"
+
+	StatusEnumTERMINATING StatusEnum = "TERMINATING"
+
+	StatusEnumUNKNOWN StatusEnum = "UNKNOWN"
+
+	StatusEnumUNPARKING StatusEnum = "UNPARKING"
+)
+
+// AccessListConfigurations defines model for AccessListConfigurations.
+type AccessListConfigurations struct {
+	AccessListEnabled bool `json:"accessListEnabled"`
+}
+
+// The model used to build an access list.
+type AccessListRequest struct {
+	// A listing of the allowed addresses
+	Addresses      *[]AddressRequest         `json:"addresses,omitempty"`
+	Configurations *AccessListConfigurations `json:"configurations,omitempty"`
+}
+
+// The response for a requested access list.
+type AccessListResponse struct {
+	// A listing of the allowed addresses
+	Addresses      *[]AddressResponse        `json:"addresses,omitempty"`
+	Configurations *AccessListConfigurations `json:"configurations,omitempty"`
+
+	// The unique identifier of the database
+	DatabaseId *string `json:"databaseId,omitempty"`
+
+	// The unique identifier of the organization
+	OrganizationId *string `json:"organizationId,omitempty"`
+}
+
+// The model used to build an address for an access list.
+type AddressRequest struct {
+	// The address (IP address and subnet mask in CIDR notation) of the address to allow
+	Address string `json:"address"`
+
+	// Description of this addresses use
+	Description string `json:"description"`
+
+	// The indication if the access address is enabled or not
+	Enabled bool `json:"enabled"`
+}
+
+// The response for a requested address in an access list.
+type AddressResponse struct {
+	// The address (IP address and subnet mask in CIDR notation) of the address to allow.
+	Address *string `json:"address,omitempty"`
+
+	// Description of this addresses use
+	Description *string `json:"description,omitempty"`
+
+	// The indication if the access address is enabled or not.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// The last update date/time for the access list.
+	LastUpdateDateTime *time.Time `json:"lastUpdateDateTime,omitempty"`
+}
+
+// AvailableRegionCombination defines a tier, cloud provider, and region combination.
+type AvailableRegionCombination struct {
+	CapacityUnitsLimit              int    `json:"capacityUnitsLimit"`
+	CapacityUnitsUsed               int    `json:"capacityUnitsUsed"`
+	CloudProvider                   string `json:"cloudProvider"`
+	Cost                            Costs  `json:"cost"`
+	DatabaseCountLimit              int    `json:"databaseCountLimit"`
+	DatabaseCountUsed               int    `json:"databaseCountUsed"`
+	DefaultStoragePerCapacityUnitGb int    `json:"defaultStoragePerCapacityUnitGb"`
+	Region                          string `json:"region"`
+	Tier                            string `json:"tier"`
+}
+
+// CapacityUnits is used to horizontally scale a database.
+type CapacityUnits struct {
+	// CapacityUnits can be increased by a max of three additional capacity units per operation. Reducing capacity units is not currently supported.
+	CapacityUnits *int `json:"capacityUnits,omitempty"`
+}
+
+// An individual clientID and associated roles.
+type ClientRole struct {
+	// the clientID
+	ClientId *string   `json:"clientId,omitempty"`
+	Roles    *[]string `json:"roles,omitempty"`
+}
+
+// The response for a requested token.
+type ClientRoleList struct {
+	// a list of clientId and associated roles.
+	Clients *[]ClientRole `json:"clients,omitempty"`
 }
 
 // ClusterResponse is the response struct for a cluster
@@ -52,6 +301,184 @@ type ClusterResponse struct {
 	WebsocketUrl     *string `json:"websocketUrl,omitempty"`
 }
 
+// Costs defines model for Costs.
+type Costs struct {
+	CostPerDayCents         *float64 `json:"costPerDayCents,omitempty"`
+	CostPerDayParkedCents   *float64 `json:"costPerDayParkedCents,omitempty"`
+	CostPerHourCents        *float64 `json:"costPerHourCents,omitempty"`
+	CostPerHourParkedCents  *float64 `json:"costPerHourParkedCents,omitempty"`
+	CostPerMinCents         *float64 `json:"costPerMinCents,omitempty"`
+	CostPerMinParkedCents   *float64 `json:"costPerMinParkedCents,omitempty"`
+	CostPerMonthCents       *float64 `json:"costPerMonthCents,omitempty"`
+	CostPerMonthParkedCents *float64 `json:"costPerMonthParkedCents,omitempty"`
+}
+
+// The createRole model.
+type CreateRoleRequest struct {
+	// The name for your custom role in your organization.
+	Name string `json:"name"`
+
+	// A policy for a role in Astra.
+	Policy Policy `json:"policy"`
+}
+
+// CredsURL from which the creds zip may be downloaded.
+type CredsURL struct {
+	// DownloadURL is only valid for about 5 minutes.
+	DownloadURL string `json:"downloadURL"`
+
+	// Internal DownloadURL is only valid for about 5 minutes.
+	DownloadURLInternal *string `json:"downloadURLInternal,omitempty"`
+
+	// Migration Proxy DownloadURL is only valid for about 5 minutes.
+	DownloadURLMigrationProxy *string `json:"downloadURLMigrationProxy,omitempty"`
+
+	// Internal Migration Proxy DownloadURL is only valid for about 5 minutes.
+	DownloadURLMigrationProxyInternal *string `json:"downloadURLMigrationProxyInternal,omitempty"`
+}
+
+// Database contains the key information about a database.
+type Database struct {
+	AvailableActions *[]DatabaseAvailableActions `json:"availableActions,omitempty"`
+	CqlshUrl         *string                     `json:"cqlshUrl,omitempty"`
+
+	// CreationTime in ISO RFC3339 format
+	CreationTime    *string `json:"creationTime,omitempty"`
+	DataEndpointUrl *string `json:"dataEndpointUrl,omitempty"`
+	GrafanaUrl      *string `json:"grafanaUrl,omitempty"`
+	GraphqlUrl      *string `json:"graphqlUrl,omitempty"`
+	Id              string  `json:"id"`
+
+	// DatabaseInfo is the user-provided information describing a database.
+	Info DatabaseInfo `json:"info"`
+
+	// Message to the customer about the cluster.
+	Message *string    `json:"message,omitempty"`
+	OrgId   string     `json:"orgId"`
+	OwnerId string     `json:"ownerId"`
+	Status  StatusEnum `json:"status"`
+
+	// Storage contains the information about how much storage space a cluster has available.
+	Storage   *Storage `json:"storage,omitempty"`
+	StudioUrl *string  `json:"studioUrl,omitempty"`
+
+	// TerminationTime in ISO RFC3339 format
+	TerminationTime *string `json:"terminationTime,omitempty"`
+}
+
+// DatabaseAvailableActions defines model for Database.AvailableActions.
+type DatabaseAvailableActions string
+
+// DatabaseInfo is the user-provided information describing a database.
+type DatabaseInfo struct {
+	// Additional keyspaces names in database.
+	AdditionalKeyspaces *[]string `json:"additionalKeyspaces,omitempty"`
+
+	// Capacity units were used for classic databases, but are not used for serverless databases. Enter 1 CU for serverless databases. Classic databases can no longer be created with the DevOps API.
+	CapacityUnits *int `json:"capacityUnits,omitempty"`
+
+	// This is the cloud provider where the database lives.
+	CloudProvider *DatabaseInfoCloudProvider `json:"cloudProvider,omitempty"`
+
+	// Keyspace name in database.
+	Keyspace *string `json:"keyspace,omitempty"`
+
+	// Name of the database--user friendly identifier.
+	Name *string `json:"name,omitempty"`
+
+	// Password for the user to access the database.
+	Password *string `json:"password,omitempty"`
+
+	// Region refers to the cloud region.
+	Region *string `json:"region,omitempty"`
+
+	// With the exception of classic databases, all databases are serverless. Classic databases can no longer be created with the DevOps API.
+	Tier *DatabaseInfoTier `json:"tier,omitempty"`
+
+	// User is the user to access the database.
+	User *string `json:"user,omitempty"`
+}
+
+// This is the cloud provider where the database lives.
+type DatabaseInfoCloudProvider string
+
+// With the exception of classic databases, all databases are serverless. Classic databases can no longer be created with the DevOps API.
+type DatabaseInfoTier string
+
+// DatabaseInfo is the user-provided information describing a database.
+type DatabaseInfoCreate struct {
+	// Capacity units were used for classic databases, but are not used for serverless databases. Enter 1 CU for serverless databases. Classic databases can no longer be created with the DevOps API.
+	CapacityUnits int `json:"capacityUnits"`
+
+	// This is the cloud provider where the database lives.
+	CloudProvider DatabaseInfoCreateCloudProvider `json:"cloudProvider"`
+
+	// Keyspace name in database.
+	Keyspace string `json:"keyspace"`
+
+	// Name of the database--user friendly identifier.
+	Name string `json:"name"`
+
+	// Region refers to the cloud region.
+	Region string `json:"region"`
+
+	// With the exception of classic databases, all databases are serverless. Classic databases can no longer be created with the DevOps API.
+	Tier DatabaseInfoCreateTier `json:"tier"`
+}
+
+// This is the cloud provider where the database lives.
+type DatabaseInfoCreateCloudProvider string
+
+// With the exception of classic databases, all databases are serverless. Classic databases can no longer be created with the DevOps API.
+type DatabaseInfoCreateTier string
+
+// ModelError information that is returned to users.
+type Error struct {
+	// API specific error code.
+	ID *int `json:"ID,omitempty"`
+
+	// User-friendly description of error.
+	Message string `json:"message"`
+}
+
+// Errors is a collection of individual Error objects.
+type Errors struct {
+	Errors []Error `json:"errors"`
+}
+
+// The POST body to generate a token.
+type GenerateTokenBody struct {
+	// The roles for which the token will be generated.
+	Roles []string `json:"roles"`
+}
+
+// The response for a requested token.
+type GenerateTokenResponse struct {
+	// The ID of the client (UUID).
+	ClientId string `json:"clientId"`
+
+	// The UUID of the organization.
+	OrgId string `json:"orgId"`
+
+	// The roles for which the token will be generated.
+	Roles []string `json:"roles"`
+
+	// The secret token.
+	Secret string `json:"secret"`
+
+	// AstraCS:clientId:hex(sha256(secret))
+	Token *string `json:"token,omitempty"`
+}
+
+// GetOrganizationUsersResponse defines model for GetOrganizationUsersResponse.
+type GetOrganizationUsersResponse struct {
+	OrgID   string `json:"orgID"`
+	OrgName string `json:"orgName"`
+
+	// an array of users in the organization
+	Users []UserResponse `json:"users"`
+}
+
 // LimitResponse is a response for tenant limits
 type LimitResponse struct {
 	NamespaceLimit         *int64                       `json:"namespace_limit,omitempty"`
@@ -59,23 +486,100 @@ type LimitResponse struct {
 	Usage                  *[]TenantNamespaceLimitUsage `json:"usage,omitempty"`
 }
 
-// TenantClusterPlanResponse is the tenant plan on a cluster
+// An organization.
+type Organization struct {
+	// The organization UUID.
+	Id string `json:"id"`
+}
+
+// A policy for a role in Astra.
+type Policy struct {
+	// The actions this policy can take. Example actions: 'org-billing-write' 'db-keyspace-create'.
+	Actions []PolicyActions `json:"actions"`
+
+	// A description of this policy.
+	Description string `json:"description"`
+
+	// Effect this policy will have on the provided resource.
+	Effect PolicyEffect `json:"effect"`
+
+	// The resources this policy can manipulate.
+	Resources []string `json:"resources"`
+}
+
+// PolicyActions defines model for Policy.Actions.
+type PolicyActions string
+
+// Effect this policy will have on the provided resource.
+type PolicyEffect string
+
+// ResponseErr error struct for Pulsar compliant HTTP responses
+type ResponseErr struct {
+	Reason *string `json:"reason,omitempty"`
+}
+
+// Details of a user role and its policy details.
+type Role struct {
+	// The unique system generated identifier of the role.
+	Id *string `json:"id,omitempty"`
+
+	// The date and time of the last update on the role.
+	LastUpdateDatetime *time.Time `json:"last_update_datetime,omitempty"`
+
+	// The userID of the user who last updated the role.
+	LastUpdateUserid *string `json:"last_update_userid,omitempty"`
+
+	// The name of the role.
+	Name *string `json:"name,omitempty"`
+
+	// A policy for a role in Astra.
+	Policy *Policy `json:"policy,omitempty"`
+}
+
+// The roleInvite model.
+type RoleInviteRequest struct {
+	Roles []string `json:"roles"`
+}
+
+// An array of roles.
+type Roles []Role
+
+// StatusEnum defines model for StatusEnum.
+type StatusEnum string
+
+// Storage contains the information about how much storage space a cluster has available.
+type Storage struct {
+	// NodeCount for the cluster.
+	NodeCount int `json:"nodeCount"`
+
+	// ReplicationFactor is the number of nodes storing a piece of data.
+	ReplicationFactor int `json:"replicationFactor"`
+
+	// TotalStorage of the cluster in GB.
+	TotalStorage int `json:"totalStorage"`
+
+	// UsedStorage in GB.
+	UsedStorage *int `json:"usedStorage,omitempty"`
+}
+
+// TenantClusterPlanResponse tenant per cluster access
+// For initial creation so namespace and topic are added
 type TenantClusterPlanResponse struct {
-	Email                  *string `json:"Email,omitempty"`
 	AstraOrgGUID           *string `json:"astraOrgGUID,omitempty"`
 	BrokerServiceUrl       *string `json:"brokerServiceUrl,omitempty"`
 	CloudProvider          *string `json:"cloudProvider,omitempty"`
 	CloudProviderCode      *string `json:"cloudProviderCode,omitempty"`
 	CloudRegion            *string `json:"cloudRegion,omitempty"`
 	ClusterName            *string `json:"clusterName,omitempty"`
-	Id                     *string `json:"id,omitempty"`
 	JvmVersion             *string `json:"jvmVersion,omitempty"`
+	Namespace              *string `json:"namespace,omitempty"`
 	Plan                   *string `json:"plan,omitempty"`
 	PlanCode               *string `json:"planCode,omitempty"`
 	PulsarToken            *string `json:"pulsarToken,omitempty"`
 	PulsarVersion          *string `json:"pulsarVersion,omitempty"`
 	Status                 *string `json:"status,omitempty"`
 	TenantName             *string `json:"tenantName,omitempty"`
+	Topic                  *string `json:"topic,omitempty"`
 	WebServiceUrl          *string `json:"webServiceUrl,omitempty"`
 	WebsocketQueryParamUrl *string `json:"websocketQueryParamUrl,omitempty"`
 	WebsocketUrl           *string `json:"websocketUrl,omitempty"`
@@ -85,6 +589,15 @@ type TenantClusterPlanResponse struct {
 type TenantNamespaceLimitUsage struct {
 	Namespace *string   `json:"namespace,omitempty"`
 	Topics    *[]string `json:"topics,omitempty"`
+}
+
+// The updateRole model
+type UpdateRoleRequest struct {
+	// The name of the custom role you want to update in your organization.
+	Name string `json:"name"`
+
+	// A policy for a role in Astra.
+	Policy Policy `json:"policy"`
 }
 
 // Usage is the data usage per single tenant
@@ -108,25 +621,52 @@ type Usage struct {
 	UpdatedAt              *time.Time `json:"updatedAt,omitempty"`
 }
 
-// CdcTableConfigResponse defines model for cdcTableConfigResponse.
-type CdcTableConfigResponse struct {
-	Body *[]CassandraCDCConfig `json:"Body,omitempty"`
+// The userInvite model
+type UserInvite struct {
+	// The email of the user being invited
+	Email string `json:"email"`
+
+	// The unique system generated identifier of the organization
+	OrgID string   `json:"orgID"`
+	Roles []string `json:"roles"`
+}
+
+// UserPassword specifies a username and new password. The specified password will be updated for the specified database user.
+type UserPassword struct {
+	// New password (min 6 characters)
+	Password *string `json:"password,omitempty"`
+	Username *string `json:"username,omitempty"`
+}
+
+// UserResponse defines model for UserResponse.
+type UserResponse struct {
+	Email *string `json:"email,omitempty"`
+
+	// an array of roles the user belongs to for an organization
+	Roles *[]Role `json:"roles,omitempty"`
+
+	// The status of a user within an organization either active or invited
+	Status *string `json:"status,omitempty"`
+	UserID string  `json:"userID"`
+}
+
+// The response for validation checks.
+type ValidationResponse struct {
+	Valid              *bool     `json:"valid,omitempty"`
+	ValidationFailures *[]string `json:"validationFailures,omitempty"`
 }
 
 // CreatedTenantResponse defines model for createdTenantResponse.
 type CreatedTenantResponse struct {
-	// TenantClusterPlanResponse is the tenant plan on a cluster
+	// TenantClusterPlanResponse tenant per cluster access
+	// For initial creation so namespace and topic are added
 	Body *TenantClusterPlanResponse `json:"Body,omitempty"`
 }
 
 // ErrorResponse defines model for errorResponse.
 type ErrorResponse struct {
-	Reason *string `json:"reason,omitempty"`
-}
-
-// ListOfMaps defines model for listOfMaps.
-type ListOfMaps []struct {
-	AdditionalProperties map[string]string `json:"-"`
+	// ResponseErr error struct for Pulsar compliant HTTP responses
+	Body ResponseErr `json:"Body"`
 }
 
 // ProviderRegionsResponse defines model for providerRegionsResponse.
@@ -142,16 +682,6 @@ type ProviderRegionsResponse_Body struct {
 // PulsarClustersResponse defines model for pulsarClustersResponse.
 type PulsarClustersResponse struct {
 	Body *[]ClusterResponse `json:"Body,omitempty"`
-}
-
-// ServerlessRegionsResponse defines model for serverlessRegionsResponse.
-type ServerlessRegionsResponse struct {
-	Body *ServerlessRegionsResponse_Body `json:"Body,omitempty"`
-}
-
-// ServerlessRegionsResponse_Body defines model for ServerlessRegionsResponse.Body.
-type ServerlessRegionsResponse_Body struct {
-	AdditionalProperties map[string][]string `json:"-"`
 }
 
 // StatsResponse defines model for statsResponse.
@@ -185,80 +715,179 @@ type TenantRequest struct {
 	UserEmail     *string `json:"userEmail,omitempty"`
 }
 
+// AddressesQueryParam defines model for AddressesQueryParam.
+type AddressesQueryParam []string
+
+// ClientIdParam defines model for ClientIdParam.
+type ClientIdParam string
+
+// DatabaseIdParam defines model for DatabaseIdParam.
+type DatabaseIdParam string
+
+// KeyspaceNameParam defines model for KeyspaceNameParam.
+type KeyspaceNameParam string
+
+// RoleIdParam defines model for RoleIdParam.
+type RoleIdParam string
+
+// UserIdParam defines model for UserIdParam.
+type UserIdParam string
+
+// Errors is a collection of individual Error objects.
+type BadRequest Errors
+
+// Errors is a collection of individual Error objects.
+type Conflict Errors
+
+// Errors is a collection of individual Error objects.
+type Forbidden Errors
+
+// Errors is a collection of individual Error objects.
+type NotFound Errors
+
+// Errors is a collection of individual Error objects.
+type ServerError Errors
+
+// Errors is a collection of individual Error objects.
+type Unauthorized Errors
+
+// Errors is a collection of individual Error objects.
+type UnprocessableEntity Errors
+
+// GenerateTokenForClientJSONBody defines parameters for GenerateTokenForClient.
+type GenerateTokenForClientJSONBody GenerateTokenBody
+
+// ListDatabasesParams defines parameters for ListDatabases.
+type ListDatabasesParams struct {
+	// Allows filtering so that databases in listed states are returned.
+	Include *ListDatabasesParamsInclude `json:"include,omitempty"`
+
+	// Allows filtering so that databases from a given provider are returned.
+	Provider *ListDatabasesParamsProvider `json:"provider,omitempty"`
+
+	// Optional parameter for pagination purposes. Used as this value for starting retrieving a specific page of results.
+	StartingAfter *string `json:"starting_after,omitempty"`
+
+	// Optional parameter for pagination purposes. Specify the number of items for one page of data.
+	Limit *int `json:"limit,omitempty"`
+}
+
+// ListDatabasesParamsInclude defines parameters for ListDatabases.
+type ListDatabasesParamsInclude string
+
+// ListDatabasesParamsProvider defines parameters for ListDatabases.
+type ListDatabasesParamsProvider string
+
+// CreateDatabaseJSONBody defines parameters for CreateDatabase.
+type CreateDatabaseJSONBody DatabaseInfoCreate
+
+// DeleteAddressesOrAccessListForDatabaseParams defines parameters for DeleteAddressesOrAccessListForDatabase.
+type DeleteAddressesOrAccessListForDatabaseParams struct {
+	// Array of addresses
+	Addresses *AddressesQueryParam `json:"addresses,omitempty"`
+}
+
+// UpdateAccessListForDatabaseJSONBody defines parameters for UpdateAccessListForDatabase.
+type UpdateAccessListForDatabaseJSONBody AccessListRequest
+
+// AddAddressesToAccessListForDatabaseJSONBody defines parameters for AddAddressesToAccessListForDatabase.
+type AddAddressesToAccessListForDatabaseJSONBody []AddressRequest
+
+// UpsertAccessListForDatabaseJSONBody defines parameters for UpsertAccessListForDatabase.
+type UpsertAccessListForDatabaseJSONBody AccessListRequest
+
+// ResetPasswordJSONBody defines parameters for ResetPassword.
+type ResetPasswordJSONBody UserPassword
+
+// ResizeDatabaseJSONBody defines parameters for ResizeDatabase.
+type ResizeDatabaseJSONBody CapacityUnits
+
+// TerminateDatabaseParams defines parameters for TerminateDatabase.
+type TerminateDatabaseParams struct {
+	// For internal use only. Used to safely terminate prepared databases.
+	PreparedStateOnly *bool `json:"preparedStateOnly,omitempty"`
+}
+
+// AddOrganizationRoleJSONBody defines parameters for AddOrganizationRole.
+type AddOrganizationRoleJSONBody CreateRoleRequest
+
+// UpdateRoleJSONBody defines parameters for UpdateRole.
+type UpdateRoleJSONBody UpdateRoleRequest
+
+// InviteUserToOrganizationJSONBody defines parameters for InviteUserToOrganization.
+type InviteUserToOrganizationJSONBody UserInvite
+
+// UpdateRolesForUserInOrganizationJSONBody defines parameters for UpdateRolesForUserInOrganization.
+type UpdateRolesForUserInOrganizationJSONBody RoleInviteRequest
+
+// IdOfTenantParams defines parameters for IdOfTenant.
+type IdOfTenantParams struct {
+	// Cloud provider. For example, aws, gcp, azure, or digital+ocean
+	Provider *string `json:"provider,omitempty"`
+
+	// Cloud provider region. For example, us-east1, us-west1, toronto
+	Region *string `json:"region,omitempty"`
+}
+
+// IdOfCreateTenantEndpointJSONBody defines parameters for IdOfCreateTenantEndpoint.
+type IdOfCreateTenantEndpointJSONBody TenantRequest
+
 // IdOfCreateTenantEndpointParams defines parameters for IdOfCreateTenantEndpoint.
 type IdOfCreateTenantEndpointParams struct {
 	// A topic name for auto-creation (if not specified, no topic is created)
 	Topic *string `json:"topic,omitempty"`
 }
 
-// HeadV2StreamingTenantsTenantNameParams defines parameters for HeadV2StreamingTenantsTenantName.
-type HeadV2StreamingTenantsTenantNameParams struct {
+// GetTeneantLimitUsageParams defines parameters for GetTeneantLimitUsage.
+type GetTeneantLimitUsageParams struct {
 	// Cloud provider, for example, aws, gcp, azure; this is required to evaluate whether a tenant has been reserved by its org owner
 	Provider *string `json:"provider,omitempty"`
 
 	// Cloud provider region, for example, us-east1, us-west1; this is required to evaluate whether a tenant has been reserved by its org owner
 	Region *string `json:"region,omitempty"`
-
-	// Bearer Astra Keycloak token or AstraCS token.
-	Authorization string `json:"Authorization"`
-
-	// the Astra Org ID
-	XDataStaxCurrentOrg string `json:"X-DataStax-Current-Org"`
 }
 
-// IdListTenantTokensParams defines parameters for IdListTenantTokens.
-type IdListTenantTokensParams struct {
-	// Bearer Astra Keycloak token or AstraCS token.
-	Authorization string `json:"Authorization"`
-
-	// Astra Org ID.
-	XDataStaxCurrentOrg string `json:"X-DataStax-Current-Org"`
-
-	// Astra Streaming Cluster Name.
-	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
-}
-
-// IdCreateTenantTokenParams defines parameters for IdCreateTenantToken.
-type IdCreateTenantTokenParams struct {
-	// Bearer Astra Keycloak token or AstraCS token.
-	Authorization string `json:"Authorization"`
-
-	// Astra Org ID.
-	XDataStaxCurrentOrg string `json:"X-DataStax-Current-Org"`
-
-	// Astra Streaming Cluster Name.
-	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
-}
-
-// IdDeleteTenantTokenParams defines parameters for IdDeleteTenantToken.
-type IdDeleteTenantTokenParams struct {
-	// Bearer Astra Keycloak token or AstraCS token.
-	Authorization string `json:"Authorization"`
-
-	// Astra Org ID.
-	XDataStaxCurrentOrg string `json:"X-DataStax-Current-Org"`
-
-	// Astra Streaming Cluster Name.
-	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
-}
-
-// GetV2StreamingTenantsTenantNameTokensTokenIDParams defines parameters for GetV2StreamingTenantsTenantNameTokensTokenID.
-type GetV2StreamingTenantsTenantNameTokensTokenIDParams struct {
-	// Bearer Astra Keycloak token or AstraCS token.
-	Authorization string `json:"Authorization"`
-
-	// Astra Org ID.
-	XDataStaxCurrentOrg string `json:"X-DataStax-Current-Org"`
-
-	// Astra Streaming Cluster Name.
-	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
-}
-
-// DeleteV2StreamingTenantsTenantClustersClusterParams defines parameters for DeleteV2StreamingTenantsTenantClustersCluster.
-type DeleteV2StreamingTenantsTenantClustersClusterParams struct {
+// DeleteStreamingTenantParams defines parameters for DeleteStreamingTenant.
+type DeleteStreamingTenantParams struct {
 	// Performs a soft delete that only marks the tenant as deleted in the database (opt=soft)
 	Opt *string `json:"opt,omitempty"`
 }
+
+// GenerateTokenForClientJSONRequestBody defines body for GenerateTokenForClient for application/json ContentType.
+type GenerateTokenForClientJSONRequestBody GenerateTokenForClientJSONBody
+
+// CreateDatabaseJSONRequestBody defines body for CreateDatabase for application/json ContentType.
+type CreateDatabaseJSONRequestBody CreateDatabaseJSONBody
+
+// UpdateAccessListForDatabaseJSONRequestBody defines body for UpdateAccessListForDatabase for application/json ContentType.
+type UpdateAccessListForDatabaseJSONRequestBody UpdateAccessListForDatabaseJSONBody
+
+// AddAddressesToAccessListForDatabaseJSONRequestBody defines body for AddAddressesToAccessListForDatabase for application/json ContentType.
+type AddAddressesToAccessListForDatabaseJSONRequestBody AddAddressesToAccessListForDatabaseJSONBody
+
+// UpsertAccessListForDatabaseJSONRequestBody defines body for UpsertAccessListForDatabase for application/json ContentType.
+type UpsertAccessListForDatabaseJSONRequestBody UpsertAccessListForDatabaseJSONBody
+
+// ResetPasswordJSONRequestBody defines body for ResetPassword for application/json ContentType.
+type ResetPasswordJSONRequestBody ResetPasswordJSONBody
+
+// ResizeDatabaseJSONRequestBody defines body for ResizeDatabase for application/json ContentType.
+type ResizeDatabaseJSONRequestBody ResizeDatabaseJSONBody
+
+// AddOrganizationRoleJSONRequestBody defines body for AddOrganizationRole for application/json ContentType.
+type AddOrganizationRoleJSONRequestBody AddOrganizationRoleJSONBody
+
+// UpdateRoleJSONRequestBody defines body for UpdateRole for application/json ContentType.
+type UpdateRoleJSONRequestBody UpdateRoleJSONBody
+
+// InviteUserToOrganizationJSONRequestBody defines body for InviteUserToOrganization for application/json ContentType.
+type InviteUserToOrganizationJSONRequestBody InviteUserToOrganizationJSONBody
+
+// UpdateRolesForUserInOrganizationJSONRequestBody defines body for UpdateRolesForUserInOrganization for application/json ContentType.
+type UpdateRolesForUserInOrganizationJSONRequestBody UpdateRolesForUserInOrganizationJSONBody
+
+// IdOfCreateTenantEndpointJSONRequestBody defines body for IdOfCreateTenantEndpoint for application/json ContentType.
+type IdOfCreateTenantEndpointJSONRequestBody IdOfCreateTenantEndpointJSONBody
 
 // Getter for additional properties for ProviderRegionsResponse_Body. Returns the specified
 // element and whether it was found
@@ -301,59 +930,6 @@ func (a *ProviderRegionsResponse_Body) UnmarshalJSON(b []byte) error {
 
 // Override default JSON handling for ProviderRegionsResponse_Body to handle AdditionalProperties
 func (a ProviderRegionsResponse_Body) MarshalJSON() ([]byte, error) {
-	var err error
-	object := make(map[string]json.RawMessage)
-
-	for fieldName, field := range a.AdditionalProperties {
-		object[fieldName], err = json.Marshal(field)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
-		}
-	}
-	return json.Marshal(object)
-}
-
-// Getter for additional properties for ServerlessRegionsResponse_Body. Returns the specified
-// element and whether it was found
-func (a ServerlessRegionsResponse_Body) Get(fieldName string) (value []string, found bool) {
-	if a.AdditionalProperties != nil {
-		value, found = a.AdditionalProperties[fieldName]
-	}
-	return
-}
-
-// Setter for additional properties for ServerlessRegionsResponse_Body
-func (a *ServerlessRegionsResponse_Body) Set(fieldName string, value []string) {
-	if a.AdditionalProperties == nil {
-		a.AdditionalProperties = make(map[string][]string)
-	}
-	a.AdditionalProperties[fieldName] = value
-}
-
-// Override default JSON handling for ServerlessRegionsResponse_Body to handle AdditionalProperties
-func (a *ServerlessRegionsResponse_Body) UnmarshalJSON(b []byte) error {
-	object := make(map[string]json.RawMessage)
-	err := json.Unmarshal(b, &object)
-	if err != nil {
-		return err
-	}
-
-	if len(object) != 0 {
-		a.AdditionalProperties = make(map[string][]string)
-		for fieldName, fieldBuf := range object {
-			var fieldVal []string
-			err := json.Unmarshal(fieldBuf, &fieldVal)
-			if err != nil {
-				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
-			}
-			a.AdditionalProperties[fieldName] = fieldVal
-		}
-	}
-	return nil
-}
-
-// Override default JSON handling for ServerlessRegionsResponse_Body to handle AdditionalProperties
-func (a ServerlessRegionsResponse_Body) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
@@ -504,50 +1080,155 @@ type ClientInterface interface {
 	// IdTopicStatsTenantNamespace request
 	IdTopicStatsTenantNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// IdOfTenant request
-	IdOfTenant(ctx context.Context, databaseId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetAccessListTemplate request
+	GetAccessListTemplate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV2StreamingClusters request
-	GetV2StreamingClusters(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ValidateAccessList request
+	ValidateAccessList(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAllAccessListsForOrganization request
+	GetAllAccessListsForOrganization(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListAvailableRegions request
+	ListAvailableRegions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteTokenForClient request
+	DeleteTokenForClient(ctx context.Context, clientId ClientIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetClientsForOrg request
+	GetClientsForOrg(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GenerateTokenForClient request with any body
+	GenerateTokenForClientWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	GenerateTokenForClient(ctx context.Context, body GenerateTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCurrentOrganization request
+	GetCurrentOrganization(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListDatabases request
+	ListDatabases(ctx context.Context, params *ListDatabasesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateDatabase request with any body
+	CreateDatabaseWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateDatabase(ctx context.Context, body CreateDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetDatabase request
+	GetDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteAddressesOrAccessListForDatabase request
+	DeleteAddressesOrAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAccessListForDatabase request
+	GetAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAccessListForDatabase request with any body
+	UpdateAccessListForDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AddAddressesToAccessListForDatabase request with any body
+	AddAddressesToAccessListForDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AddAddressesToAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpsertAccessListForDatabase request with any body
+	UpsertAccessListForDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpsertAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AddKeyspace request
+	AddKeyspace(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ParkDatabase request
+	ParkDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ResetPassword request with any body
+	ResetPasswordWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ResetPassword(ctx context.Context, databaseId DatabaseIdParam, body ResetPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ResizeDatabase request with any body
+	ResizeDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ResizeDatabase(ctx context.Context, databaseId DatabaseIdParam, body ResizeDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GenerateSecureBundleURL request
+	GenerateSecureBundleURL(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// TerminateDatabase request
+	TerminateDatabase(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UnparkDatabase request
+	UnparkDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOrganizationRoles request
+	GetOrganizationRoles(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AddOrganizationRole request with any body
+	AddOrganizationRoleWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AddOrganizationRole(ctx context.Context, body AddOrganizationRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOrganizationRole request
+	DeleteOrganizationRole(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOrganizationRole request
+	GetOrganizationRole(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateRole request with any body
+	UpdateRoleWithBody(ctx context.Context, roleID RoleIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateRole(ctx context.Context, roleID RoleIdParam, body UpdateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOrganizationUsers request
+	GetOrganizationUsers(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// InviteUserToOrganization request with any body
+	InviteUserToOrganizationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	InviteUserToOrganization(ctx context.Context, body InviteUserToOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RemoveUserFromOrganization request
+	RemoveUserFromOrganization(ctx context.Context, userID UserIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOrganizationUser request
+	GetOrganizationUser(ctx context.Context, userID UserIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateRolesForUserInOrganization request with any body
+	UpdateRolesForUserInOrganizationWithBody(ctx context.Context, userID UserIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateRolesForUserInOrganization(ctx context.Context, userID UserIdParam, body UpdateRolesForUserInOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// IdOfTenant request
+	IdOfTenant(ctx context.Context, params *IdOfTenantParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// IdTenant request
 	IdTenant(ctx context.Context, org string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV2StreamingOrgsOrgTenantsTenant request
-	GetV2StreamingOrgsOrgTenantsTenant(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetStreamingTenant request
+	GetStreamingTenant(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV2StreamingProviders request
-	GetV2StreamingProviders(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetStreamingProviders request
+	GetStreamingProviders(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetV2StreamingServerlessRegions request
-	GetV2StreamingServerlessRegions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetV2StreamingTenants request
-	GetV2StreamingTenants(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetTenants request
+	GetTenants(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// IdOfCreateTenantEndpoint request with any body
 	IdOfCreateTenantEndpointWithBody(ctx context.Context, params *IdOfCreateTenantEndpointParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// HeadV2StreamingTenantsTenantName request
-	HeadV2StreamingTenantsTenantName(ctx context.Context, tenantName string, params *HeadV2StreamingTenantsTenantNameParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	IdOfCreateTenantEndpoint(ctx context.Context, params *IdOfCreateTenantEndpointParams, body IdOfCreateTenantEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// IdListTenantTokens request
-	IdListTenantTokens(ctx context.Context, tenantName string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetTeneantLimitUsage request
+	GetTeneantLimitUsage(ctx context.Context, tenantName string, params *GetTeneantLimitUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// IdCreateTenantToken request
-	IdCreateTenantToken(ctx context.Context, tenantName string, params *IdCreateTenantTokenParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeleteStreamingTenant request
+	DeleteStreamingTenant(ctx context.Context, tenant string, cluster string, params *DeleteStreamingTenantParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// IdDeleteTenantToken request
-	IdDeleteTenantToken(ctx context.Context, tenantName string, tokenID string, params *IdDeleteTenantTokenParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetV2StreamingTenantsTenantNameTokensTokenID request
-	GetV2StreamingTenantsTenantNameTokensTokenID(ctx context.Context, tenantName string, tokenID string, params *GetV2StreamingTenantsTenantNameTokensTokenIDParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// DeleteV2StreamingTenantsTenantClustersCluster request
-	DeleteV2StreamingTenantsTenantClustersCluster(ctx context.Context, tenant string, cluster string, params *DeleteV2StreamingTenantsTenantClustersClusterParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetV2StreamingTenantsTenantLimits request
-	GetV2StreamingTenantsTenantLimits(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetLimits request
+	GetLimits(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) IdNamespaceStatsTenant(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -598,8 +1279,8 @@ func (c *Client) IdTopicStatsTenantNamespace(ctx context.Context, tenant string,
 	return c.Client.Do(req)
 }
 
-func (c *Client) IdOfTenant(ctx context.Context, databaseId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewIdOfTenantRequest(c.Server, databaseId)
+func (c *Client) GetAccessListTemplate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAccessListTemplateRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -610,8 +1291,524 @@ func (c *Client) IdOfTenant(ctx context.Context, databaseId string, reqEditors .
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV2StreamingClusters(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV2StreamingClustersRequest(c.Server)
+func (c *Client) ValidateAccessList(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewValidateAccessListRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAllAccessListsForOrganization(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAllAccessListsForOrganizationRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAvailableRegions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAvailableRegionsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteTokenForClient(ctx context.Context, clientId ClientIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteTokenForClientRequest(c.Server, clientId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetClientsForOrg(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetClientsForOrgRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GenerateTokenForClientWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateTokenForClientRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GenerateTokenForClient(ctx context.Context, body GenerateTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateTokenForClientRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCurrentOrganization(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCurrentOrganizationRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListDatabases(ctx context.Context, params *ListDatabasesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListDatabasesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDatabaseWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDatabaseRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDatabase(ctx context.Context, body CreateDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDatabaseRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDatabaseRequest(c.Server, databaseId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteAddressesOrAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteAddressesOrAccessListForDatabaseRequest(c.Server, databaseId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAccessListForDatabaseRequest(c.Server, databaseId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAccessListForDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAccessListForDatabaseRequestWithBody(c.Server, databaseId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAccessListForDatabaseRequest(c.Server, databaseId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddAddressesToAccessListForDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddAddressesToAccessListForDatabaseRequestWithBody(c.Server, databaseId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddAddressesToAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddAddressesToAccessListForDatabaseRequest(c.Server, databaseId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpsertAccessListForDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpsertAccessListForDatabaseRequestWithBody(c.Server, databaseId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpsertAccessListForDatabase(ctx context.Context, databaseId DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpsertAccessListForDatabaseRequest(c.Server, databaseId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddKeyspace(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddKeyspaceRequest(c.Server, databaseId, keyspaceName)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ParkDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewParkDatabaseRequest(c.Server, databaseId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResetPasswordWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResetPasswordRequestWithBody(c.Server, databaseId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResetPassword(ctx context.Context, databaseId DatabaseIdParam, body ResetPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResetPasswordRequest(c.Server, databaseId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResizeDatabaseWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResizeDatabaseRequestWithBody(c.Server, databaseId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResizeDatabase(ctx context.Context, databaseId DatabaseIdParam, body ResizeDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResizeDatabaseRequest(c.Server, databaseId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GenerateSecureBundleURL(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateSecureBundleURLRequest(c.Server, databaseId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) TerminateDatabase(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTerminateDatabaseRequest(c.Server, databaseId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UnparkDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUnparkDatabaseRequest(c.Server, databaseId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOrganizationRoles(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOrganizationRolesRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddOrganizationRoleWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddOrganizationRoleRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddOrganizationRole(ctx context.Context, body AddOrganizationRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddOrganizationRoleRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteOrganizationRole(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOrganizationRoleRequest(c.Server, roleID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOrganizationRole(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOrganizationRoleRequest(c.Server, roleID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRoleWithBody(ctx context.Context, roleID RoleIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRoleRequestWithBody(c.Server, roleID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRole(ctx context.Context, roleID RoleIdParam, body UpdateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRoleRequest(c.Server, roleID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOrganizationUsers(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOrganizationUsersRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) InviteUserToOrganizationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewInviteUserToOrganizationRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) InviteUserToOrganization(ctx context.Context, body InviteUserToOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewInviteUserToOrganizationRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RemoveUserFromOrganization(ctx context.Context, userID UserIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRemoveUserFromOrganizationRequest(c.Server, userID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOrganizationUser(ctx context.Context, userID UserIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOrganizationUserRequest(c.Server, userID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRolesForUserInOrganizationWithBody(ctx context.Context, userID UserIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRolesForUserInOrganizationRequestWithBody(c.Server, userID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRolesForUserInOrganization(ctx context.Context, userID UserIdParam, body UpdateRolesForUserInOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRolesForUserInOrganizationRequest(c.Server, userID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) IdOfTenant(ctx context.Context, params *IdOfTenantParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewIdOfTenantRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -634,8 +1831,8 @@ func (c *Client) IdTenant(ctx context.Context, org string, reqEditors ...Request
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV2StreamingOrgsOrgTenantsTenant(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV2StreamingOrgsOrgTenantsTenantRequest(c.Server, org, tenant)
+func (c *Client) GetStreamingTenant(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStreamingTenantRequest(c.Server, org, tenant)
 	if err != nil {
 		return nil, err
 	}
@@ -646,8 +1843,8 @@ func (c *Client) GetV2StreamingOrgsOrgTenantsTenant(ctx context.Context, org str
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV2StreamingProviders(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV2StreamingProvidersRequest(c.Server)
+func (c *Client) GetStreamingProviders(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStreamingProvidersRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -658,20 +1855,8 @@ func (c *Client) GetV2StreamingProviders(ctx context.Context, reqEditors ...Requ
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetV2StreamingServerlessRegions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV2StreamingServerlessRegionsRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetV2StreamingTenants(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV2StreamingTenantsRequest(c.Server)
+func (c *Client) GetTenants(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTenantsRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -694,8 +1879,8 @@ func (c *Client) IdOfCreateTenantEndpointWithBody(ctx context.Context, params *I
 	return c.Client.Do(req)
 }
 
-func (c *Client) HeadV2StreamingTenantsTenantName(ctx context.Context, tenantName string, params *HeadV2StreamingTenantsTenantNameParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewHeadV2StreamingTenantsTenantNameRequest(c.Server, tenantName, params)
+func (c *Client) IdOfCreateTenantEndpoint(ctx context.Context, params *IdOfCreateTenantEndpointParams, body IdOfCreateTenantEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewIdOfCreateTenantEndpointRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -706,8 +1891,8 @@ func (c *Client) HeadV2StreamingTenantsTenantName(ctx context.Context, tenantNam
 	return c.Client.Do(req)
 }
 
-func (c *Client) IdListTenantTokens(ctx context.Context, tenantName string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewIdListTenantTokensRequest(c.Server, tenantName, params)
+func (c *Client) GetTeneantLimitUsage(ctx context.Context, tenantName string, params *GetTeneantLimitUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTeneantLimitUsageRequest(c.Server, tenantName, params)
 	if err != nil {
 		return nil, err
 	}
@@ -718,8 +1903,8 @@ func (c *Client) IdListTenantTokens(ctx context.Context, tenantName string, para
 	return c.Client.Do(req)
 }
 
-func (c *Client) IdCreateTenantToken(ctx context.Context, tenantName string, params *IdCreateTenantTokenParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewIdCreateTenantTokenRequest(c.Server, tenantName, params)
+func (c *Client) DeleteStreamingTenant(ctx context.Context, tenant string, cluster string, params *DeleteStreamingTenantParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteStreamingTenantRequest(c.Server, tenant, cluster, params)
 	if err != nil {
 		return nil, err
 	}
@@ -730,44 +1915,8 @@ func (c *Client) IdCreateTenantToken(ctx context.Context, tenantName string, par
 	return c.Client.Do(req)
 }
 
-func (c *Client) IdDeleteTenantToken(ctx context.Context, tenantName string, tokenID string, params *IdDeleteTenantTokenParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewIdDeleteTenantTokenRequest(c.Server, tenantName, tokenID, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetV2StreamingTenantsTenantNameTokensTokenID(ctx context.Context, tenantName string, tokenID string, params *GetV2StreamingTenantsTenantNameTokensTokenIDParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV2StreamingTenantsTenantNameTokensTokenIDRequest(c.Server, tenantName, tokenID, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) DeleteV2StreamingTenantsTenantClustersCluster(ctx context.Context, tenant string, cluster string, params *DeleteV2StreamingTenantsTenantClustersClusterParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteV2StreamingTenantsTenantClustersClusterRequest(c.Server, tenant, cluster, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetV2StreamingTenantsTenantLimits(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetV2StreamingTenantsTenantLimitsRequest(c.Server, tenant)
+func (c *Client) GetLimits(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetLimitsRequest(c.Server, tenant)
 	if err != nil {
 		return nil, err
 	}
@@ -928,23 +2077,16 @@ func NewIdTopicStatsTenantNamespaceRequest(server string, tenant string, namespa
 	return req, nil
 }
 
-// NewIdOfTenantRequest generates requests for IdOfTenant
-func NewIdOfTenantRequest(server string, databaseId string) (*http.Request, error) {
+// NewGetAccessListTemplateRequest generates requests for GetAccessListTemplate
+func NewGetAccessListTemplateRequest(server string) (*http.Request, error) {
 	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
-	if err != nil {
-		return nil, err
-	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v2/streaming/astra-cdc/databases/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v2/access-list/template")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -962,8 +2104,1270 @@ func NewIdOfTenantRequest(server string, databaseId string) (*http.Request, erro
 	return req, nil
 }
 
-// NewGetV2StreamingClustersRequest generates requests for GetV2StreamingClusters
-func NewGetV2StreamingClustersRequest(server string) (*http.Request, error) {
+// NewValidateAccessListRequest generates requests for ValidateAccessList
+func NewValidateAccessListRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/access-list/validate")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAllAccessListsForOrganizationRequest generates requests for GetAllAccessListsForOrganization
+func NewGetAllAccessListsForOrganizationRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/access-lists")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListAvailableRegionsRequest generates requests for ListAvailableRegions
+func NewListAvailableRegionsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/availableRegions")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteTokenForClientRequest generates requests for DeleteTokenForClient
+func NewDeleteTokenForClientRequest(server string, clientId ClientIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clientId", runtime.ParamLocationPath, clientId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/clientIdSecret/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetClientsForOrgRequest generates requests for GetClientsForOrg
+func NewGetClientsForOrgRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/clientIdSecrets")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGenerateTokenForClientRequest calls the generic GenerateTokenForClient builder with application/json body
+func NewGenerateTokenForClientRequest(server string, body GenerateTokenForClientJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewGenerateTokenForClientRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewGenerateTokenForClientRequestWithBody generates requests for GenerateTokenForClient with any type of body
+func NewGenerateTokenForClientRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/clientIdSecrets")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetCurrentOrganizationRequest generates requests for GetCurrentOrganization
+func NewGetCurrentOrganizationRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/currentOrg")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListDatabasesRequest generates requests for ListDatabases
+func NewListDatabasesRequest(server string, params *ListDatabasesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Include != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "include", runtime.ParamLocationQuery, *params.Include); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Provider != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "provider", runtime.ParamLocationQuery, *params.Provider); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.StartingAfter != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "starting_after", runtime.ParamLocationQuery, *params.StartingAfter); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Limit != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateDatabaseRequest calls the generic CreateDatabase builder with application/json body
+func NewCreateDatabaseRequest(server string, body CreateDatabaseJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateDatabaseRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateDatabaseRequestWithBody generates requests for CreateDatabase with any type of body
+func NewCreateDatabaseRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetDatabaseRequest generates requests for GetDatabase
+func NewGetDatabaseRequest(server string, databaseId DatabaseIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteAddressesOrAccessListForDatabaseRequest generates requests for DeleteAddressesOrAccessListForDatabase
+func NewDeleteAddressesOrAccessListForDatabaseRequest(server string, databaseId DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/access-list", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Addresses != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "addresses", runtime.ParamLocationQuery, *params.Addresses); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAccessListForDatabaseRequest generates requests for GetAccessListForDatabase
+func NewGetAccessListForDatabaseRequest(server string, databaseId DatabaseIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/access-list", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateAccessListForDatabaseRequest calls the generic UpdateAccessListForDatabase builder with application/json body
+func NewUpdateAccessListForDatabaseRequest(server string, databaseId DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateAccessListForDatabaseRequestWithBody(server, databaseId, "application/json", bodyReader)
+}
+
+// NewUpdateAccessListForDatabaseRequestWithBody generates requests for UpdateAccessListForDatabase with any type of body
+func NewUpdateAccessListForDatabaseRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/access-list", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAddAddressesToAccessListForDatabaseRequest calls the generic AddAddressesToAccessListForDatabase builder with application/json body
+func NewAddAddressesToAccessListForDatabaseRequest(server string, databaseId DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddAddressesToAccessListForDatabaseRequestWithBody(server, databaseId, "application/json", bodyReader)
+}
+
+// NewAddAddressesToAccessListForDatabaseRequestWithBody generates requests for AddAddressesToAccessListForDatabase with any type of body
+func NewAddAddressesToAccessListForDatabaseRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/access-list", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewUpsertAccessListForDatabaseRequest calls the generic UpsertAccessListForDatabase builder with application/json body
+func NewUpsertAccessListForDatabaseRequest(server string, databaseId DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpsertAccessListForDatabaseRequestWithBody(server, databaseId, "application/json", bodyReader)
+}
+
+// NewUpsertAccessListForDatabaseRequestWithBody generates requests for UpsertAccessListForDatabase with any type of body
+func NewUpsertAccessListForDatabaseRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/access-list", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAddKeyspaceRequest generates requests for AddKeyspace
+func NewAddKeyspaceRequest(server string, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "keyspaceName", runtime.ParamLocationPath, keyspaceName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/keyspaces/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewParkDatabaseRequest generates requests for ParkDatabase
+func NewParkDatabaseRequest(server string, databaseId DatabaseIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/park", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewResetPasswordRequest calls the generic ResetPassword builder with application/json body
+func NewResetPasswordRequest(server string, databaseId DatabaseIdParam, body ResetPasswordJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewResetPasswordRequestWithBody(server, databaseId, "application/json", bodyReader)
+}
+
+// NewResetPasswordRequestWithBody generates requests for ResetPassword with any type of body
+func NewResetPasswordRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/resetPassword", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewResizeDatabaseRequest calls the generic ResizeDatabase builder with application/json body
+func NewResizeDatabaseRequest(server string, databaseId DatabaseIdParam, body ResizeDatabaseJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewResizeDatabaseRequestWithBody(server, databaseId, "application/json", bodyReader)
+}
+
+// NewResizeDatabaseRequestWithBody generates requests for ResizeDatabase with any type of body
+func NewResizeDatabaseRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/resize", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGenerateSecureBundleURLRequest generates requests for GenerateSecureBundleURL
+func NewGenerateSecureBundleURLRequest(server string, databaseId DatabaseIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/secureBundleURL", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewTerminateDatabaseRequest generates requests for TerminateDatabase
+func NewTerminateDatabaseRequest(server string, databaseId DatabaseIdParam, params *TerminateDatabaseParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/terminate", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.PreparedStateOnly != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "preparedStateOnly", runtime.ParamLocationQuery, *params.PreparedStateOnly); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUnparkDatabaseRequest generates requests for UnparkDatabase
+func NewUnparkDatabaseRequest(server string, databaseId DatabaseIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/unpark", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetOrganizationRolesRequest generates requests for GetOrganizationRoles
+func NewGetOrganizationRolesRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/roles")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAddOrganizationRoleRequest calls the generic AddOrganizationRole builder with application/json body
+func NewAddOrganizationRoleRequest(server string, body AddOrganizationRoleJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddOrganizationRoleRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAddOrganizationRoleRequestWithBody generates requests for AddOrganizationRole with any type of body
+func NewAddOrganizationRoleRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/roles")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteOrganizationRoleRequest generates requests for DeleteOrganizationRole
+func NewDeleteOrganizationRoleRequest(server string, roleID RoleIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "roleID", runtime.ParamLocationPath, roleID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/roles/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetOrganizationRoleRequest generates requests for GetOrganizationRole
+func NewGetOrganizationRoleRequest(server string, roleID RoleIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "roleID", runtime.ParamLocationPath, roleID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/roles/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateRoleRequest calls the generic UpdateRole builder with application/json body
+func NewUpdateRoleRequest(server string, roleID RoleIdParam, body UpdateRoleJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateRoleRequestWithBody(server, roleID, "application/json", bodyReader)
+}
+
+// NewUpdateRoleRequestWithBody generates requests for UpdateRole with any type of body
+func NewUpdateRoleRequestWithBody(server string, roleID RoleIdParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "roleID", runtime.ParamLocationPath, roleID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/roles/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetOrganizationUsersRequest generates requests for GetOrganizationUsers
+func NewGetOrganizationUsersRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/users")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewInviteUserToOrganizationRequest calls the generic InviteUserToOrganization builder with application/json body
+func NewInviteUserToOrganizationRequest(server string, body InviteUserToOrganizationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewInviteUserToOrganizationRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewInviteUserToOrganizationRequestWithBody generates requests for InviteUserToOrganization with any type of body
+func NewInviteUserToOrganizationRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/users")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewRemoveUserFromOrganizationRequest generates requests for RemoveUserFromOrganization
+func NewRemoveUserFromOrganizationRequest(server string, userID UserIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "userID", runtime.ParamLocationPath, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/users/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetOrganizationUserRequest generates requests for GetOrganizationUser
+func NewGetOrganizationUserRequest(server string, userID UserIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "userID", runtime.ParamLocationPath, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/users/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateRolesForUserInOrganizationRequest calls the generic UpdateRolesForUserInOrganization builder with application/json body
+func NewUpdateRolesForUserInOrganizationRequest(server string, userID UserIdParam, body UpdateRolesForUserInOrganizationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateRolesForUserInOrganizationRequestWithBody(server, userID, "application/json", bodyReader)
+}
+
+// NewUpdateRolesForUserInOrganizationRequestWithBody generates requests for UpdateRolesForUserInOrganization with any type of body
+func NewUpdateRolesForUserInOrganizationRequestWithBody(server string, userID UserIdParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "userID", runtime.ParamLocationPath, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/organizations/users/%s/roles", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewIdOfTenantRequest generates requests for IdOfTenant
+func NewIdOfTenantRequest(server string, params *IdOfTenantParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -980,6 +3384,42 @@ func NewGetV2StreamingClustersRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	queryValues := queryURL.Query()
+
+	if params.Provider != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "provider", runtime.ParamLocationQuery, *params.Provider); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Region != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "region", runtime.ParamLocationQuery, *params.Region); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
@@ -1023,8 +3463,8 @@ func NewIdTenantRequest(server string, org string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetV2StreamingOrgsOrgTenantsTenantRequest generates requests for GetV2StreamingOrgsOrgTenantsTenant
-func NewGetV2StreamingOrgsOrgTenantsTenantRequest(server string, org string, tenant string) (*http.Request, error) {
+// NewGetStreamingTenantRequest generates requests for GetStreamingTenant
+func NewGetStreamingTenantRequest(server string, org string, tenant string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1064,8 +3504,8 @@ func NewGetV2StreamingOrgsOrgTenantsTenantRequest(server string, org string, ten
 	return req, nil
 }
 
-// NewGetV2StreamingProvidersRequest generates requests for GetV2StreamingProviders
-func NewGetV2StreamingProvidersRequest(server string) (*http.Request, error) {
+// NewGetStreamingProvidersRequest generates requests for GetStreamingProviders
+func NewGetStreamingProvidersRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1091,35 +3531,8 @@ func NewGetV2StreamingProvidersRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetV2StreamingServerlessRegionsRequest generates requests for GetV2StreamingServerlessRegions
-func NewGetV2StreamingServerlessRegionsRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v2/streaming/serverless-regions")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetV2StreamingTenantsRequest generates requests for GetV2StreamingTenants
-func NewGetV2StreamingTenantsRequest(server string) (*http.Request, error) {
+// NewGetTenantsRequest generates requests for GetTenants
+func NewGetTenantsRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1143,6 +3556,17 @@ func NewGetV2StreamingTenantsRequest(server string) (*http.Request, error) {
 	}
 
 	return req, nil
+}
+
+// NewIdOfCreateTenantEndpointRequest calls the generic IdOfCreateTenantEndpoint builder with application/json body
+func NewIdOfCreateTenantEndpointRequest(server string, params *IdOfCreateTenantEndpointParams, body IdOfCreateTenantEndpointJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewIdOfCreateTenantEndpointRequestWithBody(server, params, "application/json", bodyReader)
 }
 
 // NewIdOfCreateTenantEndpointRequestWithBody generates requests for IdOfCreateTenantEndpoint with any type of body
@@ -1194,8 +3618,8 @@ func NewIdOfCreateTenantEndpointRequestWithBody(server string, params *IdOfCreat
 	return req, nil
 }
 
-// NewHeadV2StreamingTenantsTenantNameRequest generates requests for HeadV2StreamingTenantsTenantName
-func NewHeadV2StreamingTenantsTenantNameRequest(server string, tenantName string, params *HeadV2StreamingTenantsTenantNameParams) (*http.Request, error) {
+// NewGetTeneantLimitUsageRequest generates requests for GetTeneantLimitUsage
+func NewGetTeneantLimitUsageRequest(server string, tenantName string, params *GetTeneantLimitUsageParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1261,287 +3685,11 @@ func NewHeadV2StreamingTenantsTenantNameRequest(server string, tenantName string
 		return nil, err
 	}
 
-	var headerParam0 string
-
-	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, params.Authorization)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Authorization", headerParam0)
-
-	var headerParam1 string
-
-	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Current-Org", runtime.ParamLocationHeader, params.XDataStaxCurrentOrg)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("X-DataStax-Current-Org", headerParam1)
-
 	return req, nil
 }
 
-// NewIdListTenantTokensRequest generates requests for IdListTenantTokens
-func NewIdListTenantTokensRequest(server string, tenantName string, params *IdListTenantTokensParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenantName", runtime.ParamLocationPath, tenantName)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v2/streaming/tenants/%s/tokens", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var headerParam0 string
-
-	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, params.Authorization)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Authorization", headerParam0)
-
-	var headerParam1 string
-
-	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Current-Org", runtime.ParamLocationHeader, params.XDataStaxCurrentOrg)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("X-DataStax-Current-Org", headerParam1)
-
-	var headerParam2 string
-
-	headerParam2, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam2)
-
-	return req, nil
-}
-
-// NewIdCreateTenantTokenRequest generates requests for IdCreateTenantToken
-func NewIdCreateTenantTokenRequest(server string, tenantName string, params *IdCreateTenantTokenParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenantName", runtime.ParamLocationPath, tenantName)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v2/streaming/tenants/%s/tokens", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var headerParam0 string
-
-	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, params.Authorization)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Authorization", headerParam0)
-
-	var headerParam1 string
-
-	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Current-Org", runtime.ParamLocationHeader, params.XDataStaxCurrentOrg)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("X-DataStax-Current-Org", headerParam1)
-
-	var headerParam2 string
-
-	headerParam2, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam2)
-
-	return req, nil
-}
-
-// NewIdDeleteTenantTokenRequest generates requests for IdDeleteTenantToken
-func NewIdDeleteTenantTokenRequest(server string, tenantName string, tokenID string, params *IdDeleteTenantTokenParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenantName", runtime.ParamLocationPath, tenantName)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "tokenID", runtime.ParamLocationPath, tokenID)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v2/streaming/tenants/%s/tokens/%s", pathParam0, pathParam1)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var headerParam0 string
-
-	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, params.Authorization)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Authorization", headerParam0)
-
-	var headerParam1 string
-
-	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Current-Org", runtime.ParamLocationHeader, params.XDataStaxCurrentOrg)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("X-DataStax-Current-Org", headerParam1)
-
-	var headerParam2 string
-
-	headerParam2, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam2)
-
-	return req, nil
-}
-
-// NewGetV2StreamingTenantsTenantNameTokensTokenIDRequest generates requests for GetV2StreamingTenantsTenantNameTokensTokenID
-func NewGetV2StreamingTenantsTenantNameTokensTokenIDRequest(server string, tenantName string, tokenID string, params *GetV2StreamingTenantsTenantNameTokensTokenIDParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenantName", runtime.ParamLocationPath, tenantName)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "tokenID", runtime.ParamLocationPath, tokenID)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v2/streaming/tenants/%s/tokens/%s", pathParam0, pathParam1)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var headerParam0 string
-
-	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, params.Authorization)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Authorization", headerParam0)
-
-	var headerParam1 string
-
-	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Current-Org", runtime.ParamLocationHeader, params.XDataStaxCurrentOrg)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("X-DataStax-Current-Org", headerParam1)
-
-	var headerParam2 string
-
-	headerParam2, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam2)
-
-	return req, nil
-}
-
-// NewDeleteV2StreamingTenantsTenantClustersClusterRequest generates requests for DeleteV2StreamingTenantsTenantClustersCluster
-func NewDeleteV2StreamingTenantsTenantClustersClusterRequest(server string, tenant string, cluster string, params *DeleteV2StreamingTenantsTenantClustersClusterParams) (*http.Request, error) {
+// NewDeleteStreamingTenantRequest generates requests for DeleteStreamingTenant
+func NewDeleteStreamingTenantRequest(server string, tenant string, cluster string, params *DeleteStreamingTenantParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1601,8 +3749,8 @@ func NewDeleteV2StreamingTenantsTenantClustersClusterRequest(server string, tena
 	return req, nil
 }
 
-// NewGetV2StreamingTenantsTenantLimitsRequest generates requests for GetV2StreamingTenantsTenantLimits
-func NewGetV2StreamingTenantsTenantLimitsRequest(server string, tenant string) (*http.Request, error) {
+// NewGetLimitsRequest generates requests for GetLimits
+func NewGetLimitsRequest(server string, tenant string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1690,50 +3838,155 @@ type ClientWithResponsesInterface interface {
 	// IdTopicStatsTenantNamespace request
 	IdTopicStatsTenantNamespaceWithResponse(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*IdTopicStatsTenantNamespaceResponse, error)
 
-	// IdOfTenant request
-	IdOfTenantWithResponse(ctx context.Context, databaseId string, reqEditors ...RequestEditorFn) (*IdOfTenantResponse, error)
+	// GetAccessListTemplate request
+	GetAccessListTemplateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAccessListTemplateResponse, error)
 
-	// GetV2StreamingClusters request
-	GetV2StreamingClustersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV2StreamingClustersResponse, error)
+	// ValidateAccessList request
+	ValidateAccessListWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ValidateAccessListResponse, error)
+
+	// GetAllAccessListsForOrganization request
+	GetAllAccessListsForOrganizationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAllAccessListsForOrganizationResponse, error)
+
+	// ListAvailableRegions request
+	ListAvailableRegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAvailableRegionsResponse, error)
+
+	// DeleteTokenForClient request
+	DeleteTokenForClientWithResponse(ctx context.Context, clientId ClientIdParam, reqEditors ...RequestEditorFn) (*DeleteTokenForClientResponse, error)
+
+	// GetClientsForOrg request
+	GetClientsForOrgWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetClientsForOrgResponse, error)
+
+	// GenerateTokenForClient request with any body
+	GenerateTokenForClientWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GenerateTokenForClientResponse, error)
+
+	GenerateTokenForClientWithResponse(ctx context.Context, body GenerateTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateTokenForClientResponse, error)
+
+	// GetCurrentOrganization request
+	GetCurrentOrganizationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentOrganizationResponse, error)
+
+	// ListDatabases request
+	ListDatabasesWithResponse(ctx context.Context, params *ListDatabasesParams, reqEditors ...RequestEditorFn) (*ListDatabasesResponse, error)
+
+	// CreateDatabase request with any body
+	CreateDatabaseWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDatabaseResponse, error)
+
+	CreateDatabaseWithResponse(ctx context.Context, body CreateDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDatabaseResponse, error)
+
+	// GetDatabase request
+	GetDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GetDatabaseResponse, error)
+
+	// DeleteAddressesOrAccessListForDatabase request
+	DeleteAddressesOrAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams, reqEditors ...RequestEditorFn) (*DeleteAddressesOrAccessListForDatabaseResponse, error)
+
+	// GetAccessListForDatabase request
+	GetAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GetAccessListForDatabaseResponse, error)
+
+	// UpdateAccessListForDatabase request with any body
+	UpdateAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAccessListForDatabaseResponse, error)
+
+	UpdateAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAccessListForDatabaseResponse, error)
+
+	// AddAddressesToAccessListForDatabase request with any body
+	AddAddressesToAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAddressesToAccessListForDatabaseResponse, error)
+
+	AddAddressesToAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAddressesToAccessListForDatabaseResponse, error)
+
+	// UpsertAccessListForDatabase request with any body
+	UpsertAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertAccessListForDatabaseResponse, error)
+
+	UpsertAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertAccessListForDatabaseResponse, error)
+
+	// AddKeyspace request
+	AddKeyspaceWithResponse(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*AddKeyspaceResponse, error)
+
+	// ParkDatabase request
+	ParkDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*ParkDatabaseResponse, error)
+
+	// ResetPassword request with any body
+	ResetPasswordWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResetPasswordResponse, error)
+
+	ResetPasswordWithResponse(ctx context.Context, databaseId DatabaseIdParam, body ResetPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*ResetPasswordResponse, error)
+
+	// ResizeDatabase request with any body
+	ResizeDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResizeDatabaseResponse, error)
+
+	ResizeDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body ResizeDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*ResizeDatabaseResponse, error)
+
+	// GenerateSecureBundleURL request
+	GenerateSecureBundleURLWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GenerateSecureBundleURLResponse, error)
+
+	// TerminateDatabase request
+	TerminateDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*TerminateDatabaseResponse, error)
+
+	// UnparkDatabase request
+	UnparkDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*UnparkDatabaseResponse, error)
+
+	// GetOrganizationRoles request
+	GetOrganizationRolesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetOrganizationRolesResponse, error)
+
+	// AddOrganizationRole request with any body
+	AddOrganizationRoleWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddOrganizationRoleResponse, error)
+
+	AddOrganizationRoleWithResponse(ctx context.Context, body AddOrganizationRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*AddOrganizationRoleResponse, error)
+
+	// DeleteOrganizationRole request
+	DeleteOrganizationRoleWithResponse(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*DeleteOrganizationRoleResponse, error)
+
+	// GetOrganizationRole request
+	GetOrganizationRoleWithResponse(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*GetOrganizationRoleResponse, error)
+
+	// UpdateRole request with any body
+	UpdateRoleWithBodyWithResponse(ctx context.Context, roleID RoleIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRoleResponse, error)
+
+	UpdateRoleWithResponse(ctx context.Context, roleID RoleIdParam, body UpdateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRoleResponse, error)
+
+	// GetOrganizationUsers request
+	GetOrganizationUsersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetOrganizationUsersResponse, error)
+
+	// InviteUserToOrganization request with any body
+	InviteUserToOrganizationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InviteUserToOrganizationResponse, error)
+
+	InviteUserToOrganizationWithResponse(ctx context.Context, body InviteUserToOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*InviteUserToOrganizationResponse, error)
+
+	// RemoveUserFromOrganization request
+	RemoveUserFromOrganizationWithResponse(ctx context.Context, userID UserIdParam, reqEditors ...RequestEditorFn) (*RemoveUserFromOrganizationResponse, error)
+
+	// GetOrganizationUser request
+	GetOrganizationUserWithResponse(ctx context.Context, userID UserIdParam, reqEditors ...RequestEditorFn) (*GetOrganizationUserResponse, error)
+
+	// UpdateRolesForUserInOrganization request with any body
+	UpdateRolesForUserInOrganizationWithBodyWithResponse(ctx context.Context, userID UserIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRolesForUserInOrganizationResponse, error)
+
+	UpdateRolesForUserInOrganizationWithResponse(ctx context.Context, userID UserIdParam, body UpdateRolesForUserInOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRolesForUserInOrganizationResponse, error)
+
+	// IdOfTenant request
+	IdOfTenantWithResponse(ctx context.Context, params *IdOfTenantParams, reqEditors ...RequestEditorFn) (*IdOfTenantResponse, error)
 
 	// IdTenant request
 	IdTenantWithResponse(ctx context.Context, org string, reqEditors ...RequestEditorFn) (*IdTenantResponse, error)
 
-	// GetV2StreamingOrgsOrgTenantsTenant request
-	GetV2StreamingOrgsOrgTenantsTenantWithResponse(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*GetV2StreamingOrgsOrgTenantsTenantResponse, error)
+	// GetStreamingTenant request
+	GetStreamingTenantWithResponse(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*GetStreamingTenantResponse, error)
 
-	// GetV2StreamingProviders request
-	GetV2StreamingProvidersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV2StreamingProvidersResponse, error)
+	// GetStreamingProviders request
+	GetStreamingProvidersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetStreamingProvidersResponse, error)
 
-	// GetV2StreamingServerlessRegions request
-	GetV2StreamingServerlessRegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV2StreamingServerlessRegionsResponse, error)
-
-	// GetV2StreamingTenants request
-	GetV2StreamingTenantsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV2StreamingTenantsResponse, error)
+	// GetTenants request
+	GetTenantsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetTenantsResponse, error)
 
 	// IdOfCreateTenantEndpoint request with any body
 	IdOfCreateTenantEndpointWithBodyWithResponse(ctx context.Context, params *IdOfCreateTenantEndpointParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*IdOfCreateTenantEndpointResponse, error)
 
-	// HeadV2StreamingTenantsTenantName request
-	HeadV2StreamingTenantsTenantNameWithResponse(ctx context.Context, tenantName string, params *HeadV2StreamingTenantsTenantNameParams, reqEditors ...RequestEditorFn) (*HeadV2StreamingTenantsTenantNameResponse, error)
+	IdOfCreateTenantEndpointWithResponse(ctx context.Context, params *IdOfCreateTenantEndpointParams, body IdOfCreateTenantEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*IdOfCreateTenantEndpointResponse, error)
 
-	// IdListTenantTokens request
-	IdListTenantTokensWithResponse(ctx context.Context, tenantName string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*IdListTenantTokensResponse, error)
+	// GetTeneantLimitUsage request
+	GetTeneantLimitUsageWithResponse(ctx context.Context, tenantName string, params *GetTeneantLimitUsageParams, reqEditors ...RequestEditorFn) (*GetTeneantLimitUsageResponse, error)
 
-	// IdCreateTenantToken request
-	IdCreateTenantTokenWithResponse(ctx context.Context, tenantName string, params *IdCreateTenantTokenParams, reqEditors ...RequestEditorFn) (*IdCreateTenantTokenResponse, error)
+	// DeleteStreamingTenant request
+	DeleteStreamingTenantWithResponse(ctx context.Context, tenant string, cluster string, params *DeleteStreamingTenantParams, reqEditors ...RequestEditorFn) (*DeleteStreamingTenantResponse, error)
 
-	// IdDeleteTenantToken request
-	IdDeleteTenantTokenWithResponse(ctx context.Context, tenantName string, tokenID string, params *IdDeleteTenantTokenParams, reqEditors ...RequestEditorFn) (*IdDeleteTenantTokenResponse, error)
-
-	// GetV2StreamingTenantsTenantNameTokensTokenID request
-	GetV2StreamingTenantsTenantNameTokensTokenIDWithResponse(ctx context.Context, tenantName string, tokenID string, params *GetV2StreamingTenantsTenantNameTokensTokenIDParams, reqEditors ...RequestEditorFn) (*GetV2StreamingTenantsTenantNameTokensTokenIDResponse, error)
-
-	// DeleteV2StreamingTenantsTenantClustersCluster request
-	DeleteV2StreamingTenantsTenantClustersClusterWithResponse(ctx context.Context, tenant string, cluster string, params *DeleteV2StreamingTenantsTenantClustersClusterParams, reqEditors ...RequestEditorFn) (*DeleteV2StreamingTenantsTenantClustersClusterResponse, error)
-
-	// GetV2StreamingTenantsTenantLimits request
-	GetV2StreamingTenantsTenantLimitsWithResponse(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*GetV2StreamingTenantsTenantLimitsResponse, error)
+	// GetLimits request
+	GetLimitsWithResponse(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*GetLimitsResponse, error)
 }
 
 type IdNamespaceStatsTenantResponse struct {
@@ -1820,6 +4073,835 @@ func (r IdTopicStatsTenantNamespaceResponse) StatusCode() int {
 	return 0
 }
 
+type GetAccessListTemplateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AccessListRequest
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAccessListTemplateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAccessListTemplateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ValidateAccessListResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ValidationResponse
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r ValidateAccessListResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ValidateAccessListResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAllAccessListsForOrganizationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]AccessListResponse
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAllAccessListsForOrganizationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAllAccessListsForOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListAvailableRegionsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]AvailableRegionCombination
+	JSON401      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAvailableRegionsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAvailableRegionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteTokenForClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteTokenForClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteTokenForClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetClientsForOrgResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *interface{}
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetClientsForOrgResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetClientsForOrgResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GenerateTokenForClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *interface{}
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GenerateTokenForClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GenerateTokenForClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCurrentOrganizationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *interface{}
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCurrentOrganizationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCurrentOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListDatabasesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]Database
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r ListDatabasesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListDatabasesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateDatabaseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON422      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateDatabaseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetDatabaseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Database
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON404      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetDatabaseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteAddressesOrAccessListForDatabaseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteAddressesOrAccessListForDatabaseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteAddressesOrAccessListForDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAccessListForDatabaseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AccessListResponse
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAccessListForDatabaseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAccessListForDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateAccessListForDatabaseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateAccessListForDatabaseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateAccessListForDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AddAddressesToAccessListForDatabaseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r AddAddressesToAccessListForDatabaseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AddAddressesToAccessListForDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpsertAccessListForDatabaseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r UpsertAccessListForDatabaseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpsertAccessListForDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AddKeyspaceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON401      *Errors
+	JSON404      *Errors
+	JSON422      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r AddKeyspaceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AddKeyspaceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ParkDatabaseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r ParkDatabaseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ParkDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ResetPasswordResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r ResetPasswordResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ResetPasswordResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ResizeDatabaseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r ResizeDatabaseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ResizeDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GenerateSecureBundleURLResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CredsURL
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GenerateSecureBundleURLResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GenerateSecureBundleURLResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type TerminateDatabaseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r TerminateDatabaseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r TerminateDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UnparkDatabaseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r UnparkDatabaseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UnparkDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOrganizationRolesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *interface{}
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOrganizationRolesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOrganizationRolesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AddOrganizationRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r AddOrganizationRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AddOrganizationRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteOrganizationRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteOrganizationRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteOrganizationRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOrganizationRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *interface{}
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOrganizationRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOrganizationRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *interface{}
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOrganizationUsersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *GetOrganizationUsersResponse
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOrganizationUsersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOrganizationUsersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type InviteUserToOrganizationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r InviteUserToOrganizationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r InviteUserToOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RemoveUserFromOrganizationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r RemoveUserFromOrganizationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RemoveUserFromOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOrganizationUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UserResponse
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOrganizationUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOrganizationUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateRolesForUserInOrganizationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateRolesForUserInOrganizationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateRolesForUserInOrganizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type IdOfTenantResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -1835,27 +4917,6 @@ func (r IdOfTenantResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r IdOfTenantResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetV2StreamingClustersResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r GetV2StreamingClustersResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetV2StreamingClustersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1883,13 +4944,13 @@ func (r IdTenantResponse) StatusCode() int {
 	return 0
 }
 
-type GetV2StreamingOrgsOrgTenantsTenantResponse struct {
+type GetStreamingTenantResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV2StreamingOrgsOrgTenantsTenantResponse) Status() string {
+func (r GetStreamingTenantResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1897,20 +4958,20 @@ func (r GetV2StreamingOrgsOrgTenantsTenantResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV2StreamingOrgsOrgTenantsTenantResponse) StatusCode() int {
+func (r GetStreamingTenantResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV2StreamingProvidersResponse struct {
+type GetStreamingProvidersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV2StreamingProvidersResponse) Status() string {
+func (r GetStreamingProvidersResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1918,20 +4979,20 @@ func (r GetV2StreamingProvidersResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV2StreamingProvidersResponse) StatusCode() int {
+func (r GetStreamingProvidersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetV2StreamingServerlessRegionsResponse struct {
+type GetTenantsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetV2StreamingServerlessRegionsResponse) Status() string {
+func (r GetTenantsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1939,28 +5000,7 @@ func (r GetV2StreamingServerlessRegionsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetV2StreamingServerlessRegionsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetV2StreamingTenantsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r GetV2StreamingTenantsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetV2StreamingTenantsResponse) StatusCode() int {
+func (r GetTenantsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1988,13 +5028,13 @@ func (r IdOfCreateTenantEndpointResponse) StatusCode() int {
 	return 0
 }
 
-type HeadV2StreamingTenantsTenantNameResponse struct {
+type GetTeneantLimitUsageResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r HeadV2StreamingTenantsTenantNameResponse) Status() string {
+func (r GetTeneantLimitUsageResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -2002,20 +5042,20 @@ func (r HeadV2StreamingTenantsTenantNameResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r HeadV2StreamingTenantsTenantNameResponse) StatusCode() int {
+func (r GetTeneantLimitUsageResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type IdListTenantTokensResponse struct {
+type DeleteStreamingTenantResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r IdListTenantTokensResponse) Status() string {
+func (r DeleteStreamingTenantResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -2023,20 +5063,20 @@ func (r IdListTenantTokensResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r IdListTenantTokensResponse) StatusCode() int {
+func (r DeleteStreamingTenantResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type IdCreateTenantTokenResponse struct {
+type GetLimitsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r IdCreateTenantTokenResponse) Status() string {
+func (r GetLimitsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -2044,91 +5084,7 @@ func (r IdCreateTenantTokenResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r IdCreateTenantTokenResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type IdDeleteTenantTokenResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r IdDeleteTenantTokenResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r IdDeleteTenantTokenResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetV2StreamingTenantsTenantNameTokensTokenIDResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r GetV2StreamingTenantsTenantNameTokensTokenIDResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetV2StreamingTenantsTenantNameTokensTokenIDResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type DeleteV2StreamingTenantsTenantClustersClusterResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r DeleteV2StreamingTenantsTenantClustersClusterResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r DeleteV2StreamingTenantsTenantClustersClusterResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetV2StreamingTenantsTenantLimitsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r GetV2StreamingTenantsTenantLimitsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetV2StreamingTenantsTenantLimitsResponse) StatusCode() int {
+func (r GetLimitsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2171,22 +5127,398 @@ func (c *ClientWithResponses) IdTopicStatsTenantNamespaceWithResponse(ctx contex
 	return ParseIdTopicStatsTenantNamespaceResponse(rsp)
 }
 
+// GetAccessListTemplateWithResponse request returning *GetAccessListTemplateResponse
+func (c *ClientWithResponses) GetAccessListTemplateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAccessListTemplateResponse, error) {
+	rsp, err := c.GetAccessListTemplate(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAccessListTemplateResponse(rsp)
+}
+
+// ValidateAccessListWithResponse request returning *ValidateAccessListResponse
+func (c *ClientWithResponses) ValidateAccessListWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ValidateAccessListResponse, error) {
+	rsp, err := c.ValidateAccessList(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseValidateAccessListResponse(rsp)
+}
+
+// GetAllAccessListsForOrganizationWithResponse request returning *GetAllAccessListsForOrganizationResponse
+func (c *ClientWithResponses) GetAllAccessListsForOrganizationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAllAccessListsForOrganizationResponse, error) {
+	rsp, err := c.GetAllAccessListsForOrganization(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAllAccessListsForOrganizationResponse(rsp)
+}
+
+// ListAvailableRegionsWithResponse request returning *ListAvailableRegionsResponse
+func (c *ClientWithResponses) ListAvailableRegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListAvailableRegionsResponse, error) {
+	rsp, err := c.ListAvailableRegions(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAvailableRegionsResponse(rsp)
+}
+
+// DeleteTokenForClientWithResponse request returning *DeleteTokenForClientResponse
+func (c *ClientWithResponses) DeleteTokenForClientWithResponse(ctx context.Context, clientId ClientIdParam, reqEditors ...RequestEditorFn) (*DeleteTokenForClientResponse, error) {
+	rsp, err := c.DeleteTokenForClient(ctx, clientId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteTokenForClientResponse(rsp)
+}
+
+// GetClientsForOrgWithResponse request returning *GetClientsForOrgResponse
+func (c *ClientWithResponses) GetClientsForOrgWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetClientsForOrgResponse, error) {
+	rsp, err := c.GetClientsForOrg(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetClientsForOrgResponse(rsp)
+}
+
+// GenerateTokenForClientWithBodyWithResponse request with arbitrary body returning *GenerateTokenForClientResponse
+func (c *ClientWithResponses) GenerateTokenForClientWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GenerateTokenForClientResponse, error) {
+	rsp, err := c.GenerateTokenForClientWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGenerateTokenForClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) GenerateTokenForClientWithResponse(ctx context.Context, body GenerateTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateTokenForClientResponse, error) {
+	rsp, err := c.GenerateTokenForClient(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGenerateTokenForClientResponse(rsp)
+}
+
+// GetCurrentOrganizationWithResponse request returning *GetCurrentOrganizationResponse
+func (c *ClientWithResponses) GetCurrentOrganizationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentOrganizationResponse, error) {
+	rsp, err := c.GetCurrentOrganization(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCurrentOrganizationResponse(rsp)
+}
+
+// ListDatabasesWithResponse request returning *ListDatabasesResponse
+func (c *ClientWithResponses) ListDatabasesWithResponse(ctx context.Context, params *ListDatabasesParams, reqEditors ...RequestEditorFn) (*ListDatabasesResponse, error) {
+	rsp, err := c.ListDatabases(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListDatabasesResponse(rsp)
+}
+
+// CreateDatabaseWithBodyWithResponse request with arbitrary body returning *CreateDatabaseResponse
+func (c *ClientWithResponses) CreateDatabaseWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDatabaseResponse, error) {
+	rsp, err := c.CreateDatabaseWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDatabaseResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateDatabaseWithResponse(ctx context.Context, body CreateDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDatabaseResponse, error) {
+	rsp, err := c.CreateDatabase(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDatabaseResponse(rsp)
+}
+
+// GetDatabaseWithResponse request returning *GetDatabaseResponse
+func (c *ClientWithResponses) GetDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GetDatabaseResponse, error) {
+	rsp, err := c.GetDatabase(ctx, databaseId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetDatabaseResponse(rsp)
+}
+
+// DeleteAddressesOrAccessListForDatabaseWithResponse request returning *DeleteAddressesOrAccessListForDatabaseResponse
+func (c *ClientWithResponses) DeleteAddressesOrAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *DeleteAddressesOrAccessListForDatabaseParams, reqEditors ...RequestEditorFn) (*DeleteAddressesOrAccessListForDatabaseResponse, error) {
+	rsp, err := c.DeleteAddressesOrAccessListForDatabase(ctx, databaseId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteAddressesOrAccessListForDatabaseResponse(rsp)
+}
+
+// GetAccessListForDatabaseWithResponse request returning *GetAccessListForDatabaseResponse
+func (c *ClientWithResponses) GetAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GetAccessListForDatabaseResponse, error) {
+	rsp, err := c.GetAccessListForDatabase(ctx, databaseId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAccessListForDatabaseResponse(rsp)
+}
+
+// UpdateAccessListForDatabaseWithBodyWithResponse request with arbitrary body returning *UpdateAccessListForDatabaseResponse
+func (c *ClientWithResponses) UpdateAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAccessListForDatabaseResponse, error) {
+	rsp, err := c.UpdateAccessListForDatabaseWithBody(ctx, databaseId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAccessListForDatabaseResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body UpdateAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAccessListForDatabaseResponse, error) {
+	rsp, err := c.UpdateAccessListForDatabase(ctx, databaseId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAccessListForDatabaseResponse(rsp)
+}
+
+// AddAddressesToAccessListForDatabaseWithBodyWithResponse request with arbitrary body returning *AddAddressesToAccessListForDatabaseResponse
+func (c *ClientWithResponses) AddAddressesToAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddAddressesToAccessListForDatabaseResponse, error) {
+	rsp, err := c.AddAddressesToAccessListForDatabaseWithBody(ctx, databaseId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddAddressesToAccessListForDatabaseResponse(rsp)
+}
+
+func (c *ClientWithResponses) AddAddressesToAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body AddAddressesToAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAddressesToAccessListForDatabaseResponse, error) {
+	rsp, err := c.AddAddressesToAccessListForDatabase(ctx, databaseId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddAddressesToAccessListForDatabaseResponse(rsp)
+}
+
+// UpsertAccessListForDatabaseWithBodyWithResponse request with arbitrary body returning *UpsertAccessListForDatabaseResponse
+func (c *ClientWithResponses) UpsertAccessListForDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertAccessListForDatabaseResponse, error) {
+	rsp, err := c.UpsertAccessListForDatabaseWithBody(ctx, databaseId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpsertAccessListForDatabaseResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpsertAccessListForDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body UpsertAccessListForDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertAccessListForDatabaseResponse, error) {
+	rsp, err := c.UpsertAccessListForDatabase(ctx, databaseId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpsertAccessListForDatabaseResponse(rsp)
+}
+
+// AddKeyspaceWithResponse request returning *AddKeyspaceResponse
+func (c *ClientWithResponses) AddKeyspaceWithResponse(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*AddKeyspaceResponse, error) {
+	rsp, err := c.AddKeyspace(ctx, databaseId, keyspaceName, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddKeyspaceResponse(rsp)
+}
+
+// ParkDatabaseWithResponse request returning *ParkDatabaseResponse
+func (c *ClientWithResponses) ParkDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*ParkDatabaseResponse, error) {
+	rsp, err := c.ParkDatabase(ctx, databaseId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseParkDatabaseResponse(rsp)
+}
+
+// ResetPasswordWithBodyWithResponse request with arbitrary body returning *ResetPasswordResponse
+func (c *ClientWithResponses) ResetPasswordWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResetPasswordResponse, error) {
+	rsp, err := c.ResetPasswordWithBody(ctx, databaseId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResetPasswordResponse(rsp)
+}
+
+func (c *ClientWithResponses) ResetPasswordWithResponse(ctx context.Context, databaseId DatabaseIdParam, body ResetPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*ResetPasswordResponse, error) {
+	rsp, err := c.ResetPassword(ctx, databaseId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResetPasswordResponse(rsp)
+}
+
+// ResizeDatabaseWithBodyWithResponse request with arbitrary body returning *ResizeDatabaseResponse
+func (c *ClientWithResponses) ResizeDatabaseWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResizeDatabaseResponse, error) {
+	rsp, err := c.ResizeDatabaseWithBody(ctx, databaseId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResizeDatabaseResponse(rsp)
+}
+
+func (c *ClientWithResponses) ResizeDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body ResizeDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*ResizeDatabaseResponse, error) {
+	rsp, err := c.ResizeDatabase(ctx, databaseId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResizeDatabaseResponse(rsp)
+}
+
+// GenerateSecureBundleURLWithResponse request returning *GenerateSecureBundleURLResponse
+func (c *ClientWithResponses) GenerateSecureBundleURLWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GenerateSecureBundleURLResponse, error) {
+	rsp, err := c.GenerateSecureBundleURL(ctx, databaseId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGenerateSecureBundleURLResponse(rsp)
+}
+
+// TerminateDatabaseWithResponse request returning *TerminateDatabaseResponse
+func (c *ClientWithResponses) TerminateDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*TerminateDatabaseResponse, error) {
+	rsp, err := c.TerminateDatabase(ctx, databaseId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseTerminateDatabaseResponse(rsp)
+}
+
+// UnparkDatabaseWithResponse request returning *UnparkDatabaseResponse
+func (c *ClientWithResponses) UnparkDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*UnparkDatabaseResponse, error) {
+	rsp, err := c.UnparkDatabase(ctx, databaseId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUnparkDatabaseResponse(rsp)
+}
+
+// GetOrganizationRolesWithResponse request returning *GetOrganizationRolesResponse
+func (c *ClientWithResponses) GetOrganizationRolesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetOrganizationRolesResponse, error) {
+	rsp, err := c.GetOrganizationRoles(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOrganizationRolesResponse(rsp)
+}
+
+// AddOrganizationRoleWithBodyWithResponse request with arbitrary body returning *AddOrganizationRoleResponse
+func (c *ClientWithResponses) AddOrganizationRoleWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddOrganizationRoleResponse, error) {
+	rsp, err := c.AddOrganizationRoleWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddOrganizationRoleResponse(rsp)
+}
+
+func (c *ClientWithResponses) AddOrganizationRoleWithResponse(ctx context.Context, body AddOrganizationRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*AddOrganizationRoleResponse, error) {
+	rsp, err := c.AddOrganizationRole(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddOrganizationRoleResponse(rsp)
+}
+
+// DeleteOrganizationRoleWithResponse request returning *DeleteOrganizationRoleResponse
+func (c *ClientWithResponses) DeleteOrganizationRoleWithResponse(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*DeleteOrganizationRoleResponse, error) {
+	rsp, err := c.DeleteOrganizationRole(ctx, roleID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOrganizationRoleResponse(rsp)
+}
+
+// GetOrganizationRoleWithResponse request returning *GetOrganizationRoleResponse
+func (c *ClientWithResponses) GetOrganizationRoleWithResponse(ctx context.Context, roleID RoleIdParam, reqEditors ...RequestEditorFn) (*GetOrganizationRoleResponse, error) {
+	rsp, err := c.GetOrganizationRole(ctx, roleID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOrganizationRoleResponse(rsp)
+}
+
+// UpdateRoleWithBodyWithResponse request with arbitrary body returning *UpdateRoleResponse
+func (c *ClientWithResponses) UpdateRoleWithBodyWithResponse(ctx context.Context, roleID RoleIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRoleResponse, error) {
+	rsp, err := c.UpdateRoleWithBody(ctx, roleID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRoleResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateRoleWithResponse(ctx context.Context, roleID RoleIdParam, body UpdateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRoleResponse, error) {
+	rsp, err := c.UpdateRole(ctx, roleID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRoleResponse(rsp)
+}
+
+// GetOrganizationUsersWithResponse request returning *GetOrganizationUsersResponse
+func (c *ClientWithResponses) GetOrganizationUsersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetOrganizationUsersResponse, error) {
+	rsp, err := c.GetOrganizationUsers(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOrganizationUsersResponse(rsp)
+}
+
+// InviteUserToOrganizationWithBodyWithResponse request with arbitrary body returning *InviteUserToOrganizationResponse
+func (c *ClientWithResponses) InviteUserToOrganizationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InviteUserToOrganizationResponse, error) {
+	rsp, err := c.InviteUserToOrganizationWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseInviteUserToOrganizationResponse(rsp)
+}
+
+func (c *ClientWithResponses) InviteUserToOrganizationWithResponse(ctx context.Context, body InviteUserToOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*InviteUserToOrganizationResponse, error) {
+	rsp, err := c.InviteUserToOrganization(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseInviteUserToOrganizationResponse(rsp)
+}
+
+// RemoveUserFromOrganizationWithResponse request returning *RemoveUserFromOrganizationResponse
+func (c *ClientWithResponses) RemoveUserFromOrganizationWithResponse(ctx context.Context, userID UserIdParam, reqEditors ...RequestEditorFn) (*RemoveUserFromOrganizationResponse, error) {
+	rsp, err := c.RemoveUserFromOrganization(ctx, userID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRemoveUserFromOrganizationResponse(rsp)
+}
+
+// GetOrganizationUserWithResponse request returning *GetOrganizationUserResponse
+func (c *ClientWithResponses) GetOrganizationUserWithResponse(ctx context.Context, userID UserIdParam, reqEditors ...RequestEditorFn) (*GetOrganizationUserResponse, error) {
+	rsp, err := c.GetOrganizationUser(ctx, userID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOrganizationUserResponse(rsp)
+}
+
+// UpdateRolesForUserInOrganizationWithBodyWithResponse request with arbitrary body returning *UpdateRolesForUserInOrganizationResponse
+func (c *ClientWithResponses) UpdateRolesForUserInOrganizationWithBodyWithResponse(ctx context.Context, userID UserIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRolesForUserInOrganizationResponse, error) {
+	rsp, err := c.UpdateRolesForUserInOrganizationWithBody(ctx, userID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRolesForUserInOrganizationResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateRolesForUserInOrganizationWithResponse(ctx context.Context, userID UserIdParam, body UpdateRolesForUserInOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRolesForUserInOrganizationResponse, error) {
+	rsp, err := c.UpdateRolesForUserInOrganization(ctx, userID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRolesForUserInOrganizationResponse(rsp)
+}
+
 // IdOfTenantWithResponse request returning *IdOfTenantResponse
-func (c *ClientWithResponses) IdOfTenantWithResponse(ctx context.Context, databaseId string, reqEditors ...RequestEditorFn) (*IdOfTenantResponse, error) {
-	rsp, err := c.IdOfTenant(ctx, databaseId, reqEditors...)
+func (c *ClientWithResponses) IdOfTenantWithResponse(ctx context.Context, params *IdOfTenantParams, reqEditors ...RequestEditorFn) (*IdOfTenantResponse, error) {
+	rsp, err := c.IdOfTenant(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseIdOfTenantResponse(rsp)
-}
-
-// GetV2StreamingClustersWithResponse request returning *GetV2StreamingClustersResponse
-func (c *ClientWithResponses) GetV2StreamingClustersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV2StreamingClustersResponse, error) {
-	rsp, err := c.GetV2StreamingClusters(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetV2StreamingClustersResponse(rsp)
 }
 
 // IdTenantWithResponse request returning *IdTenantResponse
@@ -2198,40 +5530,31 @@ func (c *ClientWithResponses) IdTenantWithResponse(ctx context.Context, org stri
 	return ParseIdTenantResponse(rsp)
 }
 
-// GetV2StreamingOrgsOrgTenantsTenantWithResponse request returning *GetV2StreamingOrgsOrgTenantsTenantResponse
-func (c *ClientWithResponses) GetV2StreamingOrgsOrgTenantsTenantWithResponse(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*GetV2StreamingOrgsOrgTenantsTenantResponse, error) {
-	rsp, err := c.GetV2StreamingOrgsOrgTenantsTenant(ctx, org, tenant, reqEditors...)
+// GetStreamingTenantWithResponse request returning *GetStreamingTenantResponse
+func (c *ClientWithResponses) GetStreamingTenantWithResponse(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*GetStreamingTenantResponse, error) {
+	rsp, err := c.GetStreamingTenant(ctx, org, tenant, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV2StreamingOrgsOrgTenantsTenantResponse(rsp)
+	return ParseGetStreamingTenantResponse(rsp)
 }
 
-// GetV2StreamingProvidersWithResponse request returning *GetV2StreamingProvidersResponse
-func (c *ClientWithResponses) GetV2StreamingProvidersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV2StreamingProvidersResponse, error) {
-	rsp, err := c.GetV2StreamingProviders(ctx, reqEditors...)
+// GetStreamingProvidersWithResponse request returning *GetStreamingProvidersResponse
+func (c *ClientWithResponses) GetStreamingProvidersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetStreamingProvidersResponse, error) {
+	rsp, err := c.GetStreamingProviders(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV2StreamingProvidersResponse(rsp)
+	return ParseGetStreamingProvidersResponse(rsp)
 }
 
-// GetV2StreamingServerlessRegionsWithResponse request returning *GetV2StreamingServerlessRegionsResponse
-func (c *ClientWithResponses) GetV2StreamingServerlessRegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV2StreamingServerlessRegionsResponse, error) {
-	rsp, err := c.GetV2StreamingServerlessRegions(ctx, reqEditors...)
+// GetTenantsWithResponse request returning *GetTenantsResponse
+func (c *ClientWithResponses) GetTenantsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetTenantsResponse, error) {
+	rsp, err := c.GetTenants(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetV2StreamingServerlessRegionsResponse(rsp)
-}
-
-// GetV2StreamingTenantsWithResponse request returning *GetV2StreamingTenantsResponse
-func (c *ClientWithResponses) GetV2StreamingTenantsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetV2StreamingTenantsResponse, error) {
-	rsp, err := c.GetV2StreamingTenants(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetV2StreamingTenantsResponse(rsp)
+	return ParseGetTenantsResponse(rsp)
 }
 
 // IdOfCreateTenantEndpointWithBodyWithResponse request with arbitrary body returning *IdOfCreateTenantEndpointResponse
@@ -2243,67 +5566,39 @@ func (c *ClientWithResponses) IdOfCreateTenantEndpointWithBodyWithResponse(ctx c
 	return ParseIdOfCreateTenantEndpointResponse(rsp)
 }
 
-// HeadV2StreamingTenantsTenantNameWithResponse request returning *HeadV2StreamingTenantsTenantNameResponse
-func (c *ClientWithResponses) HeadV2StreamingTenantsTenantNameWithResponse(ctx context.Context, tenantName string, params *HeadV2StreamingTenantsTenantNameParams, reqEditors ...RequestEditorFn) (*HeadV2StreamingTenantsTenantNameResponse, error) {
-	rsp, err := c.HeadV2StreamingTenantsTenantName(ctx, tenantName, params, reqEditors...)
+func (c *ClientWithResponses) IdOfCreateTenantEndpointWithResponse(ctx context.Context, params *IdOfCreateTenantEndpointParams, body IdOfCreateTenantEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*IdOfCreateTenantEndpointResponse, error) {
+	rsp, err := c.IdOfCreateTenantEndpoint(ctx, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseHeadV2StreamingTenantsTenantNameResponse(rsp)
+	return ParseIdOfCreateTenantEndpointResponse(rsp)
 }
 
-// IdListTenantTokensWithResponse request returning *IdListTenantTokensResponse
-func (c *ClientWithResponses) IdListTenantTokensWithResponse(ctx context.Context, tenantName string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*IdListTenantTokensResponse, error) {
-	rsp, err := c.IdListTenantTokens(ctx, tenantName, params, reqEditors...)
+// GetTeneantLimitUsageWithResponse request returning *GetTeneantLimitUsageResponse
+func (c *ClientWithResponses) GetTeneantLimitUsageWithResponse(ctx context.Context, tenantName string, params *GetTeneantLimitUsageParams, reqEditors ...RequestEditorFn) (*GetTeneantLimitUsageResponse, error) {
+	rsp, err := c.GetTeneantLimitUsage(ctx, tenantName, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseIdListTenantTokensResponse(rsp)
+	return ParseGetTeneantLimitUsageResponse(rsp)
 }
 
-// IdCreateTenantTokenWithResponse request returning *IdCreateTenantTokenResponse
-func (c *ClientWithResponses) IdCreateTenantTokenWithResponse(ctx context.Context, tenantName string, params *IdCreateTenantTokenParams, reqEditors ...RequestEditorFn) (*IdCreateTenantTokenResponse, error) {
-	rsp, err := c.IdCreateTenantToken(ctx, tenantName, params, reqEditors...)
+// DeleteStreamingTenantWithResponse request returning *DeleteStreamingTenantResponse
+func (c *ClientWithResponses) DeleteStreamingTenantWithResponse(ctx context.Context, tenant string, cluster string, params *DeleteStreamingTenantParams, reqEditors ...RequestEditorFn) (*DeleteStreamingTenantResponse, error) {
+	rsp, err := c.DeleteStreamingTenant(ctx, tenant, cluster, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseIdCreateTenantTokenResponse(rsp)
+	return ParseDeleteStreamingTenantResponse(rsp)
 }
 
-// IdDeleteTenantTokenWithResponse request returning *IdDeleteTenantTokenResponse
-func (c *ClientWithResponses) IdDeleteTenantTokenWithResponse(ctx context.Context, tenantName string, tokenID string, params *IdDeleteTenantTokenParams, reqEditors ...RequestEditorFn) (*IdDeleteTenantTokenResponse, error) {
-	rsp, err := c.IdDeleteTenantToken(ctx, tenantName, tokenID, params, reqEditors...)
+// GetLimitsWithResponse request returning *GetLimitsResponse
+func (c *ClientWithResponses) GetLimitsWithResponse(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*GetLimitsResponse, error) {
+	rsp, err := c.GetLimits(ctx, tenant, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseIdDeleteTenantTokenResponse(rsp)
-}
-
-// GetV2StreamingTenantsTenantNameTokensTokenIDWithResponse request returning *GetV2StreamingTenantsTenantNameTokensTokenIDResponse
-func (c *ClientWithResponses) GetV2StreamingTenantsTenantNameTokensTokenIDWithResponse(ctx context.Context, tenantName string, tokenID string, params *GetV2StreamingTenantsTenantNameTokensTokenIDParams, reqEditors ...RequestEditorFn) (*GetV2StreamingTenantsTenantNameTokensTokenIDResponse, error) {
-	rsp, err := c.GetV2StreamingTenantsTenantNameTokensTokenID(ctx, tenantName, tokenID, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetV2StreamingTenantsTenantNameTokensTokenIDResponse(rsp)
-}
-
-// DeleteV2StreamingTenantsTenantClustersClusterWithResponse request returning *DeleteV2StreamingTenantsTenantClustersClusterResponse
-func (c *ClientWithResponses) DeleteV2StreamingTenantsTenantClustersClusterWithResponse(ctx context.Context, tenant string, cluster string, params *DeleteV2StreamingTenantsTenantClustersClusterParams, reqEditors ...RequestEditorFn) (*DeleteV2StreamingTenantsTenantClustersClusterResponse, error) {
-	rsp, err := c.DeleteV2StreamingTenantsTenantClustersCluster(ctx, tenant, cluster, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDeleteV2StreamingTenantsTenantClustersClusterResponse(rsp)
-}
-
-// GetV2StreamingTenantsTenantLimitsWithResponse request returning *GetV2StreamingTenantsTenantLimitsResponse
-func (c *ClientWithResponses) GetV2StreamingTenantsTenantLimitsWithResponse(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*GetV2StreamingTenantsTenantLimitsResponse, error) {
-	rsp, err := c.GetV2StreamingTenantsTenantLimits(ctx, tenant, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetV2StreamingTenantsTenantLimitsResponse(rsp)
+	return ParseGetLimitsResponse(rsp)
 }
 
 // ParseIdNamespaceStatsTenantResponse parses an HTTP response from a IdNamespaceStatsTenantWithResponse call
@@ -2370,6 +5665,1585 @@ func ParseIdTopicStatsTenantNamespaceResponse(rsp *http.Response) (*IdTopicStats
 	return response, nil
 }
 
+// ParseGetAccessListTemplateResponse parses an HTTP response from a GetAccessListTemplateWithResponse call
+func ParseGetAccessListTemplateResponse(rsp *http.Response) (*GetAccessListTemplateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAccessListTemplateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AccessListRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseValidateAccessListResponse parses an HTTP response from a ValidateAccessListWithResponse call
+func ParseValidateAccessListResponse(rsp *http.Response) (*ValidateAccessListResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ValidateAccessListResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ValidationResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAllAccessListsForOrganizationResponse parses an HTTP response from a GetAllAccessListsForOrganizationWithResponse call
+func ParseGetAllAccessListsForOrganizationResponse(rsp *http.Response) (*GetAllAccessListsForOrganizationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAllAccessListsForOrganizationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []AccessListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListAvailableRegionsResponse parses an HTTP response from a ListAvailableRegionsWithResponse call
+func ParseListAvailableRegionsResponse(rsp *http.Response) (*ListAvailableRegionsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAvailableRegionsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []AvailableRegionCombination
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteTokenForClientResponse parses an HTTP response from a DeleteTokenForClientWithResponse call
+func ParseDeleteTokenForClientResponse(rsp *http.Response) (*DeleteTokenForClientResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteTokenForClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetClientsForOrgResponse parses an HTTP response from a GetClientsForOrgWithResponse call
+func ParseGetClientsForOrgResponse(rsp *http.Response) (*GetClientsForOrgResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetClientsForOrgResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest interface{}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGenerateTokenForClientResponse parses an HTTP response from a GenerateTokenForClientWithResponse call
+func ParseGenerateTokenForClientResponse(rsp *http.Response) (*GenerateTokenForClientResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GenerateTokenForClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest interface{}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCurrentOrganizationResponse parses an HTTP response from a GetCurrentOrganizationWithResponse call
+func ParseGetCurrentOrganizationResponse(rsp *http.Response) (*GetCurrentOrganizationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCurrentOrganizationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest interface{}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListDatabasesResponse parses an HTTP response from a ListDatabasesWithResponse call
+func ParseListDatabasesResponse(rsp *http.Response) (*ListDatabasesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListDatabasesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []Database
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateDatabaseResponse parses an HTTP response from a CreateDatabaseWithResponse call
+func ParseCreateDatabaseResponse(rsp *http.Response) (*CreateDatabaseResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateDatabaseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetDatabaseResponse parses an HTTP response from a GetDatabaseWithResponse call
+func ParseGetDatabaseResponse(rsp *http.Response) (*GetDatabaseResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetDatabaseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Database
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteAddressesOrAccessListForDatabaseResponse parses an HTTP response from a DeleteAddressesOrAccessListForDatabaseWithResponse call
+func ParseDeleteAddressesOrAccessListForDatabaseResponse(rsp *http.Response) (*DeleteAddressesOrAccessListForDatabaseResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteAddressesOrAccessListForDatabaseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAccessListForDatabaseResponse parses an HTTP response from a GetAccessListForDatabaseWithResponse call
+func ParseGetAccessListForDatabaseResponse(rsp *http.Response) (*GetAccessListForDatabaseResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAccessListForDatabaseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AccessListResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateAccessListForDatabaseResponse parses an HTTP response from a UpdateAccessListForDatabaseWithResponse call
+func ParseUpdateAccessListForDatabaseResponse(rsp *http.Response) (*UpdateAccessListForDatabaseResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAccessListForDatabaseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAddAddressesToAccessListForDatabaseResponse parses an HTTP response from a AddAddressesToAccessListForDatabaseWithResponse call
+func ParseAddAddressesToAccessListForDatabaseResponse(rsp *http.Response) (*AddAddressesToAccessListForDatabaseResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AddAddressesToAccessListForDatabaseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpsertAccessListForDatabaseResponse parses an HTTP response from a UpsertAccessListForDatabaseWithResponse call
+func ParseUpsertAccessListForDatabaseResponse(rsp *http.Response) (*UpsertAccessListForDatabaseResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpsertAccessListForDatabaseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAddKeyspaceResponse parses an HTTP response from a AddKeyspaceWithResponse call
+func ParseAddKeyspaceResponse(rsp *http.Response) (*AddKeyspaceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AddKeyspaceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseParkDatabaseResponse parses an HTTP response from a ParkDatabaseWithResponse call
+func ParseParkDatabaseResponse(rsp *http.Response) (*ParkDatabaseResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ParkDatabaseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseResetPasswordResponse parses an HTTP response from a ResetPasswordWithResponse call
+func ParseResetPasswordResponse(rsp *http.Response) (*ResetPasswordResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ResetPasswordResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseResizeDatabaseResponse parses an HTTP response from a ResizeDatabaseWithResponse call
+func ParseResizeDatabaseResponse(rsp *http.Response) (*ResizeDatabaseResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ResizeDatabaseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGenerateSecureBundleURLResponse parses an HTTP response from a GenerateSecureBundleURLWithResponse call
+func ParseGenerateSecureBundleURLResponse(rsp *http.Response) (*GenerateSecureBundleURLResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GenerateSecureBundleURLResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CredsURL
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseTerminateDatabaseResponse parses an HTTP response from a TerminateDatabaseWithResponse call
+func ParseTerminateDatabaseResponse(rsp *http.Response) (*TerminateDatabaseResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &TerminateDatabaseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUnparkDatabaseResponse parses an HTTP response from a UnparkDatabaseWithResponse call
+func ParseUnparkDatabaseResponse(rsp *http.Response) (*UnparkDatabaseResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UnparkDatabaseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOrganizationRolesResponse parses an HTTP response from a GetOrganizationRolesWithResponse call
+func ParseGetOrganizationRolesResponse(rsp *http.Response) (*GetOrganizationRolesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOrganizationRolesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest interface{}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAddOrganizationRoleResponse parses an HTTP response from a AddOrganizationRoleWithResponse call
+func ParseAddOrganizationRoleResponse(rsp *http.Response) (*AddOrganizationRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AddOrganizationRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteOrganizationRoleResponse parses an HTTP response from a DeleteOrganizationRoleWithResponse call
+func ParseDeleteOrganizationRoleResponse(rsp *http.Response) (*DeleteOrganizationRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteOrganizationRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOrganizationRoleResponse parses an HTTP response from a GetOrganizationRoleWithResponse call
+func ParseGetOrganizationRoleResponse(rsp *http.Response) (*GetOrganizationRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOrganizationRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest interface{}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateRoleResponse parses an HTTP response from a UpdateRoleWithResponse call
+func ParseUpdateRoleResponse(rsp *http.Response) (*UpdateRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest interface{}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOrganizationUsersResponse parses an HTTP response from a GetOrganizationUsersWithResponse call
+func ParseGetOrganizationUsersResponse(rsp *http.Response) (*GetOrganizationUsersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOrganizationUsersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetOrganizationUsersResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseInviteUserToOrganizationResponse parses an HTTP response from a InviteUserToOrganizationWithResponse call
+func ParseInviteUserToOrganizationResponse(rsp *http.Response) (*InviteUserToOrganizationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &InviteUserToOrganizationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRemoveUserFromOrganizationResponse parses an HTTP response from a RemoveUserFromOrganizationWithResponse call
+func ParseRemoveUserFromOrganizationResponse(rsp *http.Response) (*RemoveUserFromOrganizationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RemoveUserFromOrganizationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOrganizationUserResponse parses an HTTP response from a GetOrganizationUserWithResponse call
+func ParseGetOrganizationUserResponse(rsp *http.Response) (*GetOrganizationUserResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOrganizationUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UserResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateRolesForUserInOrganizationResponse parses an HTTP response from a UpdateRolesForUserInOrganizationWithResponse call
+func ParseUpdateRolesForUserInOrganizationResponse(rsp *http.Response) (*UpdateRolesForUserInOrganizationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateRolesForUserInOrganizationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseIdOfTenantResponse parses an HTTP response from a IdOfTenantWithResponse call
 func ParseIdOfTenantResponse(rsp *http.Response) (*IdOfTenantResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -2379,22 +7253,6 @@ func ParseIdOfTenantResponse(rsp *http.Response) (*IdOfTenantResponse, error) {
 	}
 
 	response := &IdOfTenantResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV2StreamingClustersResponse parses an HTTP response from a GetV2StreamingClustersWithResponse call
-func ParseGetV2StreamingClustersResponse(rsp *http.Response) (*GetV2StreamingClustersResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV2StreamingClustersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2418,15 +7276,15 @@ func ParseIdTenantResponse(rsp *http.Response) (*IdTenantResponse, error) {
 	return response, nil
 }
 
-// ParseGetV2StreamingOrgsOrgTenantsTenantResponse parses an HTTP response from a GetV2StreamingOrgsOrgTenantsTenantWithResponse call
-func ParseGetV2StreamingOrgsOrgTenantsTenantResponse(rsp *http.Response) (*GetV2StreamingOrgsOrgTenantsTenantResponse, error) {
+// ParseGetStreamingTenantResponse parses an HTTP response from a GetStreamingTenantWithResponse call
+func ParseGetStreamingTenantResponse(rsp *http.Response) (*GetStreamingTenantResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV2StreamingOrgsOrgTenantsTenantResponse{
+	response := &GetStreamingTenantResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2434,15 +7292,15 @@ func ParseGetV2StreamingOrgsOrgTenantsTenantResponse(rsp *http.Response) (*GetV2
 	return response, nil
 }
 
-// ParseGetV2StreamingProvidersResponse parses an HTTP response from a GetV2StreamingProvidersWithResponse call
-func ParseGetV2StreamingProvidersResponse(rsp *http.Response) (*GetV2StreamingProvidersResponse, error) {
+// ParseGetStreamingProvidersResponse parses an HTTP response from a GetStreamingProvidersWithResponse call
+func ParseGetStreamingProvidersResponse(rsp *http.Response) (*GetStreamingProvidersResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV2StreamingProvidersResponse{
+	response := &GetStreamingProvidersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2450,31 +7308,15 @@ func ParseGetV2StreamingProvidersResponse(rsp *http.Response) (*GetV2StreamingPr
 	return response, nil
 }
 
-// ParseGetV2StreamingServerlessRegionsResponse parses an HTTP response from a GetV2StreamingServerlessRegionsWithResponse call
-func ParseGetV2StreamingServerlessRegionsResponse(rsp *http.Response) (*GetV2StreamingServerlessRegionsResponse, error) {
+// ParseGetTenantsResponse parses an HTTP response from a GetTenantsWithResponse call
+func ParseGetTenantsResponse(rsp *http.Response) (*GetTenantsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetV2StreamingServerlessRegionsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV2StreamingTenantsResponse parses an HTTP response from a GetV2StreamingTenantsWithResponse call
-func ParseGetV2StreamingTenantsResponse(rsp *http.Response) (*GetV2StreamingTenantsResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV2StreamingTenantsResponse{
+	response := &GetTenantsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2498,15 +7340,15 @@ func ParseIdOfCreateTenantEndpointResponse(rsp *http.Response) (*IdOfCreateTenan
 	return response, nil
 }
 
-// ParseHeadV2StreamingTenantsTenantNameResponse parses an HTTP response from a HeadV2StreamingTenantsTenantNameWithResponse call
-func ParseHeadV2StreamingTenantsTenantNameResponse(rsp *http.Response) (*HeadV2StreamingTenantsTenantNameResponse, error) {
+// ParseGetTeneantLimitUsageResponse parses an HTTP response from a GetTeneantLimitUsageWithResponse call
+func ParseGetTeneantLimitUsageResponse(rsp *http.Response) (*GetTeneantLimitUsageResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &HeadV2StreamingTenantsTenantNameResponse{
+	response := &GetTeneantLimitUsageResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2514,15 +7356,15 @@ func ParseHeadV2StreamingTenantsTenantNameResponse(rsp *http.Response) (*HeadV2S
 	return response, nil
 }
 
-// ParseIdListTenantTokensResponse parses an HTTP response from a IdListTenantTokensWithResponse call
-func ParseIdListTenantTokensResponse(rsp *http.Response) (*IdListTenantTokensResponse, error) {
+// ParseDeleteStreamingTenantResponse parses an HTTP response from a DeleteStreamingTenantWithResponse call
+func ParseDeleteStreamingTenantResponse(rsp *http.Response) (*DeleteStreamingTenantResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &IdListTenantTokensResponse{
+	response := &DeleteStreamingTenantResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2530,79 +7372,15 @@ func ParseIdListTenantTokensResponse(rsp *http.Response) (*IdListTenantTokensRes
 	return response, nil
 }
 
-// ParseIdCreateTenantTokenResponse parses an HTTP response from a IdCreateTenantTokenWithResponse call
-func ParseIdCreateTenantTokenResponse(rsp *http.Response) (*IdCreateTenantTokenResponse, error) {
+// ParseGetLimitsResponse parses an HTTP response from a GetLimitsWithResponse call
+func ParseGetLimitsResponse(rsp *http.Response) (*GetLimitsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &IdCreateTenantTokenResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseIdDeleteTenantTokenResponse parses an HTTP response from a IdDeleteTenantTokenWithResponse call
-func ParseIdDeleteTenantTokenResponse(rsp *http.Response) (*IdDeleteTenantTokenResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &IdDeleteTenantTokenResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV2StreamingTenantsTenantNameTokensTokenIDResponse parses an HTTP response from a GetV2StreamingTenantsTenantNameTokensTokenIDWithResponse call
-func ParseGetV2StreamingTenantsTenantNameTokensTokenIDResponse(rsp *http.Response) (*GetV2StreamingTenantsTenantNameTokensTokenIDResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV2StreamingTenantsTenantNameTokensTokenIDResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseDeleteV2StreamingTenantsTenantClustersClusterResponse parses an HTTP response from a DeleteV2StreamingTenantsTenantClustersClusterWithResponse call
-func ParseDeleteV2StreamingTenantsTenantClustersClusterResponse(rsp *http.Response) (*DeleteV2StreamingTenantsTenantClustersClusterResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &DeleteV2StreamingTenantsTenantClustersClusterResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetV2StreamingTenantsTenantLimitsResponse parses an HTTP response from a GetV2StreamingTenantsTenantLimitsWithResponse call
-func ParseGetV2StreamingTenantsTenantLimitsResponse(rsp *http.Response) (*GetV2StreamingTenantsTenantLimitsResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetV2StreamingTenantsTenantLimitsResponse{
+	response := &GetLimitsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
