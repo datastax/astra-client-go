@@ -1204,8 +1204,8 @@ type ClientInterface interface {
 	// IdOfTenant request
 	IdOfTenant(ctx context.Context, params *IdOfTenantParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// IdTenant request
-	IdTenant(ctx context.Context, org string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetPulsarClusters request
+	GetPulsarClusters(ctx context.Context, org string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetStreamingTenant request
 	GetStreamingTenant(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1819,8 +1819,8 @@ func (c *Client) IdOfTenant(ctx context.Context, params *IdOfTenantParams, reqEd
 	return c.Client.Do(req)
 }
 
-func (c *Client) IdTenant(ctx context.Context, org string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewIdTenantRequest(c.Server, org)
+func (c *Client) GetPulsarClusters(ctx context.Context, org string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPulsarClustersRequest(c.Server, org)
 	if err != nil {
 		return nil, err
 	}
@@ -3429,8 +3429,8 @@ func NewIdOfTenantRequest(server string, params *IdOfTenantParams) (*http.Reques
 	return req, nil
 }
 
-// NewIdTenantRequest generates requests for IdTenant
-func NewIdTenantRequest(server string, org string) (*http.Request, error) {
+// NewGetPulsarClustersRequest generates requests for GetPulsarClusters
+func NewGetPulsarClustersRequest(server string, org string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3962,8 +3962,8 @@ type ClientWithResponsesInterface interface {
 	// IdOfTenant request
 	IdOfTenantWithResponse(ctx context.Context, params *IdOfTenantParams, reqEditors ...RequestEditorFn) (*IdOfTenantResponse, error)
 
-	// IdTenant request
-	IdTenantWithResponse(ctx context.Context, org string, reqEditors ...RequestEditorFn) (*IdTenantResponse, error)
+	// GetPulsarClusters request
+	GetPulsarClustersWithResponse(ctx context.Context, org string, reqEditors ...RequestEditorFn) (*GetPulsarClustersResponse, error)
 
 	// GetStreamingTenant request
 	GetStreamingTenantWithResponse(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*GetStreamingTenantResponse, error)
@@ -4923,13 +4923,13 @@ func (r IdOfTenantResponse) StatusCode() int {
 	return 0
 }
 
-type IdTenantResponse struct {
+type GetPulsarClustersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r IdTenantResponse) Status() string {
+func (r GetPulsarClustersResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4937,7 +4937,7 @@ func (r IdTenantResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r IdTenantResponse) StatusCode() int {
+func (r GetPulsarClustersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5521,13 +5521,13 @@ func (c *ClientWithResponses) IdOfTenantWithResponse(ctx context.Context, params
 	return ParseIdOfTenantResponse(rsp)
 }
 
-// IdTenantWithResponse request returning *IdTenantResponse
-func (c *ClientWithResponses) IdTenantWithResponse(ctx context.Context, org string, reqEditors ...RequestEditorFn) (*IdTenantResponse, error) {
-	rsp, err := c.IdTenant(ctx, org, reqEditors...)
+// GetPulsarClustersWithResponse request returning *GetPulsarClustersResponse
+func (c *ClientWithResponses) GetPulsarClustersWithResponse(ctx context.Context, org string, reqEditors ...RequestEditorFn) (*GetPulsarClustersResponse, error) {
+	rsp, err := c.GetPulsarClusters(ctx, org, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseIdTenantResponse(rsp)
+	return ParseGetPulsarClustersResponse(rsp)
 }
 
 // GetStreamingTenantWithResponse request returning *GetStreamingTenantResponse
@@ -7260,15 +7260,15 @@ func ParseIdOfTenantResponse(rsp *http.Response) (*IdOfTenantResponse, error) {
 	return response, nil
 }
 
-// ParseIdTenantResponse parses an HTTP response from a IdTenantWithResponse call
-func ParseIdTenantResponse(rsp *http.Response) (*IdTenantResponse, error) {
+// ParseGetPulsarClustersResponse parses an HTTP response from a GetPulsarClustersWithResponse call
+func ParseGetPulsarClustersResponse(rsp *http.Response) (*GetPulsarClustersResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &IdTenantResponse{
+	response := &GetPulsarClustersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

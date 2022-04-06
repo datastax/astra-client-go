@@ -1191,7 +1191,7 @@ paths:
     get:
       summary: "Get all Pulsar tenants under organization"
       description: Get all Pulsar tenants under the specified organization
-      operationId: idTenant
+      operationId: getPulsarClusters
       parameters:
         - name: org
           in: path
