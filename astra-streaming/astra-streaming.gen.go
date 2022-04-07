@@ -656,6 +656,27 @@ type ValidationResponse struct {
 	ValidationFailures *[]string `json:"validationFailures,omitempty"`
 }
 
+// cdcRequest model
+type CdcRequest struct {
+	// Astra database id
+	DatabaseId string `json:"databaseId"`
+
+	// Astra database name
+	DatabaseName string `json:"databaseName"`
+
+	// keyspace
+	Keyspace string `json:"keyspace"`
+
+	// The unique system generated identifier of the organization
+	OrgId string `json:"orgId"`
+
+	// tableName
+	TableName string `json:"tableName"`
+
+	// Number of partitions for pulsar topic (e.g. 3)
+	TopicPartitions int `json:"topicPartitions"`
+}
+
 // CreatedTenantResponse defines model for createdTenantResponse.
 type CreatedTenantResponse struct {
 	// TenantClusterPlanResponse tenant per cluster access
@@ -753,6 +774,9 @@ type Unauthorized Errors
 
 // Errors is a collection of individual Error objects.
 type UnprocessableEntity Errors
+
+// EnableCDCJSONBody defines parameters for EnableCDC.
+type EnableCDCJSONBody CdcRequest
 
 // GenerateTokenForClientJSONBody defines parameters for GenerateTokenForClient.
 type GenerateTokenForClientJSONBody GenerateTokenBody
@@ -852,6 +876,9 @@ type DeleteStreamingTenantParams struct {
 	// Performs a soft delete that only marks the tenant as deleted in the database (opt=soft)
 	Opt *string `json:"opt,omitempty"`
 }
+
+// EnableCDCJSONRequestBody defines body for EnableCDC for application/json ContentType.
+type EnableCDCJSONRequestBody EnableCDCJSONBody
 
 // GenerateTokenForClientJSONRequestBody defines body for GenerateTokenForClient for application/json ContentType.
 type GenerateTokenForClientJSONRequestBody GenerateTokenForClientJSONBody
@@ -1080,6 +1107,11 @@ type ClientInterface interface {
 	// IdTopicStatsTenantNamespace request
 	IdTopicStatsTenantNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// EnableCDC request with any body
+	EnableCDCWithBody(ctx context.Context, tenantName string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	EnableCDC(ctx context.Context, tenantName string, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetAccessListTemplate request
 	GetAccessListTemplate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1269,6 +1301,30 @@ func (c *Client) IdTopicStatsTenant(ctx context.Context, tenant string, reqEdito
 
 func (c *Client) IdTopicStatsTenantNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewIdTopicStatsTenantNamespaceRequest(c.Server, tenant, namespace)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EnableCDCWithBody(ctx context.Context, tenantName string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEnableCDCRequestWithBody(c.Server, tenantName, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EnableCDC(ctx context.Context, tenantName string, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEnableCDCRequest(c.Server, tenantName, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2073,6 +2129,53 @@ func NewIdTopicStatsTenantNamespaceRequest(server string, tenant string, namespa
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewEnableCDCRequest calls the generic EnableCDC builder with application/json body
+func NewEnableCDCRequest(server string, tenantName string, body EnableCDCJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewEnableCDCRequestWithBody(server, tenantName, "application/json", bodyReader)
+}
+
+// NewEnableCDCRequestWithBody generates requests for EnableCDC with any type of body
+func NewEnableCDCRequestWithBody(server string, tenantName string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenantName", runtime.ParamLocationPath, tenantName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/admin/v3/astra/tenants/%s/cdc", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -3838,6 +3941,11 @@ type ClientWithResponsesInterface interface {
 	// IdTopicStatsTenantNamespace request
 	IdTopicStatsTenantNamespaceWithResponse(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*IdTopicStatsTenantNamespaceResponse, error)
 
+	// EnableCDC request with any body
+	EnableCDCWithBodyWithResponse(ctx context.Context, tenantName string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error)
+
+	EnableCDCWithResponse(ctx context.Context, tenantName string, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error)
+
 	// GetAccessListTemplate request
 	GetAccessListTemplateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAccessListTemplateResponse, error)
 
@@ -4067,6 +4175,27 @@ func (r IdTopicStatsTenantNamespaceResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r IdTopicStatsTenantNamespaceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type EnableCDCResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r EnableCDCResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r EnableCDCResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5127,6 +5256,23 @@ func (c *ClientWithResponses) IdTopicStatsTenantNamespaceWithResponse(ctx contex
 	return ParseIdTopicStatsTenantNamespaceResponse(rsp)
 }
 
+// EnableCDCWithBodyWithResponse request with arbitrary body returning *EnableCDCResponse
+func (c *ClientWithResponses) EnableCDCWithBodyWithResponse(ctx context.Context, tenantName string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error) {
+	rsp, err := c.EnableCDCWithBody(ctx, tenantName, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEnableCDCResponse(rsp)
+}
+
+func (c *ClientWithResponses) EnableCDCWithResponse(ctx context.Context, tenantName string, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error) {
+	rsp, err := c.EnableCDC(ctx, tenantName, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEnableCDCResponse(rsp)
+}
+
 // GetAccessListTemplateWithResponse request returning *GetAccessListTemplateResponse
 func (c *ClientWithResponses) GetAccessListTemplateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAccessListTemplateResponse, error) {
 	rsp, err := c.GetAccessListTemplate(ctx, reqEditors...)
@@ -5658,6 +5804,22 @@ func ParseIdTopicStatsTenantNamespaceResponse(rsp *http.Response) (*IdTopicStats
 	}
 
 	response := &IdTopicStatsTenantNamespaceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseEnableCDCResponse parses an HTTP response from a EnableCDCWithResponse call
+func ParseEnableCDCResponse(rsp *http.Response) (*EnableCDCResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &EnableCDCResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

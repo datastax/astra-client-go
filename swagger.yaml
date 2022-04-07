@@ -233,6 +233,40 @@ paths:
           $ref: '#/components/responses/Conflict'
         '5XX':
           $ref: '#/components/responses/ServerError'
+  /v2/databases/{databaseId}/third-party-metrics:
+    post:
+      summary: Configure third party metrics
+      description: 'Enables metrics exporting to an external system. Note: updates replace any existing config.'
+      security:
+        - BearerAuth: [ third-party-metrics ]
+      operationId: configureMetricsExport
+      parameters:
+        - $ref: '#/components/parameters/DatabaseIdParam'
+      tags:
+        - Operations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MetricsRequest"
+      responses:
+        '200':
+          description: Credentials provides a link to download cluster secure-connect-*.zip file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredsURL'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '5XX':
+          $ref: '#/components/responses/ServerError'
+
   /v2/databases/{databaseId}/terminate:
     post:
       summary: Terminates a database
@@ -1928,6 +1962,50 @@ components:
             type: string
             example: additionalKeyspace
           description: Additional keyspaces names in database
+    MetricsRequest:
+      description: Metrics Config
+      type: object
+      properties:
+        kafka_bootstrap_servers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KafkaBootstrapServer'
+        kafka_topic:
+          type: string
+          example: mytopicname
+          description: kafka topic name
+        kafka_sasl_mechanism:
+          type: string
+          example: either SCRAM-SHA-256 or SCRAM-SHA-512
+          description: Kafka SASL mechanism
+        kafka_sasl_password:
+          type: string
+          example: password
+          description: kafka password
+        kafka_sasl_username:
+          type: string
+          example: kafkaUsername
+          description: kafka username
+        prom_endpoint:
+          type: string
+          example: 10.0.0.1
+          description: ip address or dns for prometheus endpoint
+        prom_password:
+          type: string
+          example: prompassword
+          description: prometheus password (only pass if basic strategy was selected)
+        prom_strategy:
+          type: string
+          example: basic or bearer
+          description: either basic or bearer depending on your prom remote_write auth
+        prom_token:
+          type: string
+          example:  promtoken
+          description: prometheus bearer token, only pass if using bearer strategy
+        prom_user:
+          type: string
+          example: promuser
+          description: prometheus username only pass with basic strategy
     CredsURL:
       description: CredsURL from which the creds zip may be downloaded
       type: object
@@ -1981,6 +2059,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MigrationProxyMapping'
+    KafkaBootstrapServer:
+      description: Kafka bootstrap server
+      type: string
+      example: 172.18.19.20 or kafka.acme.org
     MigrationProxyMapping:
       description: A mapping of astra node to a customer node currently in use
       type: object

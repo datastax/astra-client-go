@@ -1487,6 +1487,49 @@ paths:
           description: Failed to read the HTTP body
       tags:
         - evaluate-the-tenant-is-reserved
+  /admin/v3/astra/tenants/{tenantName}/cdc:
+    post:
+      summary: "Creates cdc for tenant"
+      description: "Enable CDC for an AstraDB table and a Streaming tenant"
+      operationId: enableCDC
+      parameters:
+        - description: Streaming tenant name
+          in: path
+          required: true
+          name: tenantName
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/cdcRequest"
+        description: Request body for enabling cdc
+      responses:
+        "200":
+          description: cdc successfully enabled
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/createdTenantResponse"
+        "401":
+          description: Authentication failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "409":
+          description: cdc already enabled
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "500":
+          description: Failed to read the HTTP body
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
 
 ## End Astra Streaming paths...
 
@@ -1583,6 +1626,35 @@ components:
   ## End Astra Streaming parameters
 
   schemas:
+    cdcRequest:
+      type: "object"
+      description: "cdcRequest model"
+      required:
+        - "orgId"
+        - "databaseId"
+        - "databaseName"
+        - "keyspace"
+        - "tableName"
+        - "topicPartitions"
+      properties:
+        orgId:
+          type: "string"
+          description: "The unique system generated identifier of the organization"
+        databaseId:
+          type: "string"
+          description: "Astra database id"
+        databaseName:
+          type: "string"
+          description: "Astra database name"
+        keyspace:
+          type: "string"
+          description: "keyspace"
+        tableName:
+          type: "string"
+          description: "tableName"
+        topicPartitions:
+          type: "integer"
+          description: "Number of partitions for pulsar topic (e.g. 3)"
 
     UserInvite:
       type: "object"

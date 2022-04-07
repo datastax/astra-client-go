@@ -544,6 +544,41 @@ type GenerateTokenResponse struct {
 	Token *string `json:"token,omitempty"`
 }
 
+// Kafka bootstrap server
+type KafkaBootstrapServer string
+
+// Metrics Config
+type MetricsRequest struct {
+	KafkaBootstrapServers *[]KafkaBootstrapServer `json:"kafka_bootstrap_servers,omitempty"`
+
+	// Kafka SASL mechanism
+	KafkaSaslMechanism *string `json:"kafka_sasl_mechanism,omitempty"`
+
+	// kafka password
+	KafkaSaslPassword *string `json:"kafka_sasl_password,omitempty"`
+
+	// kafka username
+	KafkaSaslUsername *string `json:"kafka_sasl_username,omitempty"`
+
+	// kafka topic name
+	KafkaTopic *string `json:"kafka_topic,omitempty"`
+
+	// ip address or dns for prometheus endpoint
+	PromEndpoint *string `json:"prom_endpoint,omitempty"`
+
+	// prometheus password (only pass if basic strategy was selected)
+	PromPassword *string `json:"prom_password,omitempty"`
+
+	// either basic or bearer depending on your prom remote_write auth
+	PromStrategy *string `json:"prom_strategy,omitempty"`
+
+	// prometheus bearer token, only pass if using bearer strategy
+	PromToken *string `json:"prom_token,omitempty"`
+
+	// prometheus username only pass with basic strategy
+	PromUser *string `json:"prom_user,omitempty"`
+}
+
 // Configuration of the migration proxy and mappings of astra node to a customer node currently in use
 type MigrationProxyConfiguration struct {
 	Mappings []MigrationProxyMapping `json:"mappings"`
@@ -932,6 +967,9 @@ type TerminateDatabaseParams struct {
 	PreparedStateOnly *bool `json:"preparedStateOnly,omitempty"`
 }
 
+// ConfigureMetricsExportJSONBody defines parameters for ConfigureMetricsExport.
+type ConfigureMetricsExportJSONBody MetricsRequest
+
 // RemoveAllowedPrincipalFromServiceJSONBody defines parameters for RemoveAllowedPrincipalFromService.
 type RemoveAllowedPrincipalFromServiceJSONBody PrivateLinkDeleteConfigInput
 
@@ -988,6 +1026,9 @@ type ResetPasswordJSONRequestBody ResetPasswordJSONBody
 
 // ResizeDatabaseJSONRequestBody defines body for ResizeDatabase for application/json ContentType.
 type ResizeDatabaseJSONRequestBody ResizeDatabaseJSONBody
+
+// ConfigureMetricsExportJSONRequestBody defines body for ConfigureMetricsExport for application/json ContentType.
+type ConfigureMetricsExportJSONRequestBody ConfigureMetricsExportJSONBody
 
 // RemoveAllowedPrincipalFromServiceJSONRequestBody defines body for RemoveAllowedPrincipalFromService for application/json ContentType.
 type RemoveAllowedPrincipalFromServiceJSONRequestBody RemoveAllowedPrincipalFromServiceJSONBody
@@ -1195,6 +1236,11 @@ type ClientInterface interface {
 
 	// TerminateDatabase request
 	TerminateDatabase(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ConfigureMetricsExport request with any body
+	ConfigureMetricsExportWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ConfigureMetricsExport(ctx context.Context, databaseId DatabaseIdParam, body ConfigureMetricsExportJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UnparkDatabase request
 	UnparkDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1739,6 +1785,30 @@ func (c *Client) SuspendDatabase(ctx context.Context, databaseId DatabaseIdParam
 
 func (c *Client) TerminateDatabase(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewTerminateDatabaseRequest(c.Server, databaseId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConfigureMetricsExportWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfigureMetricsExportRequestWithBody(c.Server, databaseId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConfigureMetricsExport(ctx context.Context, databaseId DatabaseIdParam, body ConfigureMetricsExportJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfigureMetricsExportRequest(c.Server, databaseId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3329,6 +3399,53 @@ func NewTerminateDatabaseRequest(server string, databaseId DatabaseIdParam, para
 	return req, nil
 }
 
+// NewConfigureMetricsExportRequest calls the generic ConfigureMetricsExport builder with application/json body
+func NewConfigureMetricsExportRequest(server string, databaseId DatabaseIdParam, body ConfigureMetricsExportJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewConfigureMetricsExportRequestWithBody(server, databaseId, "application/json", bodyReader)
+}
+
+// NewConfigureMetricsExportRequestWithBody generates requests for ConfigureMetricsExport with any type of body
+func NewConfigureMetricsExportRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/third-party-metrics", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewUnparkDatabaseRequest generates requests for UnparkDatabase
 func NewUnparkDatabaseRequest(server string, databaseId DatabaseIdParam) (*http.Request, error) {
 	var err error
@@ -4379,6 +4496,11 @@ type ClientWithResponsesInterface interface {
 	// TerminateDatabase request
 	TerminateDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*TerminateDatabaseResponse, error)
 
+	// ConfigureMetricsExport request with any body
+	ConfigureMetricsExportWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfigureMetricsExportResponse, error)
+
+	ConfigureMetricsExportWithResponse(ctx context.Context, databaseId DatabaseIdParam, body ConfigureMetricsExportJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfigureMetricsExportResponse, error)
+
 	// UnparkDatabase request
 	UnparkDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*UnparkDatabaseResponse, error)
 
@@ -5188,6 +5310,33 @@ func (r TerminateDatabaseResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r TerminateDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ConfigureMetricsExportResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CredsURL
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON404      *Errors
+	JSON409      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r ConfigureMetricsExportResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ConfigureMetricsExportResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -6083,6 +6232,23 @@ func (c *ClientWithResponses) TerminateDatabaseWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseTerminateDatabaseResponse(rsp)
+}
+
+// ConfigureMetricsExportWithBodyWithResponse request with arbitrary body returning *ConfigureMetricsExportResponse
+func (c *ClientWithResponses) ConfigureMetricsExportWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfigureMetricsExportResponse, error) {
+	rsp, err := c.ConfigureMetricsExportWithBody(ctx, databaseId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfigureMetricsExportResponse(rsp)
+}
+
+func (c *ClientWithResponses) ConfigureMetricsExportWithResponse(ctx context.Context, databaseId DatabaseIdParam, body ConfigureMetricsExportJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfigureMetricsExportResponse, error) {
+	rsp, err := c.ConfigureMetricsExport(ctx, databaseId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfigureMetricsExportResponse(rsp)
 }
 
 // UnparkDatabaseWithResponse request returning *UnparkDatabaseResponse
@@ -7713,6 +7879,67 @@ func ParseTerminateDatabaseResponse(rsp *http.Response) (*TerminateDatabaseRespo
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseConfigureMetricsExportResponse parses an HTTP response from a ConfigureMetricsExportWithResponse call
+func ParseConfigureMetricsExportResponse(rsp *http.Response) (*ConfigureMetricsExportResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ConfigureMetricsExportResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CredsURL
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest Errors
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
