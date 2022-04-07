@@ -895,6 +895,18 @@ type IdListTenantTokensParams struct {
 	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
 }
 
+// GetTokenByIDParams defines parameters for GetTokenByID.
+type GetTokenByIDParams struct {
+	// Bearer Astra Keycloak token or AstraCS token.
+	Authorization string `json:"Authorization"`
+
+	// Astra Org ID.
+	XDataStaxCurrentOrg string `json:"X-DataStax-Current-Org"`
+
+	// Astra Streaming Cluster Name.
+	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
+}
+
 // EnableCDCJSONRequestBody defines body for EnableCDC for application/json ContentType.
 type EnableCDCJSONRequestBody EnableCDCJSONBody
 
@@ -1282,6 +1294,9 @@ type ClientInterface interface {
 
 	// IdListTenantTokens request
 	IdListTenantTokens(ctx context.Context, tenant string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTokenByID request
+	GetTokenByID(ctx context.Context, tenant string, tokenId string, params *GetTokenByIDParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) IdNamespaceStatsTenant(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2006,6 +2021,18 @@ func (c *Client) GetLimits(ctx context.Context, tenant string, reqEditors ...Req
 
 func (c *Client) IdListTenantTokens(ctx context.Context, tenant string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewIdListTenantTokensRequest(c.Server, tenant, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetTokenByID(ctx context.Context, tenant string, tokenId string, params *GetTokenByIDParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTokenByIDRequest(c.Server, tenant, tokenId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -3998,6 +4025,74 @@ func NewIdListTenantTokensRequest(server string, tenant string, params *IdListTe
 	return req, nil
 }
 
+// NewGetTokenByIDRequest generates requests for GetTokenByID
+func NewGetTokenByIDRequest(server string, tenant string, tokenId string, params *GetTokenByIDParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "tokenId", runtime.ParamLocationPath, tokenId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/streaming/tenants/%s/tokens/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var headerParam0 string
+
+	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, params.Authorization)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", headerParam0)
+
+	var headerParam1 string
+
+	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Current-Org", runtime.ParamLocationHeader, params.XDataStaxCurrentOrg)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Current-Org", headerParam1)
+
+	var headerParam2 string
+
+	headerParam2, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam2)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -4210,6 +4305,9 @@ type ClientWithResponsesInterface interface {
 
 	// IdListTenantTokens request
 	IdListTenantTokensWithResponse(ctx context.Context, tenant string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*IdListTenantTokensResponse, error)
+
+	// GetTokenByID request
+	GetTokenByIDWithResponse(ctx context.Context, tenant string, tokenId string, params *GetTokenByIDParams, reqEditors ...RequestEditorFn) (*GetTokenByIDResponse, error)
 }
 
 type IdNamespaceStatsTenantResponse struct {
@@ -5356,6 +5454,27 @@ func (r IdListTenantTokensResponse) StatusCode() int {
 	return 0
 }
 
+type GetTokenByIDResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTokenByIDResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTokenByIDResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // IdNamespaceStatsTenantWithResponse request returning *IdNamespaceStatsTenantResponse
 func (c *ClientWithResponses) IdNamespaceStatsTenantWithResponse(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*IdNamespaceStatsTenantResponse, error) {
 	rsp, err := c.IdNamespaceStatsTenant(ctx, tenant, reqEditors...)
@@ -5890,6 +6009,15 @@ func (c *ClientWithResponses) IdListTenantTokensWithResponse(ctx context.Context
 		return nil, err
 	}
 	return ParseIdListTenantTokensResponse(rsp)
+}
+
+// GetTokenByIDWithResponse request returning *GetTokenByIDResponse
+func (c *ClientWithResponses) GetTokenByIDWithResponse(ctx context.Context, tenant string, tokenId string, params *GetTokenByIDParams, reqEditors ...RequestEditorFn) (*GetTokenByIDResponse, error) {
+	rsp, err := c.GetTokenByID(ctx, tenant, tokenId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTokenByIDResponse(rsp)
 }
 
 // ParseIdNamespaceStatsTenantResponse parses an HTTP response from a IdNamespaceStatsTenantWithResponse call
@@ -7704,6 +7832,22 @@ func ParseIdListTenantTokensResponse(rsp *http.Response) (*IdListTenantTokensRes
 	}
 
 	response := &IdListTenantTokensResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetTokenByIDResponse parses an HTTP response from a GetTokenByIDWithResponse call
+func ParseGetTokenByIDResponse(rsp *http.Response) (*GetTokenByIDResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTokenByIDResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
