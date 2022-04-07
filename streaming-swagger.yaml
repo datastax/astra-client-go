@@ -1489,6 +1489,9 @@ paths:
         - evaluate-the-tenant-is-reserved
   /admin/v3/astra/tenants/{tenantName}/cdc:
     post:
+      servers:
+        - url: https://api.streaming.datastax.com
+          description: Override base path for the cdc operation
       summary: "Creates cdc for tenant"
       description: "Enable CDC for an AstraDB table and a Streaming tenant"
       operationId: enableCDC
@@ -1499,6 +1502,16 @@ paths:
           name: tenantName
           schema:
             type: string
+        - in: header
+          name: X-DataStax-Pulsar-Cluster
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: authorization
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/json:

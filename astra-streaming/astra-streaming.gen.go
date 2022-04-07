@@ -778,6 +778,12 @@ type UnprocessableEntity Errors
 // EnableCDCJSONBody defines parameters for EnableCDC.
 type EnableCDCJSONBody CdcRequest
 
+// EnableCDCParams defines parameters for EnableCDC.
+type EnableCDCParams struct {
+	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
+	Authorization          string `json:"authorization"`
+}
+
 // GenerateTokenForClientJSONBody defines parameters for GenerateTokenForClient.
 type GenerateTokenForClientJSONBody GenerateTokenBody
 
@@ -1108,9 +1114,9 @@ type ClientInterface interface {
 	IdTopicStatsTenantNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// EnableCDC request with any body
-	EnableCDCWithBody(ctx context.Context, tenantName string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	EnableCDCWithBody(ctx context.Context, tenantName string, params *EnableCDCParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	EnableCDC(ctx context.Context, tenantName string, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	EnableCDC(ctx context.Context, tenantName string, params *EnableCDCParams, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetAccessListTemplate request
 	GetAccessListTemplate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1311,8 +1317,8 @@ func (c *Client) IdTopicStatsTenantNamespace(ctx context.Context, tenant string,
 	return c.Client.Do(req)
 }
 
-func (c *Client) EnableCDCWithBody(ctx context.Context, tenantName string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewEnableCDCRequestWithBody(c.Server, tenantName, contentType, body)
+func (c *Client) EnableCDCWithBody(ctx context.Context, tenantName string, params *EnableCDCParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEnableCDCRequestWithBody(c.Server, tenantName, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1323,8 +1329,8 @@ func (c *Client) EnableCDCWithBody(ctx context.Context, tenantName string, conte
 	return c.Client.Do(req)
 }
 
-func (c *Client) EnableCDC(ctx context.Context, tenantName string, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewEnableCDCRequest(c.Server, tenantName, body)
+func (c *Client) EnableCDC(ctx context.Context, tenantName string, params *EnableCDCParams, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEnableCDCRequest(c.Server, tenantName, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2134,18 +2140,18 @@ func NewIdTopicStatsTenantNamespaceRequest(server string, tenant string, namespa
 }
 
 // NewEnableCDCRequest calls the generic EnableCDC builder with application/json body
-func NewEnableCDCRequest(server string, tenantName string, body EnableCDCJSONRequestBody) (*http.Request, error) {
+func NewEnableCDCRequest(server string, tenantName string, params *EnableCDCParams, body EnableCDCJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewEnableCDCRequestWithBody(server, tenantName, "application/json", bodyReader)
+	return NewEnableCDCRequestWithBody(server, tenantName, params, "application/json", bodyReader)
 }
 
 // NewEnableCDCRequestWithBody generates requests for EnableCDC with any type of body
-func NewEnableCDCRequestWithBody(server string, tenantName string, contentType string, body io.Reader) (*http.Request, error) {
+func NewEnableCDCRequestWithBody(server string, tenantName string, params *EnableCDCParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2176,6 +2182,24 @@ func NewEnableCDCRequestWithBody(server string, tenantName string, contentType s
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	var headerParam0 string
+
+	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam0)
+
+	var headerParam1 string
+
+	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "authorization", runtime.ParamLocationHeader, params.Authorization)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("authorization", headerParam1)
 
 	return req, nil
 }
@@ -3942,9 +3966,9 @@ type ClientWithResponsesInterface interface {
 	IdTopicStatsTenantNamespaceWithResponse(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*IdTopicStatsTenantNamespaceResponse, error)
 
 	// EnableCDC request with any body
-	EnableCDCWithBodyWithResponse(ctx context.Context, tenantName string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error)
+	EnableCDCWithBodyWithResponse(ctx context.Context, tenantName string, params *EnableCDCParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error)
 
-	EnableCDCWithResponse(ctx context.Context, tenantName string, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error)
+	EnableCDCWithResponse(ctx context.Context, tenantName string, params *EnableCDCParams, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error)
 
 	// GetAccessListTemplate request
 	GetAccessListTemplateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAccessListTemplateResponse, error)
@@ -5257,16 +5281,16 @@ func (c *ClientWithResponses) IdTopicStatsTenantNamespaceWithResponse(ctx contex
 }
 
 // EnableCDCWithBodyWithResponse request with arbitrary body returning *EnableCDCResponse
-func (c *ClientWithResponses) EnableCDCWithBodyWithResponse(ctx context.Context, tenantName string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error) {
-	rsp, err := c.EnableCDCWithBody(ctx, tenantName, contentType, body, reqEditors...)
+func (c *ClientWithResponses) EnableCDCWithBodyWithResponse(ctx context.Context, tenantName string, params *EnableCDCParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error) {
+	rsp, err := c.EnableCDCWithBody(ctx, tenantName, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseEnableCDCResponse(rsp)
 }
 
-func (c *ClientWithResponses) EnableCDCWithResponse(ctx context.Context, tenantName string, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error) {
-	rsp, err := c.EnableCDC(ctx, tenantName, body, reqEditors...)
+func (c *ClientWithResponses) EnableCDCWithResponse(ctx context.Context, tenantName string, params *EnableCDCParams, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error) {
+	rsp, err := c.EnableCDC(ctx, tenantName, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
