@@ -883,6 +883,18 @@ type DeleteStreamingTenantParams struct {
 	Opt *string `json:"opt,omitempty"`
 }
 
+// IdListTenantTokensParams defines parameters for IdListTenantTokens.
+type IdListTenantTokensParams struct {
+	// Bearer Astra Keycloak token or AstraCS token.
+	Authorization string `json:"Authorization"`
+
+	// Astra Org ID.
+	XDataStaxCurrentOrg string `json:"X-DataStax-Current-Org"`
+
+	// Astra Streaming Cluster Name.
+	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
+}
+
 // EnableCDCJSONRequestBody defines body for EnableCDC for application/json ContentType.
 type EnableCDCJSONRequestBody EnableCDCJSONBody
 
@@ -1267,6 +1279,9 @@ type ClientInterface interface {
 
 	// GetLimits request
 	GetLimits(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// IdListTenantTokens request
+	IdListTenantTokens(ctx context.Context, tenant string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) IdNamespaceStatsTenant(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1979,6 +1994,18 @@ func (c *Client) DeleteStreamingTenant(ctx context.Context, tenant string, clust
 
 func (c *Client) GetLimits(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetLimitsRequest(c.Server, tenant)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) IdListTenantTokens(ctx context.Context, tenant string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewIdListTenantTokensRequest(c.Server, tenant, params)
 	if err != nil {
 		return nil, err
 	}
@@ -3910,6 +3937,67 @@ func NewGetLimitsRequest(server string, tenant string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewIdListTenantTokensRequest generates requests for IdListTenantTokens
+func NewIdListTenantTokensRequest(server string, tenant string, params *IdListTenantTokensParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/streaming/tenants/%s/tokens", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var headerParam0 string
+
+	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, params.Authorization)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", headerParam0)
+
+	var headerParam1 string
+
+	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Current-Org", runtime.ParamLocationHeader, params.XDataStaxCurrentOrg)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Current-Org", headerParam1)
+
+	var headerParam2 string
+
+	headerParam2, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam2)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -4119,6 +4207,9 @@ type ClientWithResponsesInterface interface {
 
 	// GetLimits request
 	GetLimitsWithResponse(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*GetLimitsResponse, error)
+
+	// IdListTenantTokens request
+	IdListTenantTokensWithResponse(ctx context.Context, tenant string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*IdListTenantTokensResponse, error)
 }
 
 type IdNamespaceStatsTenantResponse struct {
@@ -5244,6 +5335,27 @@ func (r GetLimitsResponse) StatusCode() int {
 	return 0
 }
 
+type IdListTenantTokensResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r IdListTenantTokensResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r IdListTenantTokensResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // IdNamespaceStatsTenantWithResponse request returning *IdNamespaceStatsTenantResponse
 func (c *ClientWithResponses) IdNamespaceStatsTenantWithResponse(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*IdNamespaceStatsTenantResponse, error) {
 	rsp, err := c.IdNamespaceStatsTenant(ctx, tenant, reqEditors...)
@@ -5769,6 +5881,15 @@ func (c *ClientWithResponses) GetLimitsWithResponse(ctx context.Context, tenant 
 		return nil, err
 	}
 	return ParseGetLimitsResponse(rsp)
+}
+
+// IdListTenantTokensWithResponse request returning *IdListTenantTokensResponse
+func (c *ClientWithResponses) IdListTenantTokensWithResponse(ctx context.Context, tenant string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*IdListTenantTokensResponse, error) {
+	rsp, err := c.IdListTenantTokens(ctx, tenant, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseIdListTenantTokensResponse(rsp)
 }
 
 // ParseIdNamespaceStatsTenantResponse parses an HTTP response from a IdNamespaceStatsTenantWithResponse call
@@ -7567,6 +7688,22 @@ func ParseGetLimitsResponse(rsp *http.Response) (*GetLimitsResponse, error) {
 	}
 
 	response := &GetLimitsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseIdListTenantTokensResponse parses an HTTP response from a IdListTenantTokensWithResponse call
+func ParseIdListTenantTokensResponse(rsp *http.Response) (*IdListTenantTokensResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &IdListTenantTokensResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

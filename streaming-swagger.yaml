@@ -1407,6 +1407,55 @@ paths:
                 $ref: "#/components/schemas/errorResponse"
       tags:
         - delete-tenant-from-cluster
+  /v2/streaming/tenants/{tenant}/tokens:
+    get:
+      description: Lists all Pulsar tokens under the specified tenant
+      operationId: idListTenantTokens
+      parameters:
+        - description: Bearer Astra Keycloak token or AstraCS token.
+          in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - description: Astra Org ID.
+          in: header
+          name: X-DataStax-Current-Org
+          required: true
+          schema:
+            type: string
+        - description: Astra Streaming Cluster Name.
+          in: header
+          name: X-DataStax-Pulsar-Cluster
+          required: true
+          schema:
+            type: string
+        - description: Name of the pulsar tenant
+          in: path
+          name: tenant
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of pulsar JWT token payloads under the given tenant. Returns
+            a list of json objects each representing the payload portion of the token.
+            The claims included in the payload can include (but are not limited to)
+            the standard claims defined in https://datatracker.ietf.org/doc/html/rfc7519.html
+          schema:
+            $ref: '#/definitions/listOfMaps'
+        "401":
+          description: Authentication failure
+          schema:
+            $ref: '#/definitions/errorResponse'
+        "404":
+          description: Tenant not found
+        "500":
+          description: Failed to retreive tokens
+          schema:
+            $ref: '#/definitions/errorResponse'
+      tags:
+        - list-tokens-by-tenant
   /v2/streaming/tenants/{tenant}/limits:
     get:
       summary: "Gets number of and limits of namespaces and topics for tenant"
