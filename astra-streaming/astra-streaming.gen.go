@@ -775,6 +775,18 @@ type Unauthorized Errors
 // Errors is a collection of individual Error objects.
 type UnprocessableEntity Errors
 
+// DeleteCDCParams defines parameters for DeleteCDC.
+type DeleteCDCParams struct {
+	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
+	Authorization          string `json:"authorization"`
+}
+
+// GetCDCParams defines parameters for GetCDC.
+type GetCDCParams struct {
+	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
+	Authorization          string `json:"authorization"`
+}
+
 // EnableCDCJSONBody defines parameters for EnableCDC.
 type EnableCDCJSONBody CdcRequest
 
@@ -1137,6 +1149,12 @@ type ClientInterface interface {
 	// IdTopicStatsTenantNamespace request
 	IdTopicStatsTenantNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteCDC request
+	DeleteCDC(ctx context.Context, tenantName string, params *DeleteCDCParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCDC request
+	GetCDC(ctx context.Context, tenantName string, params *GetCDCParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// EnableCDC request with any body
 	EnableCDCWithBody(ctx context.Context, tenantName string, params *EnableCDCParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1337,6 +1355,30 @@ func (c *Client) IdTopicStatsTenant(ctx context.Context, tenant string, reqEdito
 
 func (c *Client) IdTopicStatsTenantNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewIdTopicStatsTenantNamespaceRequest(c.Server, tenant, namespace)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCDC(ctx context.Context, tenantName string, params *DeleteCDCParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCDCRequest(c.Server, tenantName, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCDC(ctx context.Context, tenantName string, params *GetCDCParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCDCRequest(c.Server, tenantName, params)
 	if err != nil {
 		return nil, err
 	}
@@ -2189,6 +2231,110 @@ func NewIdTopicStatsTenantNamespaceRequest(server string, tenant string, namespa
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewDeleteCDCRequest generates requests for DeleteCDC
+func NewDeleteCDCRequest(server string, tenantName string, params *DeleteCDCParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenantName", runtime.ParamLocationPath, tenantName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/admin/v3/astra/tenants/%s/cdc", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var headerParam0 string
+
+	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam0)
+
+	var headerParam1 string
+
+	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "authorization", runtime.ParamLocationHeader, params.Authorization)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("authorization", headerParam1)
+
+	return req, nil
+}
+
+// NewGetCDCRequest generates requests for GetCDC
+func NewGetCDCRequest(server string, tenantName string, params *GetCDCParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenantName", runtime.ParamLocationPath, tenantName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/admin/v3/astra/tenants/%s/cdc", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var headerParam0 string
+
+	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam0)
+
+	var headerParam1 string
+
+	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "authorization", runtime.ParamLocationHeader, params.Authorization)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("authorization", headerParam1)
 
 	return req, nil
 }
@@ -4148,6 +4294,12 @@ type ClientWithResponsesInterface interface {
 	// IdTopicStatsTenantNamespace request
 	IdTopicStatsTenantNamespaceWithResponse(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*IdTopicStatsTenantNamespaceResponse, error)
 
+	// DeleteCDC request
+	DeleteCDCWithResponse(ctx context.Context, tenantName string, params *DeleteCDCParams, reqEditors ...RequestEditorFn) (*DeleteCDCResponse, error)
+
+	// GetCDC request
+	GetCDCWithResponse(ctx context.Context, tenantName string, params *GetCDCParams, reqEditors ...RequestEditorFn) (*GetCDCResponse, error)
+
 	// EnableCDC request with any body
 	EnableCDCWithBodyWithResponse(ctx context.Context, tenantName string, params *EnableCDCParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error)
 
@@ -4388,6 +4540,48 @@ func (r IdTopicStatsTenantNamespaceResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r IdTopicStatsTenantNamespaceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteCDCResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteCDCResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteCDCResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCDCResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCDCResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCDCResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5511,6 +5705,24 @@ func (c *ClientWithResponses) IdTopicStatsTenantNamespaceWithResponse(ctx contex
 	return ParseIdTopicStatsTenantNamespaceResponse(rsp)
 }
 
+// DeleteCDCWithResponse request returning *DeleteCDCResponse
+func (c *ClientWithResponses) DeleteCDCWithResponse(ctx context.Context, tenantName string, params *DeleteCDCParams, reqEditors ...RequestEditorFn) (*DeleteCDCResponse, error) {
+	rsp, err := c.DeleteCDC(ctx, tenantName, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCDCResponse(rsp)
+}
+
+// GetCDCWithResponse request returning *GetCDCResponse
+func (c *ClientWithResponses) GetCDCWithResponse(ctx context.Context, tenantName string, params *GetCDCParams, reqEditors ...RequestEditorFn) (*GetCDCResponse, error) {
+	rsp, err := c.GetCDC(ctx, tenantName, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCDCResponse(rsp)
+}
+
 // EnableCDCWithBodyWithResponse request with arbitrary body returning *EnableCDCResponse
 func (c *ClientWithResponses) EnableCDCWithBodyWithResponse(ctx context.Context, tenantName string, params *EnableCDCParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error) {
 	rsp, err := c.EnableCDCWithBody(ctx, tenantName, params, contentType, body, reqEditors...)
@@ -6077,6 +6289,38 @@ func ParseIdTopicStatsTenantNamespaceResponse(rsp *http.Response) (*IdTopicStats
 	}
 
 	response := &IdTopicStatsTenantNamespaceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseDeleteCDCResponse parses an HTTP response from a DeleteCDCWithResponse call
+func ParseDeleteCDCResponse(rsp *http.Response) (*DeleteCDCResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteCDCResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetCDCResponse parses an HTTP response from a GetCDCWithResponse call
+func ParseGetCDCResponse(rsp *http.Response) (*GetCDCResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCDCResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

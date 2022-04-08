@@ -1645,6 +1645,100 @@ paths:
             "*/*":
               schema:
                 $ref: "#/components/schemas/errorResponse"
+    get:
+      servers:
+        - url: https://api.streaming.datastax.com
+          description: Override base path for the cdc operation
+      summary: "Gets cdc for tenant"
+      description: "Gets CDC for an AstraDB table and a Streaming tenant"
+      operationId: getCDC
+      parameters:
+        - description: Streaming tenant name
+          in: path
+          required: true
+          name: tenantName
+          schema:
+            type: string
+        - in: header
+          name: X-DataStax-Pulsar-Cluster
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: authorization
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: cdc
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/createdTenantResponse"
+        "401":
+          description: Authentication failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "500":
+          description: Failed to read the HTTP body
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+    delete:
+      servers:
+        - url: https://api.streaming.datastax.com
+          description: Override base path for the cdc operation
+      summary: "Deletes cdc for tenant"
+      description: "Deletes CDC for an AstraDB table and a Streaming tenant"
+      operationId: deleteCDC
+      parameters:
+        - description: Streaming tenant name
+          in: path
+          required: true
+          name: tenantName
+          schema:
+            type: string
+        - in: header
+          name: X-DataStax-Pulsar-Cluster
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: authorization
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: cdc successfully deleted
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/createdTenantResponse"
+        "401":
+          description: Authentication failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "409":
+          description: cdc already deleted
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "500":
+          description: Failed to read the HTTP body
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+
+
 
 ## End Astra Streaming paths...
 
