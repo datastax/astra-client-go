@@ -1442,18 +1442,24 @@ paths:
             a list of json objects each representing the payload portion of the token.
             The claims included in the payload can include (but are not limited to)
             the standard claims defined in https://datatracker.ietf.org/doc/html/rfc7519.html
-          schema:
-            $ref: '#/definitions/listOfMaps'
+          content:
+            "*/*":
+              schema:
+                $ref: '#/components/schemas/listOfMaps'
         "401":
           description: Authentication failure
-          schema:
-            $ref: '#/definitions/errorResponse'
+          content:
+            "*/*":
+              schema:
+                $ref: '#/components/schemas/errorResponse'
         "404":
           description: Tenant not found
         "500":
           description: Failed to retreive tokens
-          schema:
-            $ref: '#/definitions/errorResponse'
+          content:
+            "*/*":
+              schema:
+                $ref: '#/components/schemas/errorResponse'
       tags:
         - list-tokens-by-tenant
   /v2/streaming/tenants/{tenant}/tokens/{tokenId}:
@@ -1497,18 +1503,24 @@ paths:
             a list of json objects each representing the payload portion of the token.
             The claims included in the payload can include (but are not limited to)
             the standard claims defined in https://datatracker.ietf.org/doc/html/rfc7519.html
-          schema:
-            $ref: '#/definitions/listOfMaps'
+          content:
+            "*/*":
+              schema:
+                $ref: '#/components/schemas/listOfMaps'
         "401":
           description: Authentication failure
-          schema:
-            $ref: '#/definitions/errorResponse'
+          content:
+            "*/*":
+              schema:
+                $ref: '#/components/schemas/errorResponse'
         "404":
           description: Tenant not found
         "500":
           description: Failed to retreive tokens
-          schema:
-            $ref: '#/definitions/errorResponse'
+          content:
+            "*/*":
+              schema:
+                $ref: '#/components/schemas/errorResponse'
   /v2/streaming/tenants/{tenant}/limits:
     get:
       summary: "Gets number of and limits of namespaces and topics for tenant"
@@ -1712,12 +1724,6 @@ paths:
           schema:
             type: string
           required: true
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/cdcRequest"
-        description: Request body for enabling cdc
       responses:
         "200":
           description: cdc successfully deleted
@@ -1743,6 +1749,265 @@ paths:
             "*/*":
               schema:
                 $ref: "#/components/schemas/errorResponse"
+
+  /admin/v3/astrasinks/{tenant}/{namespace}/{sinkName}:
+    post:
+      description: Creates a new Sink using the given JSON config
+      operationId: createSinkJSON
+      parameters:
+        - description: Astra JWT token
+          in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - description: Astra Org ID.
+          in: header
+          name: X-DataStax-Current-Org
+          required: true
+          schema:
+            type: string
+        - description: Astra Streaming Cluster Name.
+          in: header
+          name: X-DataStax-Pulsar-Cluster
+          required: true
+          schema:
+            type: string
+        - description: Name of the pulsar tenant
+          in: path
+          name: tenant
+          required: true
+          schema:
+            type: string
+        - description: pulsar namespace
+          in: path
+          name: namespace
+          required: true
+          schema:
+            type: string
+        - description: Name of the sink
+          in: path
+          name: sinkName
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SinkConfig"
+      responses:
+        "204":
+          description: success
+        "401":
+          description: Authentication failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "404":
+          description: Tenant or namespace not found
+        "500":
+          description: General server failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+      tags:
+        - connectors
+    put:
+      description: Update a Sink using the given JSON config
+      operationId: updateSinkJSON
+      parameters:
+        - description: Astra JWT token
+          in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - description: Astra Org ID.
+          in: header
+          name: X-DataStax-Current-Org
+          required: true
+          schema:
+            type: string
+        - description: Astra Streaming Cluster Name.
+          in: header
+          name: X-DataStax-Pulsar-Cluster
+          required: true
+          schema:
+            type: string
+        - description: Name of the pulsar tenant
+          in: path
+          name: tenant
+          required: true
+          schema:
+            type: string
+        - description: pulsar namespace
+          in: path
+          name: namespace
+          required: true
+          schema:
+            type: string
+        - description: Name of the sink
+          in: path
+          name: sinkName
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SinkConfig"
+      responses:
+        "204":
+          description: success
+        "401":
+          description: Authentication failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "404":
+          description: Tenant or namespace not found
+        "500":
+          description: General server failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+      tags:
+        - connectors
+  /admin/v3/astrasources/{tenant}/{namespace}/{sourceName}:
+    post:
+      description: Creates a new Source using the given JSON config
+      operationId: createSourceJSON
+      parameters:
+        - description: Astra JWT token
+          in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - description: Astra Org ID.
+          in: header
+          name: X-DataStax-Current-Org
+          required: true
+          schema:
+            type: string
+        - description: Astra Streaming Cluster Name.
+          in: header
+          name: X-DataStax-Pulsar-Cluster
+          required: true
+          schema:
+            type: string
+        - description: Name of the pulsar tenant
+          in: path
+          name: tenant
+          required: true
+          schema:
+            type: string
+        - description: pulsar namespace
+          in: path
+          name: namespace
+          required: true
+          schema:
+            type: string
+        - description: source name
+          in: path
+          name: sourceName
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceConfig"
+      responses:
+        "204":
+          description: success
+        "401":
+          description: Authentication failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "404":
+          description: Tenant or namespace not found
+        "500":
+          description: General server failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+      tags:
+        - connectors
+    put:
+      description: Update a source using the given JSON config
+      operationId: updateSourceJSON
+      parameters:
+        - description: Astra JWT token
+          in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - description: Astra Org ID.
+          in: header
+          name: X-DataStax-Current-Org
+          required: true
+          schema:
+            type: string
+        - description: Astra Streaming Cluster Name.
+          in: header
+          name: X-DataStax-Pulsar-Cluster
+          required: true
+          schema:
+            type: string
+        - description: Name of the pulsar tenant
+          in: path
+          name: tenant
+          required: true
+          schema:
+            type: string
+        - description: pulsar namespace
+          in: path
+          name: namespace
+          required: true
+          schema:
+            type: string
+        - description: source name
+          in: path
+          name: sourceName
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceConfig"
+      responses:
+        "204":
+          description: success
+        "401":
+          description: Authentication failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "404":
+          description: Tenant or namespace not found
+        "500":
+          description: General server failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+      tags:
+        - connectors
 
 
 
@@ -1841,6 +2106,227 @@ components:
   ## End Astra Streaming parameters
 
   schemas:
+    SourceConfig:
+      type: object
+      properties:
+        tenant:
+          type: string
+        namespace:
+          type: string
+        name:
+          type: string
+        className:
+          type: string
+        topicName:
+          type: string
+        producerConfig:
+          "$ref": "#/components/schemas/ProducerConfig"
+        serdeClassName:
+          type: string
+        schemaType:
+          type: string
+        configs:
+          type: object
+          additionalProperties:
+            type: object
+        secrets:
+          type: object
+          additionalProperties:
+            type: object
+        parallelism:
+          type: integer
+          format: int32
+        processingGuarantees:
+          type: string
+          enum:
+            - ATLEAST_ONCE
+            - ATMOST_ONCE
+            - EFFECTIVELY_ONCE
+        resources:
+          "$ref": "#/components/schemas/Resources"
+        archive:
+          type: string
+        runtimeFlags:
+          type: string
+        customRuntimeOptions:
+          type: string
+        batchSourceConfig:
+          "$ref": "#/components/schemas/BatchSourceConfig"
+        batchBuilder:
+          type: string
+    ProducerConfig:
+      type: object
+      properties:
+        maxPendingMessages:
+          type: integer
+          format: int32
+        maxPendingMessagesAcrossPartitions:
+          type: integer
+          format: int32
+        useThreadLocalProducers:
+          type: boolean
+        cryptoConfig:
+          "$ref": "#/components/schemas/CryptoConfig"
+        batchBuilder:
+          type: string
+    BatchSourceConfig:
+      type: object
+      properties:
+        discoveryTriggererClassName:
+          type: string
+        discoveryTriggererConfig:
+          type: object
+          additionalProperties:
+            type: object
+    CryptoConfig:
+      type: object
+      properties:
+        cryptoKeyReaderClassName:
+          type: string
+        cryptoKeyReaderConfig:
+          type: object
+          additionalProperties:
+            type: object
+        encryptionKeys:
+          type: array
+          items:
+            type: string
+        producerCryptoFailureAction:
+          type: string
+          enum:
+            - FAIL
+            - SEND
+        consumerCryptoFailureAction:
+          type: string
+          enum:
+            - FAIL
+            - DISCARD
+            - CONSUME
+
+
+    SinkConfig:
+      type: object
+      properties:
+        tenant:
+          type: string
+        namespace:
+          type: string
+        name:
+          type: string
+        className:
+          type: string
+        sourceSubscriptionName:
+          type: string
+        sourceSubscriptionPosition:
+          type: string
+          enum:
+            - Latest
+            - Earliest
+        inputs:
+          type: array
+          items:
+            type: string
+        topicToSerdeClassName:
+          type: object
+          additionalProperties:
+            type: string
+        topicsPattern:
+          type: string
+        topicToSchemaType:
+          type: object
+          additionalProperties:
+            type: string
+        topicToSchemaProperties:
+          type: object
+          additionalProperties:
+            type: string
+        inputSpecs:
+          type: object
+          additionalProperties:
+            "$ref": "#/components/schemas/ConsumerConfig"
+        maxMessageRetries:
+          type: integer
+          format: int32
+        deadLetterTopic:
+          type: string
+        configs:
+          type: object
+          additionalProperties:
+            type: object
+        secrets:
+          type: object
+          additionalProperties:
+            type: object
+        parallelism:
+          type: integer
+          format: int32
+        processingGuarantees:
+          type: string
+          enum:
+            - ATLEAST_ONCE
+            - ATMOST_ONCE
+            - EFFECTIVELY_ONCE
+        retainOrdering:
+          type: boolean
+        retainKeyOrdering:
+          type: boolean
+        resources:
+          "$ref": "#/components/schemas/Resources"
+        autoAck:
+          type: boolean
+        timeoutMs:
+          type: integer
+          format: int64
+        negativeAckRedeliveryDelayMs:
+          type: integer
+          format: int64
+        sinkType:
+          type: string
+        archive:
+          type: string
+        cleanupSubscription:
+          type: boolean
+        runtimeFlags:
+          type: string
+        customRuntimeOptions:
+          type: string
+    Resources:
+      type: object
+      properties:
+        cpu:
+          type: number
+          format: double
+        ram:
+          type: integer
+          format: int64
+        disk:
+          type: integer
+          format: int64
+    ConsumerConfig:
+      type: object
+      properties:
+        schemaType:
+          type: string
+        serdeClassName:
+          type: string
+        schemaProperties:
+          type: object
+          additionalProperties:
+            type: string
+        consumerProperties:
+          type: object
+          additionalProperties:
+            type: string
+        receiverQueueSize:
+          type: integer
+          format: int32
+        cryptoConfig:
+          "$ref": "#/components/schemas/CryptoConfig"
+        poolMessages:
+          type: boolean
+        regexPattern:
+          type: boolean
+
     cdcRequest:
       type: "object"
       description: "cdcRequest model"
@@ -2957,6 +3443,13 @@ components:
       required:
         - Body
       type: object
+      x-go-package: github.com/riptano/bellburnell/src/docs
+    listOfMaps:
+      items:
+        additionalProperties:
+          type: string
+        type: object
+      type: array
       x-go-package: github.com/riptano/bellburnell/src/docs
     listOfString:
       properties:
