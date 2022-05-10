@@ -5423,9 +5423,6 @@ type AcceptEndpointToServiceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *PrivateLinkEndpoint
-	JSON400      *Errors
-	JSON404      *Errors
-	JSON409      *Errors
 	JSON500      *Errors
 }
 
@@ -8148,27 +8145,6 @@ func ParseAcceptEndpointToServiceResponse(rsp *http.Response) (*AcceptEndpointTo
 			return nil, err
 		}
 		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest Errors
