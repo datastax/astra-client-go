@@ -1165,11 +1165,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/PrivateLinkEndpoint'
         400:
-          $ref: '#/components/responses/BadRequest'
+          description: not ok
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
         404:
-          $ref: '#/components/responses/NotFound'
+          description: not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
         409:
-          $ref: '#/components/responses/Conflict'
+          description: conflict
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
         500:
           $ref: '#/components/responses/ServerError'
   /v2/organizations/clusters/{clusterID}/datacenters/{datacenterID}/endpoints/{endpointID}:
