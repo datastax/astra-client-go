@@ -995,6 +995,9 @@ type Unauthorized Errors
 // Errors is a collection of individual Error objects.
 type UnprocessableEntity Errors
 
+// DeleteCDCJSONBody defines parameters for DeleteCDC.
+type DeleteCDCJSONBody CdcRequest
+
 // DeleteCDCParams defines parameters for DeleteCDC.
 type DeleteCDCParams struct {
 	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
@@ -1198,6 +1201,9 @@ type GetTokenByIDParams struct {
 	// Astra Streaming Cluster Name.
 	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
 }
+
+// DeleteCDCJSONRequestBody defines body for DeleteCDC for application/json ContentType.
+type DeleteCDCJSONRequestBody DeleteCDCJSONBody
 
 // EnableCDCJSONRequestBody defines body for EnableCDC for application/json ContentType.
 type EnableCDCJSONRequestBody EnableCDCJSONBody
@@ -2077,8 +2083,10 @@ type ClientInterface interface {
 	// IdTopicStatsTenantNamespace request
 	IdTopicStatsTenantNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeleteCDC request
-	DeleteCDC(ctx context.Context, tenantName string, params *DeleteCDCParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// DeleteCDC request with any body
+	DeleteCDCWithBody(ctx context.Context, tenantName string, params *DeleteCDCParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	DeleteCDC(ctx context.Context, tenantName string, params *DeleteCDCParams, body DeleteCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCDC request
 	GetCDC(ctx context.Context, tenantName string, params *GetCDCParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2313,8 +2321,20 @@ func (c *Client) IdTopicStatsTenantNamespace(ctx context.Context, tenant string,
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteCDC(ctx context.Context, tenantName string, params *DeleteCDCParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteCDCRequest(c.Server, tenantName, params)
+func (c *Client) DeleteCDCWithBody(ctx context.Context, tenantName string, params *DeleteCDCParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCDCRequestWithBody(c.Server, tenantName, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCDC(ctx context.Context, tenantName string, params *DeleteCDCParams, body DeleteCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCDCRequest(c.Server, tenantName, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3279,8 +3299,19 @@ func NewIdTopicStatsTenantNamespaceRequest(server string, tenant string, namespa
 	return req, nil
 }
 
-// NewDeleteCDCRequest generates requests for DeleteCDC
-func NewDeleteCDCRequest(server string, tenantName string, params *DeleteCDCParams) (*http.Request, error) {
+// NewDeleteCDCRequest calls the generic DeleteCDC builder with application/json body
+func NewDeleteCDCRequest(server string, tenantName string, params *DeleteCDCParams, body DeleteCDCJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeleteCDCRequestWithBody(server, tenantName, params, "application/json", bodyReader)
+}
+
+// NewDeleteCDCRequestWithBody generates requests for DeleteCDC with any type of body
+func NewDeleteCDCRequestWithBody(server string, tenantName string, params *DeleteCDCParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3305,10 +3336,12 @@ func NewDeleteCDCRequest(server string, tenantName string, params *DeleteCDCPara
 		return nil, err
 	}
 
-	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	req, err := http.NewRequest("DELETE", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	var headerParam0 string
 
@@ -5690,8 +5723,10 @@ type ClientWithResponsesInterface interface {
 	// IdTopicStatsTenantNamespace request
 	IdTopicStatsTenantNamespaceWithResponse(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*IdTopicStatsTenantNamespaceResponse, error)
 
-	// DeleteCDC request
-	DeleteCDCWithResponse(ctx context.Context, tenantName string, params *DeleteCDCParams, reqEditors ...RequestEditorFn) (*DeleteCDCResponse, error)
+	// DeleteCDC request with any body
+	DeleteCDCWithBodyWithResponse(ctx context.Context, tenantName string, params *DeleteCDCParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteCDCResponse, error)
+
+	DeleteCDCWithResponse(ctx context.Context, tenantName string, params *DeleteCDCParams, body DeleteCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteCDCResponse, error)
 
 	// GetCDC request
 	GetCDCWithResponse(ctx context.Context, tenantName string, params *GetCDCParams, reqEditors ...RequestEditorFn) (*GetCDCResponse, error)
@@ -7205,9 +7240,17 @@ func (c *ClientWithResponses) IdTopicStatsTenantNamespaceWithResponse(ctx contex
 	return ParseIdTopicStatsTenantNamespaceResponse(rsp)
 }
 
-// DeleteCDCWithResponse request returning *DeleteCDCResponse
-func (c *ClientWithResponses) DeleteCDCWithResponse(ctx context.Context, tenantName string, params *DeleteCDCParams, reqEditors ...RequestEditorFn) (*DeleteCDCResponse, error) {
-	rsp, err := c.DeleteCDC(ctx, tenantName, params, reqEditors...)
+// DeleteCDCWithBodyWithResponse request with arbitrary body returning *DeleteCDCResponse
+func (c *ClientWithResponses) DeleteCDCWithBodyWithResponse(ctx context.Context, tenantName string, params *DeleteCDCParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteCDCResponse, error) {
+	rsp, err := c.DeleteCDCWithBody(ctx, tenantName, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCDCResponse(rsp)
+}
+
+func (c *ClientWithResponses) DeleteCDCWithResponse(ctx context.Context, tenantName string, params *DeleteCDCParams, body DeleteCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteCDCResponse, error) {
+	rsp, err := c.DeleteCDC(ctx, tenantName, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}

@@ -1724,6 +1724,12 @@ paths:
           schema:
             type: string
           required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/cdcRequest"
+        description: Request body for enabling cdc
       responses:
         "200":
           description: cdc successfully deleted
