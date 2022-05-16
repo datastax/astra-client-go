@@ -1756,6 +1756,42 @@ paths:
               schema:
                 $ref: "#/components/schemas/errorResponse"
 
+  /admin/v3/sinks/builtinsinks:
+    get:
+      description: Gets built in sinks
+      operationId: getBuiltInSinks
+      parameters:
+        - description: Astra JWT token
+          in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - description: Astra Streaming Cluster Name.
+          in: header
+          name: X-DataStax-Pulsar-Cluster
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+        "401":
+          description: Authentication failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "404":
+          description: not found
+        "500":
+          description: General server failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+
+
   /admin/v3/astrasinks/{tenant}/{namespace}/{sinkName}:
     post:
       description: Creates a new Sink using the given JSON config

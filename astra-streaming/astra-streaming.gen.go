@@ -1079,6 +1079,15 @@ type UpdateSourceJSONParams struct {
 	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
 }
 
+// GetBuiltInSinksParams defines parameters for GetBuiltInSinks.
+type GetBuiltInSinksParams struct {
+	// Astra JWT token
+	Authorization string `json:"Authorization"`
+
+	// Astra Streaming Cluster Name.
+	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
+}
+
 // GenerateTokenForClientJSONBody defines parameters for GenerateTokenForClient.
 type GenerateTokenForClientJSONBody GenerateTokenBody
 
@@ -2116,6 +2125,9 @@ type ClientInterface interface {
 
 	UpdateSourceJSON(ctx context.Context, tenant string, namespace string, sourceName string, params *UpdateSourceJSONParams, body UpdateSourceJSONJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetBuiltInSinks request
+	GetBuiltInSinks(ctx context.Context, params *GetBuiltInSinksParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetAccessListTemplate request
 	GetAccessListTemplate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2467,6 +2479,18 @@ func (c *Client) UpdateSourceJSONWithBody(ctx context.Context, tenant string, na
 
 func (c *Client) UpdateSourceJSON(ctx context.Context, tenant string, namespace string, sourceName string, params *UpdateSourceJSONParams, body UpdateSourceJSONJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateSourceJSONRequest(c.Server, tenant, namespace, sourceName, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetBuiltInSinks(ctx context.Context, params *GetBuiltInSinksParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBuiltInSinksRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -3829,6 +3853,51 @@ func NewUpdateSourceJSONRequestWithBody(server string, tenant string, namespace 
 	}
 
 	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam2)
+
+	return req, nil
+}
+
+// NewGetBuiltInSinksRequest generates requests for GetBuiltInSinks
+func NewGetBuiltInSinksRequest(server string, params *GetBuiltInSinksParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/admin/v3/sinks/builtinsinks")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var headerParam0 string
+
+	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, params.Authorization)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", headerParam0)
+
+	var headerParam1 string
+
+	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam1)
 
 	return req, nil
 }
@@ -5756,6 +5825,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdateSourceJSONWithResponse(ctx context.Context, tenant string, namespace string, sourceName string, params *UpdateSourceJSONParams, body UpdateSourceJSONJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateSourceJSONResponse, error)
 
+	// GetBuiltInSinks request
+	GetBuiltInSinksWithResponse(ctx context.Context, params *GetBuiltInSinksParams, reqEditors ...RequestEditorFn) (*GetBuiltInSinksResponse, error)
+
 	// GetAccessListTemplate request
 	GetAccessListTemplateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAccessListTemplateResponse, error)
 
@@ -6138,6 +6210,27 @@ func (r UpdateSourceJSONResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateSourceJSONResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetBuiltInSinksResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r GetBuiltInSinksResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetBuiltInSinksResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -7351,6 +7444,15 @@ func (c *ClientWithResponses) UpdateSourceJSONWithResponse(ctx context.Context, 
 	return ParseUpdateSourceJSONResponse(rsp)
 }
 
+// GetBuiltInSinksWithResponse request returning *GetBuiltInSinksResponse
+func (c *ClientWithResponses) GetBuiltInSinksWithResponse(ctx context.Context, params *GetBuiltInSinksParams, reqEditors ...RequestEditorFn) (*GetBuiltInSinksResponse, error) {
+	rsp, err := c.GetBuiltInSinks(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBuiltInSinksResponse(rsp)
+}
+
 // GetAccessListTemplateWithResponse request returning *GetAccessListTemplateResponse
 func (c *ClientWithResponses) GetAccessListTemplateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAccessListTemplateResponse, error) {
 	rsp, err := c.GetAccessListTemplate(ctx, reqEditors...)
@@ -8012,6 +8114,22 @@ func ParseUpdateSourceJSONResponse(rsp *http.Response) (*UpdateSourceJSONRespons
 	}
 
 	response := &UpdateSourceJSONResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetBuiltInSinksResponse parses an HTTP response from a GetBuiltInSinksWithResponse call
+func ParseGetBuiltInSinksResponse(rsp *http.Response) (*GetBuiltInSinksResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBuiltInSinksResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
