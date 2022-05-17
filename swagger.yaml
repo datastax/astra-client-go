@@ -935,7 +935,6 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         200:
           description: OK
@@ -965,14 +964,12 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
         - name: datacenterID
           in: path
           description: Database ID
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         200:
           description: OK
@@ -1006,14 +1003,12 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
         - name: datacenterID
           in: path
           description: Database ID
           required: true
           schema:
             type: string
-            format: uuid
       requestBody:
         description: The model for adding a private link allowed principal
         content:
@@ -1064,14 +1059,12 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
         - name: datacenterID
           in: path
           description: Datacenter ID
           required: true
           schema:
             type: string
-            format: uuid
       requestBody:
         description: The model for adding a private link allowed principal
         content:
@@ -1106,14 +1099,12 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
         - name: datacenterID
           in: path
           description: Datacenter ID
           required: true
           schema:
             type: string
-            format: uuid
       requestBody:
         description: The model for removing a private link allowed principal
         content:
@@ -1143,14 +1134,12 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
         - name: datacenterID
           in: path
           description: Database ID
           required: true
           schema:
             type: string
-            format: uuid
       requestBody:
         description: The model for an AWS Private Link connection creation request
         content:
@@ -1201,14 +1190,12 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
         - name: datacenterID
           in: path
           description: Datacenter ID
           required: true
           schema:
             type: string
-            format: uuid
         - name: endpointID
           in: path
           description: Endpoint ID
@@ -1243,14 +1230,12 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
         - name: datacenterID
           in: path
           description: Datacenter ID
           required: true
           schema:
             type: string
-            format: uuid
         - name: endpointID
           in: path
           description: Endpoint ID
@@ -1291,14 +1276,12 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
         - name: datacenterID
           in: path
           description: Datacenter ID
           required: true
           schema:
             type: string
-            format: uuid
         - name: endpointID
           in: path
           description: Endpoint ID
@@ -1567,8 +1550,7 @@ paths:
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/Organization'
+                $ref: '#/components/schemas/Organization'
         '400':
           $ref: '#/components/responses/BadRequest'
         '403':
@@ -1745,7 +1727,6 @@ components:
           type: string
           description: The UUID client secret for the service account from
             the create service account response in the user interface
-          format: uuid
           example: '00b03a37-209c-462a-971b-be35ab3321de'
     StatusEnum:
       type: string
@@ -2540,12 +2521,10 @@ components:
         organizationId:
           type: string
           description: The unique identifier of the organization
-          format: uuid
           example: 303a3598-0905-4b5d-9db2-4bf2f9790973
         databaseId:
           type: string
           description: The unique identifier of the database
-          format: uuid
           example: 8fbcfe1d-56fa-4ed0-9aff-f57029feef1b
         addresses:
           type: array

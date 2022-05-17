@@ -1007,13 +1007,13 @@ paths:
           description: map of tenant's namespace stats, key is the tenant namespace name,
             the value is the stats
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/statsResponse"
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "429":
@@ -1021,7 +1021,7 @@ paths:
         "500":
           description: ""
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -1049,13 +1049,13 @@ paths:
           description: map of tenant's namespace stats, key is the tenant namespace name,
             the value is the stats
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/statsResponse"
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "429":
@@ -1063,7 +1063,7 @@ paths:
         "500":
           description: ""
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -1085,13 +1085,13 @@ paths:
           description: map of individual topics stats, key is the topic full name, the
             value is the stats
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/statsResponse"
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "429":
@@ -1099,7 +1099,7 @@ paths:
         "500":
           description: ""
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -1127,13 +1127,13 @@ paths:
           description: map of individual topics stats, key is the topic full name, the
             value is the stats
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/statsResponse"
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "429":
@@ -1141,7 +1141,7 @@ paths:
         "500":
           description: ""
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -1166,13 +1166,13 @@ paths:
         "200":
           description: Pulsar cluster list successfully returned
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/pulsarClustersResponse"
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "404":
@@ -1182,7 +1182,7 @@ paths:
         "500":
           description: Failed to read the HTTP body
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -1203,13 +1203,13 @@ paths:
         "200":
           description: List of tenants successfully retrieved
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/tenantClusterPlansResponse"
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "429":
@@ -1217,7 +1217,7 @@ paths:
         "500":
           description: Failed to read the HTTP body
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -1244,13 +1244,13 @@ paths:
         "200":
           description: List of tenants successfully retrieved
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/tenantClusterPlanResponse"
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "429":
@@ -1258,7 +1258,7 @@ paths:
         "500":
           description: Failed to read the HTTP body
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -1272,13 +1272,13 @@ paths:
         "200":
           description: All providers and regions under each provider
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/providerRegionsResponse"
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "429":
@@ -1286,7 +1286,7 @@ paths:
         "500":
           description: Failed to read the HTTP body
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -1301,13 +1301,13 @@ paths:
         "200":
           description: List of tenants successfully retrieved
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/tenantClusterPlansResponse"
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "429":
@@ -1315,7 +1315,7 @@ paths:
         "500":
           description: Failed to read the HTTP body
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -1341,25 +1341,25 @@ paths:
         "200":
           description: Tenant successfully created
           content:
-            "*/*":
+            application/json:
               schema:
-                $ref: "#/components/schemas/createdTenantResponse"
+                $ref: "#/components/schemas/TenantClusterPlanResponse"
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "409":
           description: Tenant already exists
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "500":
           description: Failed to read the HTTP body
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -1394,7 +1394,7 @@ paths:
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "429":
@@ -1402,7 +1402,7 @@ paths:
         "500":
           description: Failed to read the HTTP body
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -1443,13 +1443,13 @@ paths:
             The claims included in the payload can include (but are not limited to)
             the standard claims defined in https://datatracker.ietf.org/doc/html/rfc7519.html
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: '#/components/schemas/listOfMaps'
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: '#/components/schemas/errorResponse'
         "404":
@@ -1457,7 +1457,7 @@ paths:
         "500":
           description: Failed to retreive tokens
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: '#/components/schemas/errorResponse'
       tags:
@@ -1504,13 +1504,13 @@ paths:
             The claims included in the payload can include (but are not limited to)
             the standard claims defined in https://datatracker.ietf.org/doc/html/rfc7519.html
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: '#/components/schemas/listOfMaps'
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: '#/components/schemas/errorResponse'
         "404":
@@ -1518,7 +1518,7 @@ paths:
         "500":
           description: Failed to retreive tokens
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: '#/components/schemas/errorResponse'
   /v2/streaming/tenants/{tenant}/limits:
@@ -1538,13 +1538,13 @@ paths:
         "200":
           description: List of tenant namespaces, topics, and the limits for both
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/tenantLimitResponse"
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "429":
@@ -1552,7 +1552,7 @@ paths:
         "500":
           description: Failed to read the HTTP body
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -1636,25 +1636,25 @@ paths:
         "200":
           description: cdc successfully enabled
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/createdTenantResponse"
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "409":
           description: cdc already enabled
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "500":
           description: Failed to read the HTTP body
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
     get:
@@ -1685,19 +1685,19 @@ paths:
         "200":
           description: cdc
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/createdTenantResponse"
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "500":
           description: Failed to read the HTTP body
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
     delete:
@@ -1734,25 +1734,25 @@ paths:
         "200":
           description: cdc successfully deleted
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/createdTenantResponse"
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "409":
           description: cdc already deleted
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "500":
           description: Failed to read the HTTP body
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
 
@@ -1844,7 +1844,7 @@ paths:
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "404":
@@ -1852,7 +1852,7 @@ paths:
         "500":
           description: General server failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -1908,7 +1908,7 @@ paths:
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "404":
@@ -1916,7 +1916,7 @@ paths:
         "500":
           description: General server failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -1973,7 +1973,7 @@ paths:
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "404":
@@ -1981,7 +1981,7 @@ paths:
         "500":
           description: General server failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -2037,7 +2037,7 @@ paths:
         "401":
           description: Authentication failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
         "404":
@@ -2045,7 +2045,7 @@ paths:
         "500":
           description: General server failure
           content:
-            "*/*":
+            application/json:
               schema:
                 $ref: "#/components/schemas/errorResponse"
       tags:
@@ -3537,7 +3537,7 @@ components:
           items:
             $ref: "#/components/schemas/TenantClusterPlanResponse"
           type: array
-      type: object
+      type: array
       x-go-package: github.com/riptano/bellburnell/src/docs
     tenantLimitResponse:
       properties:
