@@ -2293,8 +2293,6 @@ components:
           type: string
         configs:
           type: object
-          additionalProperties:
-            type: object
         secrets:
           type: object
           additionalProperties:

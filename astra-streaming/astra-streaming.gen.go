@@ -661,7 +661,7 @@ type SinkConfig struct {
 	AutoAck                      *bool                                 `json:"autoAck,omitempty"`
 	ClassName                    *string                               `json:"className,omitempty"`
 	CleanupSubscription          *bool                                 `json:"cleanupSubscription,omitempty"`
-	Configs                      *SinkConfig_Configs                   `json:"configs,omitempty"`
+	Configs                      *map[string]interface{}               `json:"configs,omitempty"`
 	CustomRuntimeOptions         *string                               `json:"customRuntimeOptions,omitempty"`
 	DeadLetterTopic              *string                               `json:"deadLetterTopic,omitempty"`
 	InputSpecs                   *SinkConfig_InputSpecs                `json:"inputSpecs,omitempty"`
@@ -686,11 +686,6 @@ type SinkConfig struct {
 	TopicToSchemaType            *SinkConfig_TopicToSchemaType         `json:"topicToSchemaType,omitempty"`
 	TopicToSerdeClassName        *SinkConfig_TopicToSerdeClassName     `json:"topicToSerdeClassName,omitempty"`
 	TopicsPattern                *string                               `json:"topicsPattern,omitempty"`
-}
-
-// SinkConfig_Configs defines model for SinkConfig.Configs.
-type SinkConfig_Configs struct {
-	AdditionalProperties map[string]map[string]interface{} `json:"-"`
 }
 
 // SinkConfig_InputSpecs defines model for SinkConfig.InputSpecs.
@@ -1465,59 +1460,6 @@ func (a *CryptoConfig_CryptoKeyReaderConfig) UnmarshalJSON(b []byte) error {
 
 // Override default JSON handling for CryptoConfig_CryptoKeyReaderConfig to handle AdditionalProperties
 func (a CryptoConfig_CryptoKeyReaderConfig) MarshalJSON() ([]byte, error) {
-	var err error
-	object := make(map[string]json.RawMessage)
-
-	for fieldName, field := range a.AdditionalProperties {
-		object[fieldName], err = json.Marshal(field)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
-		}
-	}
-	return json.Marshal(object)
-}
-
-// Getter for additional properties for SinkConfig_Configs. Returns the specified
-// element and whether it was found
-func (a SinkConfig_Configs) Get(fieldName string) (value map[string]interface{}, found bool) {
-	if a.AdditionalProperties != nil {
-		value, found = a.AdditionalProperties[fieldName]
-	}
-	return
-}
-
-// Setter for additional properties for SinkConfig_Configs
-func (a *SinkConfig_Configs) Set(fieldName string, value map[string]interface{}) {
-	if a.AdditionalProperties == nil {
-		a.AdditionalProperties = make(map[string]map[string]interface{})
-	}
-	a.AdditionalProperties[fieldName] = value
-}
-
-// Override default JSON handling for SinkConfig_Configs to handle AdditionalProperties
-func (a *SinkConfig_Configs) UnmarshalJSON(b []byte) error {
-	object := make(map[string]json.RawMessage)
-	err := json.Unmarshal(b, &object)
-	if err != nil {
-		return err
-	}
-
-	if len(object) != 0 {
-		a.AdditionalProperties = make(map[string]map[string]interface{})
-		for fieldName, fieldBuf := range object {
-			var fieldVal map[string]interface{}
-			err := json.Unmarshal(fieldBuf, &fieldVal)
-			if err != nil {
-				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
-			}
-			a.AdditionalProperties[fieldName] = fieldVal
-		}
-	}
-	return nil
-}
-
-// Override default JSON handling for SinkConfig_Configs to handle AdditionalProperties
-func (a SinkConfig_Configs) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
