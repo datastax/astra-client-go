@@ -7391,7 +7391,6 @@ func (r IdListTenantTokensResponse) StatusCode() int {
 type GetTokenByIDResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ListOfMaps
 	JSON401      *ErrorResponse
 	JSON500      *ErrorResponse
 }
@@ -10496,13 +10495,6 @@ func ParseGetTokenByIDResponse(rsp *http.Response) (*GetTokenByIDResponse, error
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ListOfMaps
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest ErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {

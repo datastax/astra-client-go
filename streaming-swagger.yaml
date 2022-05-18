@@ -1499,14 +1499,11 @@ paths:
             type: string
       responses:
         "200":
-          description: List of pulsar JWT token payloads under the given tenant. Returns
-            a list of json objects each representing the payload portion of the token.
-            The claims included in the payload can include (but are not limited to)
-            the standard claims defined in https://datatracker.ietf.org/doc/html/rfc7519.html
+          description: JWT token payload for the token id
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: '#/components/schemas/listOfMaps'
+                type: string
         "401":
           description: Authentication failure
           content:
