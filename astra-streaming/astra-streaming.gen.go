@@ -1012,6 +1012,18 @@ type EnableCDCParams struct {
 	Authorization          string `json:"authorization"`
 }
 
+// DeleteSinkParams defines parameters for DeleteSink.
+type DeleteSinkParams struct {
+	// Astra Org ID.
+	XDataStaxCurrentOrg string `json:"X-DataStax-Current-Org"`
+
+	// Astra JWT token
+	Authorization string `json:"Authorization"`
+
+	// Astra Streaming Cluster Name.
+	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
+}
+
 // GetSinksParams defines parameters for GetSinks.
 type GetSinksParams struct {
 	// Astra JWT token
@@ -2054,6 +2066,9 @@ type ClientInterface interface {
 
 	EnableCDC(ctx context.Context, tenantName string, params *EnableCDCParams, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteSink request
+	DeleteSink(ctx context.Context, tenant string, namespace string, sinkName string, params *DeleteSinkParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetSinks request
 	GetSinks(ctx context.Context, tenant string, namespace string, sinkName string, params *GetSinksParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2335,6 +2350,18 @@ func (c *Client) EnableCDCWithBody(ctx context.Context, tenantName string, param
 
 func (c *Client) EnableCDC(ctx context.Context, tenantName string, params *EnableCDCParams, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewEnableCDCRequest(c.Server, tenantName, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteSink(ctx context.Context, tenant string, namespace string, sinkName string, params *DeleteSinkParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteSinkRequest(c.Server, tenant, namespace, sinkName, params)
 	if err != nil {
 		return nil, err
 	}
@@ -3465,6 +3492,81 @@ func NewEnableCDCRequestWithBody(server string, tenantName string, params *Enabl
 	}
 
 	req.Header.Set("authorization", headerParam1)
+
+	return req, nil
+}
+
+// NewDeleteSinkRequest generates requests for DeleteSink
+func NewDeleteSinkRequest(server string, tenant string, namespace string, sinkName string, params *DeleteSinkParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "namespace", runtime.ParamLocationPath, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "sinkName", runtime.ParamLocationPath, sinkName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/admin/v3/astrasinks/%s/%s/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var headerParam0 string
+
+	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Current-Org", runtime.ParamLocationHeader, params.XDataStaxCurrentOrg)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Current-Org", headerParam0)
+
+	var headerParam1 string
+
+	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, params.Authorization)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", headerParam1)
+
+	var headerParam2 string
+
+	headerParam2, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam2)
 
 	return req, nil
 }
@@ -5835,6 +5937,9 @@ type ClientWithResponsesInterface interface {
 
 	EnableCDCWithResponse(ctx context.Context, tenantName string, params *EnableCDCParams, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error)
 
+	// DeleteSink request
+	DeleteSinkWithResponse(ctx context.Context, tenant string, namespace string, sinkName string, params *DeleteSinkParams, reqEditors ...RequestEditorFn) (*DeleteSinkResponse, error)
+
 	// GetSinks request
 	GetSinksWithResponse(ctx context.Context, tenant string, namespace string, sinkName string, params *GetSinksParams, reqEditors ...RequestEditorFn) (*GetSinksResponse, error)
 
@@ -6182,6 +6287,27 @@ func (r EnableCDCResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r EnableCDCResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteSinkResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteSinkResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteSinkResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -7490,6 +7616,15 @@ func (c *ClientWithResponses) EnableCDCWithResponse(ctx context.Context, tenantN
 	return ParseEnableCDCResponse(rsp)
 }
 
+// DeleteSinkWithResponse request returning *DeleteSinkResponse
+func (c *ClientWithResponses) DeleteSinkWithResponse(ctx context.Context, tenant string, namespace string, sinkName string, params *DeleteSinkParams, reqEditors ...RequestEditorFn) (*DeleteSinkResponse, error) {
+	rsp, err := c.DeleteSink(ctx, tenant, namespace, sinkName, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteSinkResponse(rsp)
+}
+
 // GetSinksWithResponse request returning *GetSinksResponse
 func (c *ClientWithResponses) GetSinksWithResponse(ctx context.Context, tenant string, namespace string, sinkName string, params *GetSinksParams, reqEditors ...RequestEditorFn) (*GetSinksResponse, error) {
 	rsp, err := c.GetSinks(ctx, tenant, namespace, sinkName, params, reqEditors...)
@@ -8357,6 +8492,22 @@ func ParseEnableCDCResponse(rsp *http.Response) (*EnableCDCResponse, error) {
 		}
 		response.JSON500 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseDeleteSinkResponse parses an HTTP response from a DeleteSinkWithResponse call
+func ParseDeleteSinkResponse(rsp *http.Response) (*DeleteSinkResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteSinkResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil

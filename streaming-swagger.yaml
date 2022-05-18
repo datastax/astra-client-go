@@ -1790,8 +1790,67 @@ paths:
 
 
   /admin/v3/astrasinks/{tenant}/{namespace}/{sinkName}:
+    delete:
+      description: Deletes Sink for a tenant / namespace / sink name
+      operationId: deleteSink
+      parameters:
+        - description: Astra Org ID.
+          in: header
+          name: X-DataStax-Current-Org
+          required: true
+          schema:
+            type: string
+        - description: Astra JWT token
+          in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+        - description: Astra Streaming Cluster Name.
+          in: header
+          name: X-DataStax-Pulsar-Cluster
+          required: true
+          schema:
+            type: string
+        - description: Name of the pulsar tenant
+          in: path
+          name: tenant
+          required: true
+          schema:
+            type: string
+        - description: pulsar namespace
+          in: path
+          name: namespace
+          required: true
+          schema:
+            type: string
+        - description: Name of the sink
+          in: path
+          name: sinkName
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: success
+        "401":
+          description: Authentication failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+        "404":
+          description: Tenant or namespace not found
+        "500":
+          description: General server failure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+      tags:
+        - connectors
     get:
-      description: Gets Sinks for a tenant / namespace / sink name
+      description: Gets Sink for a tenant / namespace / sink name
       operationId: getSinks
       parameters:
         - description: Astra JWT token
