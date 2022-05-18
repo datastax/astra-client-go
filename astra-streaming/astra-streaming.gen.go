@@ -1014,6 +1014,15 @@ type EnableCDCParams struct {
 	Authorization          string `json:"authorization"`
 }
 
+// GetSinksParams defines parameters for GetSinks.
+type GetSinksParams struct {
+	// Astra JWT token
+	Authorization string `json:"Authorization"`
+
+	// Astra Streaming Cluster Name.
+	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
+}
+
 // CreateSinkJSONJSONBody defines parameters for CreateSinkJSON.
 type CreateSinkJSONJSONBody SinkConfig
 
@@ -2047,6 +2056,9 @@ type ClientInterface interface {
 
 	EnableCDC(ctx context.Context, tenantName string, params *EnableCDCParams, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetSinks request
+	GetSinks(ctx context.Context, tenant string, namespace string, sinkName string, params *GetSinksParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateSinkJSON request with any body
 	CreateSinkJSONWithBody(ctx context.Context, tenant string, namespace string, sinkName string, params *CreateSinkJSONParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2325,6 +2337,18 @@ func (c *Client) EnableCDCWithBody(ctx context.Context, tenantName string, param
 
 func (c *Client) EnableCDC(ctx context.Context, tenantName string, params *EnableCDCParams, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewEnableCDCRequest(c.Server, tenantName, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSinks(ctx context.Context, tenant string, namespace string, sinkName string, params *GetSinksParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSinksRequest(c.Server, tenant, namespace, sinkName, params)
 	if err != nil {
 		return nil, err
 	}
@@ -3443,6 +3467,72 @@ func NewEnableCDCRequestWithBody(server string, tenantName string, params *Enabl
 	}
 
 	req.Header.Set("authorization", headerParam1)
+
+	return req, nil
+}
+
+// NewGetSinksRequest generates requests for GetSinks
+func NewGetSinksRequest(server string, tenant string, namespace string, sinkName string, params *GetSinksParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "namespace", runtime.ParamLocationPath, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "sinkName", runtime.ParamLocationPath, sinkName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/admin/v3/astrasinks/%s/%s/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var headerParam0 string
+
+	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, params.Authorization)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", headerParam0)
+
+	var headerParam1 string
+
+	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam1)
 
 	return req, nil
 }
@@ -5747,6 +5837,9 @@ type ClientWithResponsesInterface interface {
 
 	EnableCDCWithResponse(ctx context.Context, tenantName string, params *EnableCDCParams, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error)
 
+	// GetSinks request
+	GetSinksWithResponse(ctx context.Context, tenant string, namespace string, sinkName string, params *GetSinksParams, reqEditors ...RequestEditorFn) (*GetSinksResponse, error)
+
 	// CreateSinkJSON request with any body
 	CreateSinkJSONWithBodyWithResponse(ctx context.Context, tenant string, namespace string, sinkName string, params *CreateSinkJSONParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSinkJSONResponse, error)
 
@@ -6068,6 +6161,27 @@ func (r EnableCDCResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r EnableCDCResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSinksResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSinksResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSinksResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -7318,6 +7432,15 @@ func (c *ClientWithResponses) EnableCDCWithResponse(ctx context.Context, tenantN
 	return ParseEnableCDCResponse(rsp)
 }
 
+// GetSinksWithResponse request returning *GetSinksResponse
+func (c *ClientWithResponses) GetSinksWithResponse(ctx context.Context, tenant string, namespace string, sinkName string, params *GetSinksParams, reqEditors ...RequestEditorFn) (*GetSinksResponse, error) {
+	rsp, err := c.GetSinks(ctx, tenant, namespace, sinkName, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSinksResponse(rsp)
+}
+
 // CreateSinkJSONWithBodyWithResponse request with arbitrary body returning *CreateSinkJSONResponse
 func (c *ClientWithResponses) CreateSinkJSONWithBodyWithResponse(ctx context.Context, tenant string, namespace string, sinkName string, params *CreateSinkJSONParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSinkJSONResponse, error) {
 	rsp, err := c.CreateSinkJSONWithBody(ctx, tenant, namespace, sinkName, params, contentType, body, reqEditors...)
@@ -7992,6 +8115,22 @@ func ParseEnableCDCResponse(rsp *http.Response) (*EnableCDCResponse, error) {
 	}
 
 	response := &EnableCDCResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetSinksResponse parses an HTTP response from a GetSinksWithResponse call
+func ParseGetSinksResponse(rsp *http.Response) (*GetSinksResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSinksResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
