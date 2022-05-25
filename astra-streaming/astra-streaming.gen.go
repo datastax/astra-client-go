@@ -3185,7 +3185,7 @@ func NewGetTenantsRequest(server string, tenant string, namespace string, params
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/admin/v2/non-persistent/%s/%s/", pathParam0, pathParam1)
+	operationPath := fmt.Sprintf("/admin/v2/persistent/%s/%s/", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -3253,7 +3253,7 @@ func NewDeleteTopicRequest(server string, tenant string, namespace string, topic
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/admin/v2/non-persistent/%s/%s/%s", pathParam0, pathParam1, pathParam2)
+	operationPath := fmt.Sprintf("/admin/v2/persistent/%s/%s/%s", pathParam0, pathParam1, pathParam2)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -3330,7 +3330,7 @@ func NewCreateTopicRequest(server string, tenant string, namespace string, topic
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/admin/v2/non-persistent/%s/%s/%s", pathParam0, pathParam1, pathParam2)
+	operationPath := fmt.Sprintf("/admin/v2/persistent/%s/%s/%s", pathParam0, pathParam1, pathParam2)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
