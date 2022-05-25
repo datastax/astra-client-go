@@ -1274,7 +1274,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/providerRegionsResponse"
+                $ref: "#/components/schemas/CloudProviderRegionResponse"
         "401":
           description: Authentication failure
           content:
@@ -3867,22 +3867,10 @@ components:
     CloudProviderRegionResponse:
       description: CloudProviderRegionResponse is a map of cloud provider and its available regions.
       type: object
-      properties:
-        aws:
-          type: array
-          items:
-            type: string
-            example: ["us-east-2", "eu-west-1"]
-        gcp:
-          type: array
-          items:
-            type: string
-            example: ["us-east-2", "eu-west-1"]
-        azure:
-          type: array
-          items:
-            type: string
-            example: ["us-east-2", "eu-west-1"]
+      additionalProperties:
+        type: array
+        items:
+          type: string
 
   ## End Astra Streaming schemas
 

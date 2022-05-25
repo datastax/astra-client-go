@@ -263,6 +263,11 @@ type ClientRoleList struct {
 	Clients *[]ClientRole `json:"clients,omitempty"`
 }
 
+// CloudProviderRegionResponse is a map of cloud provider and its available regions.
+type CloudProviderRegionResponse struct {
+	AdditionalProperties map[string][]string `json:"-"`
+}
+
 // ClusterResponse is the response struct for a cluster
 type ClusterResponse struct {
 	PulsarURL           *string `json:"brokerServiceUrl,omitempty"`
@@ -825,16 +830,6 @@ type ListOfMaps = []struct {
 	AdditionalProperties map[string]string `json:"-"`
 }
 
-// ProviderRegionsResponse defines model for providerRegionsResponse.
-type ProviderRegionsResponse struct {
-	Body *ProviderRegionsResponse_Body `json:"Body,omitempty"`
-}
-
-// ProviderRegionsResponse_Body defines model for ProviderRegionsResponse.Body.
-type ProviderRegionsResponse_Body struct {
-	AdditionalProperties map[string][]string `json:"-"`
-}
-
 // PulsarClustersResponse defines model for pulsarClustersResponse.
 type PulsarClustersResponse struct {
 	Body *[]ClusterResponse `json:"Body,omitempty"`
@@ -1273,6 +1268,59 @@ func (a *BatchSourceConfig_DiscoveryTriggererConfig) UnmarshalJSON(b []byte) err
 
 // Override default JSON handling for BatchSourceConfig_DiscoveryTriggererConfig to handle AdditionalProperties
 func (a BatchSourceConfig_DiscoveryTriggererConfig) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for CloudProviderRegionResponse. Returns the specified
+// element and whether it was found
+func (a CloudProviderRegionResponse) Get(fieldName string) (value []string, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for CloudProviderRegionResponse
+func (a *CloudProviderRegionResponse) Set(fieldName string, value []string) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string][]string)
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for CloudProviderRegionResponse to handle AdditionalProperties
+func (a *CloudProviderRegionResponse) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string][]string)
+		for fieldName, fieldBuf := range object {
+			var fieldVal []string
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for CloudProviderRegionResponse to handle AdditionalProperties
+func (a CloudProviderRegionResponse) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
@@ -1803,59 +1851,6 @@ func (a *SourceConfig_Secrets) UnmarshalJSON(b []byte) error {
 
 // Override default JSON handling for SourceConfig_Secrets to handle AdditionalProperties
 func (a SourceConfig_Secrets) MarshalJSON() ([]byte, error) {
-	var err error
-	object := make(map[string]json.RawMessage)
-
-	for fieldName, field := range a.AdditionalProperties {
-		object[fieldName], err = json.Marshal(field)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
-		}
-	}
-	return json.Marshal(object)
-}
-
-// Getter for additional properties for ProviderRegionsResponse_Body. Returns the specified
-// element and whether it was found
-func (a ProviderRegionsResponse_Body) Get(fieldName string) (value []string, found bool) {
-	if a.AdditionalProperties != nil {
-		value, found = a.AdditionalProperties[fieldName]
-	}
-	return
-}
-
-// Setter for additional properties for ProviderRegionsResponse_Body
-func (a *ProviderRegionsResponse_Body) Set(fieldName string, value []string) {
-	if a.AdditionalProperties == nil {
-		a.AdditionalProperties = make(map[string][]string)
-	}
-	a.AdditionalProperties[fieldName] = value
-}
-
-// Override default JSON handling for ProviderRegionsResponse_Body to handle AdditionalProperties
-func (a *ProviderRegionsResponse_Body) UnmarshalJSON(b []byte) error {
-	object := make(map[string]json.RawMessage)
-	err := json.Unmarshal(b, &object)
-	if err != nil {
-		return err
-	}
-
-	if len(object) != 0 {
-		a.AdditionalProperties = make(map[string][]string)
-		for fieldName, fieldBuf := range object {
-			var fieldVal []string
-			err := json.Unmarshal(fieldBuf, &fieldVal)
-			if err != nil {
-				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
-			}
-			a.AdditionalProperties[fieldName] = fieldVal
-		}
-	}
-	return nil
-}
-
-// Override default JSON handling for ProviderRegionsResponse_Body to handle AdditionalProperties
-func (a ProviderRegionsResponse_Body) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
@@ -7637,7 +7632,7 @@ func (r GetStreamingTenantResponse) StatusCode() int {
 type GetStreamingProvidersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ProviderRegionsResponse
+	JSON200      *CloudProviderRegionResponse
 	JSON401      *ErrorResponse
 	JSON500      *ErrorResponse
 }
@@ -10751,7 +10746,7 @@ func ParseGetStreamingProvidersResponse(rsp *http.Response) (*GetStreamingProvid
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ProviderRegionsResponse
+		var dest CloudProviderRegionResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
