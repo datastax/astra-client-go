@@ -1791,8 +1791,8 @@ paths:
 
   /admin/v2/persistent/{tenant}/{namespace}/:
     get:
-      description: Gets tenants for a tenant / namespace
-      operationId: getTenants
+      description: Gets topics for a tenant / namespace
+      operationId: getTopics
       parameters:
         - description: Astra JWT token
           in: header

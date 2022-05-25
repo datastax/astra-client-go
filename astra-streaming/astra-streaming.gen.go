@@ -903,8 +903,8 @@ type Unauthorized = Errors
 // Errors is a collection of individual Error objects.
 type UnprocessableEntity = Errors
 
-// GetTenantsParams defines parameters for GetTenants.
-type GetTenantsParams struct {
+// GetTopicsParams defines parameters for GetTopics.
+type GetTopicsParams struct {
 	// Astra JWT token
 	Authorization string `json:"Authorization"`
 
@@ -1989,8 +1989,8 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// GetTenants request
-	GetTenants(ctx context.Context, tenant string, namespace string, params *GetTenantsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetTopics request
+	GetTopics(ctx context.Context, tenant string, namespace string, params *GetTopicsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteTopic request
 	DeleteTopic(ctx context.Context, tenant string, namespace string, topic string, params *DeleteTopicParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2209,8 +2209,8 @@ type ClientInterface interface {
 	GetTokenByID(ctx context.Context, tenant string, tokenId string, params *GetTokenByIDParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) GetTenants(ctx context.Context, tenant string, namespace string, params *GetTenantsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetTenantsRequest(c.Server, tenant, namespace, params)
+func (c *Client) GetTopics(ctx context.Context, tenant string, namespace string, params *GetTopicsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTopicsRequest(c.Server, tenant, namespace, params)
 	if err != nil {
 		return nil, err
 	}
@@ -3157,8 +3157,8 @@ func (c *Client) GetTokenByID(ctx context.Context, tenant string, tokenId string
 	return c.Client.Do(req)
 }
 
-// NewGetTenantsRequest generates requests for GetTenants
-func NewGetTenantsRequest(server string, tenant string, namespace string, params *GetTenantsParams) (*http.Request, error) {
+// NewGetTopicsRequest generates requests for GetTopics
+func NewGetTopicsRequest(server string, tenant string, namespace string, params *GetTopicsParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -6120,8 +6120,8 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// GetTenants request
-	GetTenantsWithResponse(ctx context.Context, tenant string, namespace string, params *GetTenantsParams, reqEditors ...RequestEditorFn) (*GetTenantsResponse, error)
+	// GetTopics request
+	GetTopicsWithResponse(ctx context.Context, tenant string, namespace string, params *GetTopicsParams, reqEditors ...RequestEditorFn) (*GetTopicsResponse, error)
 
 	// DeleteTopic request
 	DeleteTopicWithResponse(ctx context.Context, tenant string, namespace string, topic string, params *DeleteTopicParams, reqEditors ...RequestEditorFn) (*DeleteTopicResponse, error)
@@ -6340,13 +6340,13 @@ type ClientWithResponsesInterface interface {
 	GetTokenByIDWithResponse(ctx context.Context, tenant string, tokenId string, params *GetTokenByIDParams, reqEditors ...RequestEditorFn) (*GetTokenByIDResponse, error)
 }
 
-type GetTenantsResponse struct {
+type GetTopicsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r GetTenantsResponse) Status() string {
+func (r GetTopicsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6354,7 +6354,7 @@ func (r GetTenantsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetTenantsResponse) StatusCode() int {
+func (r GetTopicsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -7817,13 +7817,13 @@ func (r GetTokenByIDResponse) StatusCode() int {
 	return 0
 }
 
-// GetTenantsWithResponse request returning *GetTenantsResponse
-func (c *ClientWithResponses) GetTenantsWithResponse(ctx context.Context, tenant string, namespace string, params *GetTenantsParams, reqEditors ...RequestEditorFn) (*GetTenantsResponse, error) {
-	rsp, err := c.GetTenants(ctx, tenant, namespace, params, reqEditors...)
+// GetTopicsWithResponse request returning *GetTopicsResponse
+func (c *ClientWithResponses) GetTopicsWithResponse(ctx context.Context, tenant string, namespace string, params *GetTopicsParams, reqEditors ...RequestEditorFn) (*GetTopicsResponse, error) {
+	rsp, err := c.GetTopics(ctx, tenant, namespace, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetTenantsResponse(rsp)
+	return ParseGetTopicsResponse(rsp)
 }
 
 // DeleteTopicWithResponse request returning *DeleteTopicResponse
@@ -8510,15 +8510,15 @@ func (c *ClientWithResponses) GetTokenByIDWithResponse(ctx context.Context, tena
 	return ParseGetTokenByIDResponse(rsp)
 }
 
-// ParseGetTenantsResponse parses an HTTP response from a GetTenantsWithResponse call
-func ParseGetTenantsResponse(rsp *http.Response) (*GetTenantsResponse, error) {
+// ParseGetTopicsResponse parses an HTTP response from a GetTopicsWithResponse call
+func ParseGetTopicsResponse(rsp *http.Response) (*GetTopicsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetTenantsResponse{
+	response := &GetTopicsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
