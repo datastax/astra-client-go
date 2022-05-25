@@ -1836,6 +1836,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/errorResponse"
 
+  # https://pulsar-admin.docs.streaming.datastax.com/#/
   /admin/v2/persistent/{tenant}/{namespace}/{topic}:
     put:
       description: Creates a topic for a tenant / namespace / topic name
