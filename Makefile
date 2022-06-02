@@ -8,3 +8,6 @@ generate-client: tools
 
 generate-streaming-client: tools
 	oapi-codegen -old-config-style -generate types,client -package astrastreaming -o astra-streaming/astra-streaming.gen.go streaming-swagger.yaml
+
+generate-rest-api-client: tools
+	oapi-codegen -old-config-style -generate types,client -package astrarestapi -o astra-rest-api/astra-rest-api.gen.go rest-api-swagger.yaml
