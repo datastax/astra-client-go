@@ -1,11 +1,8 @@
 openapi: '3.0.0'
 info:
-  description: >-
-    Use this REST API to perform lifecycle actions for DataStax Astra databases.</br> </br>
-    To get started, create an authorization token to authenticate with your
-    database using the /v2/authenticateServiceAccount endpoint using a service account for your organization. You can then create,
-    terminate, resize, park, and unpark databases using the DevOps API.
-  version: 2.2.0
+  description: Use the DevOps API to perform lifecycle actions for DataStax Astra
+    databases.</br>
+  version: 2.3.0
   title: Astra DevOps API
   contact:
     email: ad-astra@datastax.com
@@ -17,11 +14,14 @@ security:
       - org-db-expand
       - org-db-suspend
       - org-db-managemigratorproxy
+      - org-db-addpeering
+      - org-db-readpeering
       - db-keyspace-create
       - db-cql
       - accesslist-write
       - accesslist-read
       - db-manage-privateendpoint
+      - db-manage-telemetry
 tags:
   - name: Operations
     description: The DevOps APIs are for interacting with Astra databases and all aspects of their lifecycle
@@ -37,6 +37,11 @@ tags:
     description: The DevOps Access List APIs allow creation and deletion of access lists
   - name: Private Link
     description: The DevOps Private Link APIs allow managing of private link endpoints
+  - name: VPC Peering
+    description: The DevOps VPC Peering APIs allow managing of VPC peering for Astra
+      classic databases
+  - name: Customer Keys
+    description: Create and view Customer Keys for your Astra DB organization
 paths:
   /v2/authenticateServiceAccount:
     post:
@@ -73,7 +78,8 @@ paths:
       summary: Returns a list of databases
       description: Get a list of databases visible to the user
       security:
-        - BearerAuth: [org-db-view]
+        - Bearer:
+            - org-db-view
       operationId: listDatabases
       parameters:
         - in: query
@@ -82,22 +88,46 @@ paths:
           required: false
           schema:
             type: string
-            enum: [nonterminated, all, active, pending, preparing, prepared, initializing, parked, parking, unparking, terminating, terminated, resizing, error, maintenance, suspended, suspending]
+            enum:
+              - nonterminated
+              - all
+              - active
+              - pending
+              - preparing
+              - prepared
+              - initializing
+              - parked
+              - parking
+              - unparking
+              - terminating
+              - terminated
+              - resizing
+              - error
+              - maintenance
+              - hibernating
+              - hibernated
+              - resuming
             default: nonterminated
         - in: query
           name: provider
-          description: Allows filtering so that databases from a given provider are returned
+          description: Allows filtering so that databases from a given provider are
+            returned.
           required: false
           schema:
             type: string
-            enum: [ALL, GCP, AWS, AZURE]
+            enum:
+              - ALL
+              - GCP
+              - AWS
+              - Azure
             default: ALL
         - in: query
           name: starting_after
           schema:
             type: string
           required: false
-          description: Optional parameter for pagination purposes. Used as this value for starting retrieving a specific page of results
+          description: Optional parameter for pagination purposes. Used as this value
+            for starting retrieving a specific page of results.
         - in: query
           name: limit
           schema:
@@ -126,12 +156,14 @@ paths:
       tags:
         - Operations
       summary: Create a new database
-      description: Takes a user provided databaseInfo and returns the uuid for a new database
+      description: Takes a user provided databaseInfo and returns the uuid for a new
+        database.
       security:
-        - BearerAuth: [org-db-create]
+        - Bearer:
+            - org-db-create
       operationId: createDatabase
       requestBody:
-        description: Definition of new database
+        description: Definition of new database.
         required: true
         content:
           application/json:
@@ -158,9 +190,10 @@ paths:
       tags:
         - Operations
       summary: Finds database by ID
-      description: Returns specified database
+      description: Returns specified database.
       security:
-        - BearerAuth: [org-db-view]
+        - Bearer:
+            - org-db-view
       operationId: getDatabase
       parameters:
         - $ref: '#/components/parameters/DatabaseIdParam'
@@ -184,9 +217,10 @@ paths:
       tags:
         - Operations
       summary: Adds keyspace into database
-      description: Adds the specified keyspace to the database
+      description: Adds the specified keyspace to the database.
       security:
-        - BearerAuth: [db-keyspace-create]
+        - Bearer:
+            - db-keyspace-create
       operationId: addKeyspace
       parameters:
         - $ref: '#/components/parameters/DatabaseIdParam'
@@ -238,7 +272,8 @@ paths:
       summary: Configure third party metrics
       description: 'Enables metrics exporting to an external system. Note: updates replace any existing config.'
       security:
-        - BearerAuth: [ third-party-metrics ]
+        - Bearer:
+          - third-party-metrics
       operationId: configureMetricsExport
       parameters:
         - $ref: '#/components/parameters/DatabaseIdParam'
@@ -251,7 +286,8 @@ paths:
               $ref: "#/components/schemas/MetricsRequest"
       responses:
         '200':
-          description: Credentials provides a link to download cluster secure-connect-*.zip file
+          description: Enables third party metrics
+            file
           content:
             application/json:
               schema:
@@ -270,9 +306,11 @@ paths:
   /v2/databases/{databaseId}/terminate:
     post:
       summary: Terminates a database
-      description: Terminates a database
+      description: Terminates a database. Removing a database is not reversible. Proceed
+        with caution.
       security:
-        - BearerAuth: [org-db-terminate]
+        - Bearer:
+            - org-db-terminate
       operationId: terminateDatabase
       tags:
         - Operations
@@ -303,7 +341,8 @@ paths:
       summary: Parks a database
       description: Parks a database
       security:
-        - BearerAuth: [org-db-suspend]
+        - Bearer:
+          - org-db-suspend
       operationId: parkDatabase
       tags:
         - Operations
@@ -322,43 +361,13 @@ paths:
           $ref: '#/components/responses/Conflict'
         '5XX':
           $ref: '#/components/responses/ServerError'
-  /v2/databases/{databaseId}/suspend:
-    post:
-      summary: Suspends a database
-      description: Suspends a database
-      security:
-        - BearerAuth: [org-db-suspend]
-      operationId: suspendDatabase
-      tags:
-        - Public
-      parameters:
-        - $ref: '#/components/parameters/DatabaseIdParam'
-        - in: query
-          name: freeConsumed
-          description: Represents, from 0 to 100, the free credits percentage consumed.
-          required: false
-          schema:
-            type: integer
-            default: -1
-      responses:
-        '202':
-          $ref: '#/components/responses/Accepted'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '5XX':
-          $ref: '#/components/responses/ServerError'
   /v2/databases/{databaseId}/unpark:
     post:
       summary: Unparks a database
-      description: Unparks a database
+      description: Unparks a database.
       security:
-        - BearerAuth: [org-db-suspend]
+        - Bearer:
+            - org-db-suspend
       operationId: unparkDatabase
       tags:
         - Operations
@@ -382,7 +391,8 @@ paths:
       summary: Resizes a database
       description: Resizes a database. Total number of capacity units desired should be specified. Reducing a size of a database is not supported at this time.
       security:
-        - BearerAuth: [org-db-expand]
+        - Bearer:
+            - org-db-expand
       operationId: resizeDatabase
       tags:
         - Operations
@@ -1559,6 +1569,215 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/ServerError'
+
+  /v2/kms:
+    post:
+      tags:
+        - Customer Keys
+      summary: Creates a new Customer Key for an organization
+      description: A service to create a new Customer Key registration for an organization.
+      operationId: CreateKey
+      requestBody:
+        description: KMS details that need to be created.
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ExternalKMS"
+      responses:
+        '200':
+          description: OK
+        '400':
+          "$ref": "#/components/responses/BadRequest"
+        '403':
+          "$ref": "#/components/responses/Forbidden"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '500':
+          "$ref": "#/components/responses/ServerError"
+    get:
+      tags:
+        - Customer Keys
+      summary: Retrieves all keys in an organization
+      description: A service to retrieve the existing Customer Keys of an organization.
+      operationId: ListKeys
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GetAllCustomerKeys"
+        '400':
+          "$ref": "#/components/responses/BadRequest"
+        '403':
+          "$ref": "#/components/responses/Forbidden"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '500':
+          "$ref": "#/components/responses/ServerError"
+  /v2/kms/provider/{provider}/region/{region}/accounts:
+    get:
+      tags:
+        - Customer Keys
+      summary: Retrieves an array of Cloud provider accounts
+      description: Retrieves an array of Cloud provider accounts for a given cloud-provider
+        & region combination to which customers need to grant their KMS keys access.
+      operationId: GetCloudAccounts
+      parameters:
+        - in: path
+          name: provider
+          description: The name of the provider, such as aws or gcp.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: region
+          description: The region in which the key exists.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/GetCloudProviderAccounts"
+        '400':
+          "$ref": "#/components/responses/BadRequest"
+        '403':
+          "$ref": "#/components/responses/Forbidden"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '500':
+          "$ref": "#/components/responses/ServerError"
+  /v2/peering/provider/{provider}/database/{databaseID}:
+    get:
+      tags:
+        - VPC Peering
+      summary: Retrieves VPC peering connection information for an Astra database
+        in a given cloud provider
+      description: Retrieves VPC peering connection details (if any exist) for Astra
+        database
+      operationId: GetVPCPeeringConnectionDetails
+      security:
+        - BearerAuth:
+            - org-db-readpeering
+            - org-db-addpeering
+      parameters:
+        - in: path
+          name: provider
+          description: The name of the provider, such as 'aws', 'azure' or 'gcp'
+          required: true
+          schema:
+            type: string
+            enum:
+              - aws
+              - azure
+              - gcp
+        - in: path
+          name: databaseID
+          description: The ID for the database
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/VPCConnection"
+        '403':
+          "$ref": "#/components/responses/Forbidden"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '500':
+          "$ref": "#/components/responses/ServerError"
+    post:
+      tags:
+        - VPC Peering
+      summary: Creates a VPC peering connection
+      description: Creates a VPC peering connection between an Astra database's VPC
+        and the VPC provided
+      operationId: CreateVPCPeeringConnection
+      security:
+        - BearerAuth:
+            - org-db-addpeering
+      parameters:
+        - in: path
+          name: provider
+          description: The name of the provider, such as 'aws', 'azure' or 'gcp'
+          required: true
+          schema:
+            type: string
+            enum:
+              - aws
+              - azure
+              - gcp
+        - in: path
+          name: databaseID
+          description: The ID for the database
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - "$ref": "#/components/schemas/AzureVPC"
+                - "$ref": "#/components/schemas/AmazonVPC"
+                - "$ref": "#/components/schemas/GoogleVPC"
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/VPCConnection"
+        '403':
+          "$ref": "#/components/responses/Forbidden"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '500':
+          "$ref": "#/components/responses/ServerError"
+    delete:
+      tags:
+        - VPC Peering
+      summary: Deletes an existing VPC peering connection
+      description: Deletes a VPC peering connection for an Astra database on the given
+        cloud provider
+      operationId: DeleteVPCPeeringConnection
+      security:
+        - BearerAuth:
+            - org-db-addpeering
+      parameters:
+        - in: path
+          name: provider
+          description: The name of the provider, such as 'aws', 'azure' or 'gcp'
+          required: true
+          schema:
+            type: string
+            enum:
+              - aws
+              - azure
+              - gcp
+        - in: path
+          name: databaseID
+          description: The ID for the database
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          "$ref": "#/components/responses/NoContent"
+        '403':
+          "$ref": "#/components/responses/Forbidden"
+        '404':
+          "$ref": "#/components/responses/NotFound"
+        '500':
+          "$ref": "#/components/responses/ServerError"
 servers:
   - url: https://api.astra.datastax.com/
 components:
@@ -2659,6 +2878,515 @@ components:
           type: "string"
           description: "AstraCS:clientId:hex(sha256(secret))"
           example: "uuid"
+    ExternalKMS:
+      type: object
+      properties:
+        orgId:
+          type: string
+          format: uuid
+          description: The unique identifier for the organization.
+          example: 368600f6-a1e7-42f1-8266-2960de5313f3
+        aws:
+          "$ref": "#/components/schemas/AWS-KMS"
+        gcp:
+          "$ref": "#/components/schemas/GCP-KMS"
+    AWS-KMS:
+      type: object
+      properties:
+        keyID:
+          type: string
+          description: The unique identifier of the customer-key.
+        region:
+          type: string
+          description: The region in which the master key exists.
+    GCP-KMS:
+      type: object
+      properties:
+        keyID:
+          type: string
+          description: The KMS key version resource id for encryption operations.
+        region:
+          type: string
+          description: The region in which the key exists.
+    GetAllCustomerKeys:
+      type: array
+      description: List of Customer Keys in an organization
+      items:
+        "$ref": "#/components/schemas/ExternalKMSResponse"
+    ExternalKMSResponse:
+      type: object
+      properties:
+        OrganizationID:
+          type: string
+          description: The ID of your organization.
+        CloudProvider:
+          type: string
+          description: The cloud provider, such as aws or gcp.
+        KeyID:
+          type: string
+          description: The ID of the Customer Key.
+        Region:
+          type: string
+          description: The region in which the Customer Key is used.
+    GetParticularCustomerKey:
+      type: object
+      description: Retrieves a Customer Key for the specified provider and region
+        combination
+      properties:
+        orgId:
+          type: string
+          example: ccd0aa59-facd-4a42-b27f-49dba057833d
+        aws:
+          type: object
+          properties:
+            keyID:
+              type: string
+              example: arn:aws:kms:us-east-1:111111111:key/aabbbb-a00f-4c38-9e92-b46ff1ed181d
+            region:
+              type: string
+              example: us-east-1
+    GetCloudProviderAccounts:
+      type: array
+      description: List of Cloud provider accounts in an organization for a cloud-provider
+        & region combination
+      items:
+        "$ref": "#/components/schemas/CloudProviderAccountDetails"
+    CloudProviderAccountDetails:
+      type: object
+      properties:
+        organization_id:
+          type: string
+          description: The ID of your organization.
+        provider_id:
+          type: string
+          description: The ID of the provider's storage account where DataStax stores
+            your data.
+        provider:
+          type: string
+          description: The provider, such as aws or gcp.
+    VPCConnection:
+      description: A VPC peering connection with an Astra database
+      type: object
+      required:
+        - connectionId
+        - status
+        - currentVpc
+        - otherVpc
+      properties:
+        connectionId:
+          type: string
+          description: A unique identifier for the peering connection
+        status:
+          type: string
+          description: The current status of the connection
+        currentVpc:
+          description: Details about the VPC where the Astra database is running
+          "$ref": "#/components/schemas/VPC"
+        otherVpc:
+          description: Details about the VPC peered to the Astra database's VPC
+          "$ref": "#/components/schemas/VPC"
+    VPC:
+      description: Details about a virtual private cloud
+      type: object
+      required:
+        - provider
+        - account
+        - vpcId
+        - cidrBlock
+      properties:
+        provider:
+          type: string
+          example: aws
+          description: Cloud provider the VPC is hosted on
+        account:
+          type: string
+          description: Account (AWS), Project (GCP) or Subscription (Azure) the VPC
+            belongs to
+        vpcId:
+          type: string
+          description: The VPC's unique identifier
+        cidrBlock:
+          type: string
+          description: The CIDR block available for this VPC
+          pattern: "^([0-9]{1,3}\\.){3}[0-9]{1,3}(\\/([0-9]|[1-2][0-9]|3[0-2]))?$"
+          example: 137.187.23.0/24
+    AzureVPC:
+      description: Details about an Azure virtual private cloud
+      type: object
+      required:
+        - tenantId
+        - subscriptionId
+        - resourceGroupName
+        - virtualNetworkName
+      properties:
+        tenantId:
+          type: string
+          description: ID of the Azure tenant the subscription resides in
+        subscriptionId:
+          type: string
+          description: ID of the subscription the resource group and virtual network
+            reside in
+        resourceGroupName:
+          type: string
+          description: Name of the Resource Group the virtual network resides in
+        virtualNetworkName:
+          type: string
+          description: Name of the Virtual Network the peering is connecting to
+    AmazonVPC:
+      description: Details about an AWS virtual private cloud
+      type: object
+      required:
+        - accountId
+        - vpcId
+        - region
+        - cidrBlock
+      properties:
+        accountId:
+          type: string
+          description: ID of the AWS account the VPC belongs to
+          pattern: "^\\d{12}$"
+          example: 123456780000
+        vpcId:
+          type: string
+          description: Unique identifier for the VPC
+          pattern: "^(vpc-)([a-z0-9]{8}|[a-z0-9]{17})$"
+          example: vpc-00001111aa332244c
+        region:
+          type: string
+          description: AWS region the VPC resides in
+        cidrBlock:
+          type: string
+          description: The CIDR block available for this VPC
+          pattern: "^([0-9]{1,3}\\.){3}[0-9]{1,3}(\\/([0-9]|[1-2][0-9]|3[0-2]))?$"
+          example: 137.187.23.0/24
+    GoogleVPC:
+      description: Details about a GCP virtual private cloud
+      type: object
+      required:
+        - projectId
+        - vpcNetworkName
+      properties:
+        projectId:
+          type: string
+          description: ID of the GPC project the VPC belongs to
+        vpcNetworkName:
+          type: string
+          description: Unique identifier for the VPC
+    PrivateLinkConfiguration:
+      required:
+        - provider
+        - region
+        - organizationId
+        - datacenterID
+        - endpoints
+      type: object
+      properties:
+        provider:
+          type: string
+          description: Provider the private endpoint is configured
+          example: aws
+        region:
+          type: string
+          description: Region for the private endpoint connection
+          example: us-east-1
+        description:
+          type: string
+          description: Private endpoint configuration description
+          example: Private Endpoint B
+        organizationId:
+          type: string
+          description: Organization ID UUID v4 formatted
+        datacenterID:
+          type: string
+          description: Datacenter ID UUID v4 formatted
+        endpoints:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PrivateLinkEndpoint"
+    PrivateLinkEndpoint:
+      required:
+        - id
+        - dateActivation
+      type: object
+      properties:
+        id:
+          type: string
+          description: Endpoint ID
+        dateActivation:
+          type: string
+          description: Private endpoint activation date in RFC3339 format
+          example: '1997-12-09T02:03:33.57Z'
+        dateDeactivation:
+          type: string
+          description: Private endpoint deactivation date in RFC3339 format
+          example: '1997-12-09T02:03:33.57Z'
+    VPCRepresentation:
+      required:
+        - provider
+        - account
+        - vpcId
+        - cidrBlock
+      type: object
+      properties:
+        provider:
+          type: string
+          description: Provider the VPC is hosted on
+          example: aws
+        account:
+          type: string
+          description: The account the VPC is hosted on
+          example: '587695123584'
+        vpcId:
+          type: string
+          description: The unique identifier for the VPC
+          example: VPC-879df8e5d8f4d5d5f
+        cidrBlock:
+          type: string
+          description: The CIDR block available for this VPC
+          example: 17.0.0.0/16
+    AWSVPCRepresentation:
+      required:
+        - accountId
+        - region
+        - vpcId
+        - cidrBlock
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: A unique identifier for the account being peered to
+          example: '489567213584'
+        vpcId:
+          type: string
+          description: A unique identifier for the VPC
+          example: VPC-038df8e5d8f4d5d8f
+        region:
+          type: string
+          description: the region for the VPC
+          example: us-east-1
+        cidrBlock:
+          type: string
+          description: the CIDR block available for this VPC
+          example: 10.0.0.0/16
+      description: Details about an AWS VPC
+    GCPVPCRepresentation:
+      required:
+        - projectId
+        - vpcNetworkName
+      type: object
+      properties:
+        projectId:
+          type: string
+          description: A unique identifier for the project being peered to
+          example: project-name-01
+        vpcNetworkName:
+          type: string
+          description: A unique identifier for the VPC being peered to
+          example: network-name-01
+    AzureVPCRepresentation:
+      required:
+        - tenantId
+        - subscriptionId
+        - resourceGroupName
+        - virtualNetworkName
+      type: object
+      properties:
+        tenantId:
+          type: string
+          description: A unique identifier for the tenant being peered to
+          example: 8bf27cb8-2e44-402d-b3fa-1d3bf7c76760
+        subscriptionId:
+          type: string
+          description: A unique identifier for the subscription being peered to
+          example: 6897g2u7-2b78-8ayg-5e55-b55x55dybj66
+        resourceGroupName:
+          type: string
+          description: The name of the resource group the virtual network belongs
+            in
+          example: group-name-01
+        virtualNetworkName:
+          type: string
+          description: The name of the virtual networking being peered to
+          example: vnet-name-01
+    AzurePrivateLinkModel:
+      required:
+        - subscriptionId
+        - resourceGroupName
+        - virtualNetworkName
+        - region
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+          description: A unique identifier for the subscription being linked to
+          example: 6897g2u7-2b78-8ayg-5e55-b55x55dybj66
+        resourceGroupName:
+          type: string
+          description: The name of the resource group the virtual network belongs
+            in
+          example: group-name-01
+        virtualNetworkName:
+          type: string
+          description: The name of the virtual networking being linked to
+          example: vnet-name-01
+        region:
+          type: string
+          description: The region for the private endpoint connection
+          example: us-east-1
+    ConnectionRepresentation:
+      required:
+        - currentVpc
+        - otherVpc
+        - connectionId
+        - status
+      type: object
+      properties:
+        currentVpc:
+          "$ref": "#/components/schemas/VPCRepresentation"
+        otherVpc:
+          "$ref": "#/components/schemas/VPCRepresentation"
+        status:
+          type: string
+          description: The current status of the connection
+          example: active
+          enum:
+            - pending-acceptance
+            - failed
+            - expired
+            - provisioning
+            - active
+            - deleting
+            - deleted
+            - rejected
+        connectionId:
+          type: string
+          description: The AWS defined unique identifier for this connection resource
+      description: Details about a VPC connection
+    ClusterConnectionRepresentationAws:
+      required:
+        - fromdatabaseID
+        - todatabaseID
+        - fromVpcId
+        - fromCidrBlock
+        - toVpcId
+        - toCidrBlock
+        - connectionId
+      type: object
+      properties:
+        fromdatabaseID:
+          type: string
+          description: Database ID for the database being peered from
+        todatabaseID:
+          type: string
+          description: Database ID for the database being peered to
+        fromVpcId:
+          type: string
+          description: VPC ID for the database being peered from
+        fromCidrBlock:
+          type: string
+          description: CIDR block for the database being peered from
+        toVpcId:
+          type: string
+          description: VPC ID for the database being peered to
+        toCidrBlock:
+          type: string
+          description: CIDR block for the database being peered to
+        connectionId:
+          type: string
+          description: The AWS defined unique identifier for this connection resource
+      description: Details about a VPC connection
+    ClusterConnectionRepresentationGcp:
+      type: object
+      required:
+        - fromdatabaseID
+        - todatabaseID
+        - fromConnectionId
+        - toConnectionId
+        - fromProjectId
+        - fromVpcNetworkName
+        - toProjectId
+        - toVpcNetworkName
+      properties:
+        fromdatabaseID:
+          type: string
+          description: Database ID for the database being peered from
+        todatabaseID:
+          type: string
+          description: Database ID for the database being peered to
+        fromConnectionId:
+          type: string
+          description: Connection ID for the database peered from
+        toConnectionId:
+          type: string
+          description: Connection ID for the database peered to
+        fromProjectId:
+          type: string
+          description: Project ID for the database peered from
+        fromVpcNetworkName:
+          type: string
+          description: VPC Name for the database peered from
+        toProjectId:
+          type: string
+          description: Project ID for the database peered to
+        toVpcNetworkName:
+          type: string
+          description: Project ID for the database peered from
+      description: Details about a VPC connection
+    AzureClientIDResponse:
+      type: object
+      required:
+        - Id
+      properties:
+        Id:
+          type: string
+          description: Azure client id
+      description: Response containing the Azure client id
+    ClusterConnectionRepresentationAzure:
+      type: object
+      required:
+        - fromdatabaseID
+        - todatabaseID
+        - fromSubscriptionId
+        - fromResourceGroupName
+        - fromVirtualNetworkName
+        - fromConnectionId
+        - toSubscriptionId
+        - toResourceGroupName
+        - toVirtualNetworkName
+        - toConnectionId
+      properties:
+        fromdatabaseID:
+          type: string
+          description: Database ID for the database being peered from
+        todatabaseID:
+          type: string
+          description: Database ID for the database being peered to
+        fromSubscriptionId:
+          type: string
+          description: Subscription ID for the database peered from
+        fromResourceGroupName:
+          type: string
+          description: Resource Group Name for the database peered from
+        fromVirtalNetworkName:
+          type: string
+          description: Virtual Network Name for the database peered from
+        fromConnectionId:
+          type: string
+          description: Connection ID for the database peered to
+        toSubscriptionId:
+          type: string
+          description: Project ID for the database peered to
+        toResourceGroupName:
+          type: string
+          description: Resource Group the virtual network resides in
+        toVpcNetworkName:
+          type: string
+          description: Project ID for the database peered from
+        toConnectionId:
+          type: string
+          description: Connection ID for the database peered to
+      description: Details about an Azure database to database VPC connection
+
   responses:
     # 200
     Ok:
