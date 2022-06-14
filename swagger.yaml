@@ -925,12 +925,28 @@ paths:
                 $ref: '#/components/schemas/PrivateLinkOrgOutput'
         400:
           $ref: '#/components/responses/BadRequest'
+          description: not ok
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
         404:
           $ref: '#/components/responses/NotFound'
+          description: not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
         409:
           $ref: '#/components/responses/Conflict'
-        500:
-          $ref: '#/components/responses/ServerError'
+          description: conflict
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
   /v2/organizations/clusters/{clusterID}/private-link:
     get:
       tags:
@@ -1682,18 +1698,36 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        200:
           description: OK
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/VPCConnection"
-        '403':
-          "$ref": "#/components/responses/Forbidden"
-        '404':
-          "$ref": "#/components/responses/NotFound"
-        '500':
-          "$ref": "#/components/responses/ServerError"
+        400:
+          $ref: '#/components/responses/BadRequest'
+          description: not ok
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
+        404:
+          $ref: '#/components/responses/NotFound'
+          description: not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
+        409:
+          $ref: '#/components/responses/Conflict'
+          description: conflict
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
     post:
       tags:
         - VPC Peering
