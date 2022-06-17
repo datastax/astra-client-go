@@ -120,6 +120,12 @@ const (
 	OrgWrite                 PolicyAction = "org-write"
 )
 
+// Defines values for PrivateLinkEndpointStatus.
+const (
+	Accepted PrivateLinkEndpointStatus = "Accepted"
+	Rejected PrivateLinkEndpointStatus = "Rejected"
+)
+
 // Defines values for StatusEnum.
 const (
 	ACTIVE       StatusEnum = "ACTIVE"
@@ -699,15 +705,24 @@ type PrivateLinkDeleteConfigInput struct {
 
 // PrivateLinkEndpoint defines model for PrivateLinkEndpoint.
 type PrivateLinkEndpoint struct {
-	// Private endpoint activation date in RFC3339 format
-	DateActivation string `json:"dateActivation"`
+	// The datetime that the private link connection was created
+	CreatedDateTime *string `json:"createdDateTime,omitempty"`
 
-	// Private endpoint deactivation date in RFC3339 format
-	DateDeactivation *string `json:"dateDeactivation,omitempty"`
+	// User defined description of the endpoint
+	Description *string `json:"description,omitempty"`
 
-	// Endpoint ID
-	Id string `json:"id"`
+	// Endpoint ID of the user side private link
+	EndpointID *string `json:"endpointID,omitempty"`
+
+	// Link ID for the private link service and endpoint connection
+	LinkID *string `json:"linkID,omitempty"`
+
+	// The current status of the connection
+	Status *PrivateLinkEndpointStatus `json:"status,omitempty"`
 }
+
+// The current status of the connection
+type PrivateLinkEndpointStatus string
 
 // PrivateLinkOrgOutput defines model for PrivateLinkOrgOutput.
 type PrivateLinkOrgOutput struct {

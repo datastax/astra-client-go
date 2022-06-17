@@ -3136,8 +3136,8 @@ components:
         endpoints:
           type: array
           items:
-            "$ref": "#/components/schemas/PrivateLinkEndpoint"
-    PrivateLinkEndpoint:
+            "$ref": "#/components/schemas/PrivateLinkConfigurationEndpoint"
+    PrivateLinkConfigurationEndpoint:
       required:
         - id
         - dateActivation
