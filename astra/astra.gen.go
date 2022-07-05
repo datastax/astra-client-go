@@ -6109,7 +6109,7 @@ func (r DeleteOrganizationRoleResponse) StatusCode() int {
 type GetOrganizationRoleResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *interface{}
+	JSON200      *Role
 	JSON400      *string
 	JSON403      *string
 	JSON404      *string
@@ -9280,7 +9280,7 @@ func ParseGetOrganizationRoleResponse(rsp *http.Response) (*GetOrganizationRoleR
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest interface{}
+		var dest Role
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
