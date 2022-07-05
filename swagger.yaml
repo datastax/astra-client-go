@@ -1415,13 +1415,33 @@ paths:
         '204':
           $ref: '#/components/responses/NoContent'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
         '403':
-          $ref: '#/components/responses/Forbidden'
+          description: forbidden
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
         '404':
-          $ref: '#/components/responses/NotFound'
+          description: not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
         '500':
-          $ref: '#/components/responses/ServerError'
+          description: server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
     patch:
       tags:
         - "Access List"

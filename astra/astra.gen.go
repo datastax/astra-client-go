@@ -5325,10 +5325,6 @@ func (r UpdateAccessListForDatabaseResponse) StatusCode() int {
 type AddAddressesToAccessListForDatabaseResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON400      *Errors
-	JSON403      *Errors
-	JSON404      *Errors
-	JSON500      *Errors
 }
 
 // Status returns HTTPResponse.Status
@@ -7756,37 +7752,6 @@ func ParseAddAddressesToAccessListForDatabaseResponse(rsp *http.Response) (*AddA
 	response := &AddAddressesToAccessListForDatabaseResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON403 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
 	}
 
 	return response, nil
