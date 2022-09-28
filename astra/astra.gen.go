@@ -5277,7 +5277,6 @@ type GetAccessListForDatabaseResponse struct {
 	JSON200      *AccessListResponse
 	JSON400      *Errors
 	JSON403      *Errors
-	JSON404      *Errors
 	JSON500      *Errors
 }
 
@@ -7674,13 +7673,6 @@ func ParseGetAccessListForDatabaseResponse(rsp *http.Response) (*GetAccessListFo
 			return nil, err
 		}
 		response.JSON403 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest Errors
