@@ -229,9 +229,32 @@ paths:
         '201':
           description: created
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          description: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '5XX':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags:
+        - Operations
+      summary: Drops keyspace from database
+      description: Drops the specified keyspace from the database.
+      security:
+        - Bearer:
+            - db-keyspace-drop
+      operationId: dropKeyspace
+      parameters:
+        - $ref: '#/components/parameters/DatabaseIdParam'
+        - $ref: '#/components/parameters/KeyspaceNameParam'
+      responses:
+        '202':
+          description: dropped
+        '204':
+          description: no keyspace found to delete
+        '401':
+          description: '#/components/responses/Unauthorized'
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
         '5XX':

@@ -1257,6 +1257,9 @@ type ClientInterface interface {
 	// TerminateDatacenter request
 	TerminateDatacenter(ctx context.Context, databaseId DatabaseIdParam, datacenterId DatacenterIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DropKeyspace request
+	DropKeyspace(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AddKeyspace request
 	AddKeyspace(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1713,6 +1716,18 @@ func (c *Client) AddDatacenters(ctx context.Context, databaseId DatabaseIdParam,
 
 func (c *Client) TerminateDatacenter(ctx context.Context, databaseId DatabaseIdParam, datacenterId DatacenterIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewTerminateDatacenterRequest(c.Server, databaseId, datacenterId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DropKeyspace(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDropKeyspaceRequest(c.Server, databaseId, keyspaceName)
 	if err != nil {
 		return nil, err
 	}
@@ -3156,6 +3171,47 @@ func NewTerminateDatacenterRequest(server string, databaseId DatabaseIdParam, da
 	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDropKeyspaceRequest generates requests for DropKeyspace
+func NewDropKeyspaceRequest(server string, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "keyspaceName", runtime.ParamLocationPath, keyspaceName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/keyspaces/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -4809,6 +4865,9 @@ type ClientWithResponsesInterface interface {
 	// TerminateDatacenter request
 	TerminateDatacenterWithResponse(ctx context.Context, databaseId DatabaseIdParam, datacenterId DatacenterIdParam, reqEditors ...RequestEditorFn) (*TerminateDatacenterResponse, error)
 
+	// DropKeyspace request
+	DropKeyspaceWithResponse(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*DropKeyspaceResponse, error)
+
 	// AddKeyspace request
 	AddKeyspaceWithResponse(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*AddKeyspaceResponse, error)
 
@@ -5442,10 +5501,32 @@ func (r TerminateDatacenterResponse) StatusCode() int {
 	return 0
 }
 
+type DropKeyspaceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON422      *Errors
+	JSON5XX      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r DropKeyspaceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DropKeyspaceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type AddKeyspaceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON401      *Errors
 	JSON404      *Errors
 	JSON422      *Errors
 	JSON5XX      *Errors
@@ -6608,6 +6689,15 @@ func (c *ClientWithResponses) TerminateDatacenterWithResponse(ctx context.Contex
 		return nil, err
 	}
 	return ParseTerminateDatacenterResponse(rsp)
+}
+
+// DropKeyspaceWithResponse request returning *DropKeyspaceResponse
+func (c *ClientWithResponses) DropKeyspaceWithResponse(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, reqEditors ...RequestEditorFn) (*DropKeyspaceResponse, error) {
+	rsp, err := c.DropKeyspace(ctx, databaseId, keyspaceName, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDropKeyspaceResponse(rsp)
 }
 
 // AddKeyspaceWithResponse request returning *AddKeyspaceResponse
@@ -7937,6 +8027,39 @@ func ParseTerminateDatacenterResponse(rsp *http.Response) (*TerminateDatacenterR
 	return response, nil
 }
 
+// ParseDropKeyspaceResponse parses an HTTP response from a DropKeyspaceWithResponse call
+func ParseDropKeyspaceResponse(rsp *http.Response) (*DropKeyspaceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DropKeyspaceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseAddKeyspaceResponse parses an HTTP response from a AddKeyspaceWithResponse call
 func ParseAddKeyspaceResponse(rsp *http.Response) (*AddKeyspaceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -7951,13 +8074,6 @@ func ParseAddKeyspaceResponse(rsp *http.Response) (*AddKeyspaceResponse, error) 
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest Errors
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
