@@ -3649,6 +3649,12 @@ components:
         websocketUrl:
           type: string
           x-go-name: WebsocketURL
+        id:
+          type: string
+          x-go-name: Id
+        userMetricsUrl:
+          tye: string
+          x-go-name: UserMetricsURL
       type: object
       x-go-package: github.com/riptano/bellburnell/src/workflow
     TenantNamespaceLimitUsage:

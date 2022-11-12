@@ -700,24 +700,26 @@ type Storage struct {
 // TenantClusterPlanResponse tenant per cluster access
 // For initial creation so namespace and topic are added
 type TenantClusterPlanResponse struct {
-	OrgName                *string `json:"astraOrgGUID,omitempty"`
-	PulsarURL              *string `json:"brokerServiceUrl,omitempty"`
-	CloudProvider          *string `json:"cloudProvider,omitempty"`
-	CloudProviderCode      *string `json:"cloudProviderCode,omitempty"`
-	CloudProviderRegion    *string `json:"cloudRegion,omitempty"`
-	ClusterName            *string `json:"clusterName,omitempty"`
-	PulsarJVMVersion       *string `json:"jvmVersion,omitempty"`
-	Namespace              *string `json:"namespace,omitempty"`
-	Plan                   *string `json:"plan,omitempty"`
-	PlanCode               *string `json:"planCode,omitempty"`
-	TenantPulsarToken      *string `json:"pulsarToken,omitempty"`
-	PulsarVersion          *string `json:"pulsarVersion,omitempty"`
-	Status                 *string `json:"status,omitempty"`
-	TenantName             *string `json:"tenantName,omitempty"`
-	TopicName              *string `json:"topic,omitempty"`
-	AdminURL               *string `json:"webServiceUrl,omitempty"`
-	WebsocketQueryParamURL *string `json:"websocketQueryParamUrl,omitempty"`
-	WebsocketURL           *string `json:"websocketUrl,omitempty"`
+	OrgName                *string      `json:"astraOrgGUID,omitempty"`
+	PulsarURL              *string      `json:"brokerServiceUrl,omitempty"`
+	CloudProvider          *string      `json:"cloudProvider,omitempty"`
+	CloudProviderCode      *string      `json:"cloudProviderCode,omitempty"`
+	CloudProviderRegion    *string      `json:"cloudRegion,omitempty"`
+	ClusterName            *string      `json:"clusterName,omitempty"`
+	Id                     *string      `json:"id,omitempty"`
+	PulsarJVMVersion       *string      `json:"jvmVersion,omitempty"`
+	Namespace              *string      `json:"namespace,omitempty"`
+	Plan                   *string      `json:"plan,omitempty"`
+	PlanCode               *string      `json:"planCode,omitempty"`
+	TenantPulsarToken      *string      `json:"pulsarToken,omitempty"`
+	PulsarVersion          *string      `json:"pulsarVersion,omitempty"`
+	Status                 *string      `json:"status,omitempty"`
+	TenantName             *string      `json:"tenantName,omitempty"`
+	TopicName              *string      `json:"topic,omitempty"`
+	UserMetricsURL         *interface{} `json:"userMetricsUrl,omitempty"`
+	AdminURL               *string      `json:"webServiceUrl,omitempty"`
+	WebsocketQueryParamURL *string      `json:"websocketQueryParamUrl,omitempty"`
+	WebsocketURL           *string      `json:"websocketUrl,omitempty"`
 }
 
 // TenantNamespaceLimitUsage holds usages for enforcing limits
