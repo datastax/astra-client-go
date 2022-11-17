@@ -1445,7 +1445,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/listOfMaps'
+                type: array
+                items:
+                  $ref: '#/components/schemas/TenantToken'
         "401":
           description: Authentication failure
           content:
@@ -3649,12 +3651,12 @@ components:
         websocketUrl:
           type: string
           x-go-name: WebsocketURL
+        userMetricsUrl:
+          type: string
+          x-go-name: UserMetricsURL
         id:
           type: string
           x-go-name: Id
-        userMetricsUrl:
-          tye: string
-          x-go-name: UserMetricsURL
       type: object
       x-go-package: github.com/riptano/bellburnell/src/workflow
     TenantNamespaceLimitUsage:
@@ -3856,6 +3858,21 @@ components:
           type: integer
         usage:
           $ref: '#/components/schemas/NamespaceUsages'
+    TenantToken:
+      type: object
+      properties:
+        iat:
+          type: integer
+          x-go-name: Iat
+        iss:
+          type: string
+          x-go-name: Iss
+        sub:
+          type: string
+          x-go-name: Sub
+        tokenid:
+          type: string
+          x-go-name: TokenID
     NamespaceUsages:
       type: array
       description: A list of namespace and its usage.

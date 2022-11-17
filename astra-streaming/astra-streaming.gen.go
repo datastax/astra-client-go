@@ -700,32 +700,40 @@ type Storage struct {
 // TenantClusterPlanResponse tenant per cluster access
 // For initial creation so namespace and topic are added
 type TenantClusterPlanResponse struct {
-	OrgName                *string      `json:"astraOrgGUID,omitempty"`
-	PulsarURL              *string      `json:"brokerServiceUrl,omitempty"`
-	CloudProvider          *string      `json:"cloudProvider,omitempty"`
-	CloudProviderCode      *string      `json:"cloudProviderCode,omitempty"`
-	CloudProviderRegion    *string      `json:"cloudRegion,omitempty"`
-	ClusterName            *string      `json:"clusterName,omitempty"`
-	Id                     *string      `json:"id,omitempty"`
-	PulsarJVMVersion       *string      `json:"jvmVersion,omitempty"`
-	Namespace              *string      `json:"namespace,omitempty"`
-	Plan                   *string      `json:"plan,omitempty"`
-	PlanCode               *string      `json:"planCode,omitempty"`
-	TenantPulsarToken      *string      `json:"pulsarToken,omitempty"`
-	PulsarVersion          *string      `json:"pulsarVersion,omitempty"`
-	Status                 *string      `json:"status,omitempty"`
-	TenantName             *string      `json:"tenantName,omitempty"`
-	TopicName              *string      `json:"topic,omitempty"`
-	UserMetricsURL         *interface{} `json:"userMetricsUrl,omitempty"`
-	AdminURL               *string      `json:"webServiceUrl,omitempty"`
-	WebsocketQueryParamURL *string      `json:"websocketQueryParamUrl,omitempty"`
-	WebsocketURL           *string      `json:"websocketUrl,omitempty"`
+	OrgName                *string `json:"astraOrgGUID,omitempty"`
+	PulsarURL              *string `json:"brokerServiceUrl,omitempty"`
+	CloudProvider          *string `json:"cloudProvider,omitempty"`
+	CloudProviderCode      *string `json:"cloudProviderCode,omitempty"`
+	CloudProviderRegion    *string `json:"cloudRegion,omitempty"`
+	ClusterName            *string `json:"clusterName,omitempty"`
+	Id                     *string `json:"id,omitempty"`
+	PulsarJVMVersion       *string `json:"jvmVersion,omitempty"`
+	Namespace              *string `json:"namespace,omitempty"`
+	Plan                   *string `json:"plan,omitempty"`
+	PlanCode               *string `json:"planCode,omitempty"`
+	TenantPulsarToken      *string `json:"pulsarToken,omitempty"`
+	PulsarVersion          *string `json:"pulsarVersion,omitempty"`
+	Status                 *string `json:"status,omitempty"`
+	TenantName             *string `json:"tenantName,omitempty"`
+	TopicName              *string `json:"topic,omitempty"`
+	UserMetricsURL         *string `json:"userMetricsUrl,omitempty"`
+	AdminURL               *string `json:"webServiceUrl,omitempty"`
+	WebsocketQueryParamURL *string `json:"websocketQueryParamUrl,omitempty"`
+	WebsocketURL           *string `json:"websocketUrl,omitempty"`
 }
 
 // TenantNamespaceLimitUsage holds usages for enforcing limits
 type TenantNamespaceLimitUsage struct {
 	Namespace *string   `json:"namespace,omitempty"`
 	Topics    *[]string `json:"topics,omitempty"`
+}
+
+// TenantToken defines model for TenantToken.
+type TenantToken struct {
+	Iat     *int    `json:"iat,omitempty"`
+	Iss     *string `json:"iss,omitempty"`
+	Sub     *string `json:"sub,omitempty"`
+	TokenID *string `json:"tokenid,omitempty"`
 }
 
 // The updateRole model
@@ -825,11 +833,6 @@ type CreatedTenantResponse struct {
 type ErrorResponse struct {
 	// ResponseErr error struct for Pulsar compliant HTTP responses
 	Body ResponseErr `json:"Body"`
-}
-
-// ListOfMaps defines model for listOfMaps.
-type ListOfMaps = []struct {
-	AdditionalProperties map[string]string `json:"-"`
 }
 
 // PulsarClustersResponse defines model for pulsarClustersResponse.
@@ -7775,7 +7778,7 @@ func (r GetLimitsResponse) StatusCode() int {
 type IdListTenantTokensResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ListOfMaps
+	JSON200      *[]TenantToken
 	JSON401      *ErrorResponse
 	JSON500      *ErrorResponse
 }
@@ -10964,7 +10967,7 @@ func ParseIdListTenantTokensResponse(rsp *http.Response) (*IdListTenantTokensRes
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ListOfMaps
+		var dest []TenantToken
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
