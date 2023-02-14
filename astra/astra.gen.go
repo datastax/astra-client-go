@@ -5864,9 +5864,6 @@ func (r GetCloudAccountsResponse) StatusCode() int {
 type RemoveAllowedPrincipalFromServiceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON400      *Errors
-	JSON404      *Errors
-	JSON500      *Errors
 }
 
 // Status returns HTTPResponse.Status
@@ -5889,10 +5886,6 @@ type AddAllowedPrincipalResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *PrivateLinkCreateConfigOutput
-	JSON400      *Errors
-	JSON404      *Errors
-	JSON409      *Errors
-	JSON500      *Errors
 }
 
 // Status returns HTTPResponse.Status
@@ -6036,7 +6029,6 @@ type AddAllowedPrincipalToServiceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *PrivateLinkCreateConfigOutput
-	JSON500      *Errors
 }
 
 // Status returns HTTPResponse.Status
@@ -6059,10 +6051,6 @@ type ListPrivateLinksForClusterResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *PrivateLinkClusterOutput
-	JSON400      *Errors
-	JSON404      *Errors
-	JSON409      *Errors
-	JSON500      *Errors
 }
 
 // Status returns HTTPResponse.Status
@@ -8768,30 +8756,6 @@ func ParseRemoveAllowedPrincipalFromServiceResponse(rsp *http.Response) (*Remove
 		HTTPResponse: rsp,
 	}
 
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
 	return response, nil
 }
 
@@ -8815,34 +8779,6 @@ func ParseAddAllowedPrincipalResponse(rsp *http.Response) (*AddAllowedPrincipalR
 			return nil, err
 		}
 		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON409 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
 
 	}
 
@@ -9077,13 +9013,6 @@ func ParseAddAllowedPrincipalToServiceResponse(rsp *http.Response) (*AddAllowedP
 		}
 		response.JSON200 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
 	}
 
 	return response, nil
@@ -9109,34 +9038,6 @@ func ParseListPrivateLinksForClusterResponse(rsp *http.Response) (*ListPrivateLi
 			return nil, err
 		}
 		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON409 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest Errors
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
 
 	}
 
