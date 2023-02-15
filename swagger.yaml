@@ -1663,11 +1663,33 @@ paths:
                 items:
                   $ref: '#/components/schemas/GenerateTokenResponse'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
         '403':
-          $ref: '#/components/responses/Forbidden'
+          description: forbidden
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
+        '404':
+          description: not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
         '500':
-          $ref: '#/components/responses/ServerError'
+          description: server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
   /v2/clientIdSecrets/{clientId}:
     delete:
       tags:
