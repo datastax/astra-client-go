@@ -867,6 +867,7 @@ type TenantRequest struct {
 	OrgName       *string `json:"orgName,omitempty"`
 	TenantName    *string `json:"tenantName,omitempty"`
 	UserEmail     *string `json:"userEmail,omitempty"`
+	ClusterName   *string `json:"clusterName,omitempty"`
 }
 
 // AddressesQueryParam defines model for AddressesQueryParam.

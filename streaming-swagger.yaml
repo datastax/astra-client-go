@@ -3847,6 +3847,9 @@ components:
         userEmail:
           type: string
           x-go-name: UserEmail
+        clusterName:
+          type: string
+          x-go-name: ClusterName
       type: object
       x-go-package: github.com/riptano/bellburnell/src/docs
     TenantLimitResponse:
