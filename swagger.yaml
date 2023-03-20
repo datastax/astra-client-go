@@ -273,13 +273,20 @@ paths:
         - Operations
       parameters:
         - $ref: '#/components/parameters/DatabaseIdParam'
+        - in: query
+          name: all
+          description: Fetch bundles for all datacenters.
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: Credentials provides a link to download cluster secure-connect-*.zip file
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CredsURL'
+                $ref: '#/components/schemas/SecureBundles'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -2399,12 +2406,64 @@ components:
           type: string
           example: promuser
           description: prometheus username only pass with basic strategy
+    CustomDomainBundle:
+      description: Download URL info for creds for a custom domain
+      type: object
+      required:
+        - downloadURL
+        - apiFQDN
+        - cqlFQDN
+        - dashboardFQDN
+        - domain
+      properties:
+        downloadURL:
+          type: string
+          example: https://example.com/myBundle
+          description: Download URL for the secure connect bundle for this custom domain
+        apiFQDN:
+          type: string
+          example: d04d1eb2-6a52-483e-ab16-faaad3d077a9-us-east1.apps.example.com
+          description: FQDN for the API
+        cqlFQDN:
+          type: string
+          example: d04d1eb2-6a52-483e-ab16-faaad3d077a9-us-east1.db.example.com
+          description: FQDN for CQL
+        dashboardFQDN:
+          type: string
+          example: d04d1eb2-6a52-483e-ab16-faaad3d077a9-us-east1.dashboard.example.com
+          description: FQDN for Dashboard
+        domain:
+          type: string
+          example: example.com
+          description: Custom domain
+    CustomDomainBundles:
+      description: Collection of custom domain bundles
+      type: array
+      example: [{'see CustomDomainBundle'}]
+      items:
+        $ref: '#/components/schemas/CustomDomainBundle'
+    SecureBundles:
+      description: List of Secure Connection Bundle info
+      type: array
+      items:
+        $ref: '#/components/schemas/CredsURL'
     CredsURL:
       description: CredsURL from which the creds zip may be downloaded
       type: object
       required:
         - downloadURL
+        - downloadURLInternal
+        - downloadURLMigrationProxy
+        - downloadURLMigrationProxyInternal
       properties:
+        datacenterID:
+          type: string
+          example: d04d1eb2-6a52-483e-ab16-faaad3d077a9-1
+          description: Datacenter ID for which the download URL applies
+        datcenterID:
+          type: string
+          example: d04d1eb2-6a52-483e-ab16-faaad3d077a9-1
+          description: Intentionally misspelled Datacenter ID for which the download URL applies
         downloadURL:
           type: string
           example: nifty.cloud.datastax.com:9092
@@ -2421,6 +2480,8 @@ components:
           type: string
           example: proxy-nifty.cloud.datastax.com:9092
           description: Internal Migration Proxy DownloadURL is only valid for about 5 minutes
+        customDomainBundles:
+          $ref: '#/components/schemas/CustomDomainBundles'
     UserPassword:
       description: UserPassword specifies a username and new password. The specified password will be updated for the specified database user
       type: object

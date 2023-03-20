@@ -863,11 +863,11 @@ type TenantLimitResponse struct {
 type TenantRequest struct {
 	CloudProvider *string `json:"cloudProvider,omitempty"`
 	CloudRegion   *string `json:"cloudRegion,omitempty"`
+	ClusterName   *string `json:"clusterName,omitempty"`
 	OrgID         *string `json:"orgID,omitempty"`
 	OrgName       *string `json:"orgName,omitempty"`
 	TenantName    *string `json:"tenantName,omitempty"`
 	UserEmail     *string `json:"userEmail,omitempty"`
-	ClusterName   *string `json:"clusterName,omitempty"`
 }
 
 // AddressesQueryParam defines model for AddressesQueryParam.

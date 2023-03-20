@@ -330,18 +330,48 @@ type CreateRoleRequest struct {
 
 // CredsURL from which the creds zip may be downloaded
 type CredsURL struct {
+	// Collection of custom domain bundles
+	CustomDomainBundles *CustomDomainBundles `json:"customDomainBundles,omitempty"`
+
+	// Datacenter ID for which the download URL applies
+	DatacenterID *string `json:"datacenterID,omitempty"`
+
+	// Intentionally misspelled Datacenter ID for which the download URL applies
+	DatcenterID *string `json:"datcenterID,omitempty"`
+
 	// DownloadURL is only valid for about 5 minutes
 	DownloadURL string `json:"downloadURL"`
 
 	// Internal DownloadURL is only valid for about 5 minutes
-	DownloadURLInternal *string `json:"downloadURLInternal,omitempty"`
+	DownloadURLInternal string `json:"downloadURLInternal"`
 
 	// Migration Proxy DownloadURL is only valid for about 5 minutes
-	DownloadURLMigrationProxy *string `json:"downloadURLMigrationProxy,omitempty"`
+	DownloadURLMigrationProxy string `json:"downloadURLMigrationProxy"`
 
 	// Internal Migration Proxy DownloadURL is only valid for about 5 minutes
-	DownloadURLMigrationProxyInternal *string `json:"downloadURLMigrationProxyInternal,omitempty"`
+	DownloadURLMigrationProxyInternal string `json:"downloadURLMigrationProxyInternal"`
 }
+
+// Download URL info for creds for a custom domain
+type CustomDomainBundle struct {
+	// FQDN for the API
+	ApiFQDN string `json:"apiFQDN"`
+
+	// FQDN for CQL
+	CqlFQDN string `json:"cqlFQDN"`
+
+	// FQDN for Dashboard
+	DashboardFQDN string `json:"dashboardFQDN"`
+
+	// Custom domain
+	Domain string `json:"domain"`
+
+	// Download URL for the secure connect bundle for this custom domain
+	DownloadURL string `json:"downloadURL"`
+}
+
+// Collection of custom domain bundles
+type CustomDomainBundles = []CustomDomainBundle
 
 // Database contains the key information about a database
 type Database struct {
@@ -759,6 +789,9 @@ type RoleInviteRequest struct {
 	Roles []string `json:"roles"`
 }
 
+// List of Secure Connection Bundle info
+type SecureBundles = []CredsURL
+
 // Serverless region information
 type ServerlessRegion struct {
 	Classification string `json:"classification"`
@@ -992,6 +1025,12 @@ type ResetPasswordJSONBody = UserPassword
 
 // ResizeDatabaseJSONBody defines parameters for ResizeDatabase.
 type ResizeDatabaseJSONBody = CapacityUnits
+
+// GenerateSecureBundleURLParams defines parameters for GenerateSecureBundleURL.
+type GenerateSecureBundleURLParams struct {
+	// Fetch bundles for all datacenters.
+	All *bool `form:"all,omitempty" json:"all,omitempty"`
+}
 
 // TerminateDatabaseParams defines parameters for TerminateDatabase.
 type TerminateDatabaseParams struct {
@@ -1285,7 +1324,7 @@ type ClientInterface interface {
 	ResizeDatabase(ctx context.Context, databaseId DatabaseIdParam, body ResizeDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GenerateSecureBundleURL request
-	GenerateSecureBundleURL(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GenerateSecureBundleURL(ctx context.Context, databaseId DatabaseIdParam, params *GenerateSecureBundleURLParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// TerminateDatabase request
 	TerminateDatabase(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1846,8 +1885,8 @@ func (c *Client) ResizeDatabase(ctx context.Context, databaseId DatabaseIdParam,
 	return c.Client.Do(req)
 }
 
-func (c *Client) GenerateSecureBundleURL(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGenerateSecureBundleURLRequest(c.Server, databaseId)
+func (c *Client) GenerateSecureBundleURL(ctx context.Context, databaseId DatabaseIdParam, params *GenerateSecureBundleURLParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateSecureBundleURLRequest(c.Server, databaseId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -3470,7 +3509,7 @@ func NewResizeDatabaseRequestWithBody(server string, databaseId DatabaseIdParam,
 }
 
 // NewGenerateSecureBundleURLRequest generates requests for GenerateSecureBundleURL
-func NewGenerateSecureBundleURLRequest(server string, databaseId DatabaseIdParam) (*http.Request, error) {
+func NewGenerateSecureBundleURLRequest(server string, databaseId DatabaseIdParam, params *GenerateSecureBundleURLParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3494,6 +3533,26 @@ func NewGenerateSecureBundleURLRequest(server string, databaseId DatabaseIdParam
 	if err != nil {
 		return nil, err
 	}
+
+	queryValues := queryURL.Query()
+
+	if params.All != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "all", runtime.ParamLocationQuery, *params.All); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("POST", queryURL.String(), nil)
 	if err != nil {
@@ -4893,7 +4952,7 @@ type ClientWithResponsesInterface interface {
 	ResizeDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, body ResizeDatabaseJSONRequestBody, reqEditors ...RequestEditorFn) (*ResizeDatabaseResponse, error)
 
 	// GenerateSecureBundleURL request
-	GenerateSecureBundleURLWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GenerateSecureBundleURLResponse, error)
+	GenerateSecureBundleURLWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *GenerateSecureBundleURLParams, reqEditors ...RequestEditorFn) (*GenerateSecureBundleURLResponse, error)
 
 	// TerminateDatabase request
 	TerminateDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*TerminateDatabaseResponse, error)
@@ -5678,7 +5737,7 @@ func (r ResizeDatabaseResponse) StatusCode() int {
 type GenerateSecureBundleURLResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *CredsURL
+	JSON200      *SecureBundles
 	JSON400      *Errors
 	JSON401      *Errors
 	JSON404      *Errors
@@ -6764,8 +6823,8 @@ func (c *ClientWithResponses) ResizeDatabaseWithResponse(ctx context.Context, da
 }
 
 // GenerateSecureBundleURLWithResponse request returning *GenerateSecureBundleURLResponse
-func (c *ClientWithResponses) GenerateSecureBundleURLWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GenerateSecureBundleURLResponse, error) {
-	rsp, err := c.GenerateSecureBundleURL(ctx, databaseId, reqEditors...)
+func (c *ClientWithResponses) GenerateSecureBundleURLWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *GenerateSecureBundleURLParams, reqEditors ...RequestEditorFn) (*GenerateSecureBundleURLResponse, error) {
+	rsp, err := c.GenerateSecureBundleURL(ctx, databaseId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -8349,7 +8408,7 @@ func ParseGenerateSecureBundleURLResponse(rsp *http.Response) (*GenerateSecureBu
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest CredsURL
+		var dest SecureBundles
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
