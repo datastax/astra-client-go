@@ -1,7 +1,7 @@
 .PHONY: generate-client tools
 
 tools:
-	go get github.com/deepmap/oapi-codegen/cmd/oapi-codegen
+	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
 
 generate-client: tools
 	oapi-codegen -old-config-style -generate types,client -package astra -o astra/astra.gen.go swagger.yaml
