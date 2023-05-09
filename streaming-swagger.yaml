@@ -2327,6 +2327,115 @@ paths:
       tags:
         - connectors
 
+  /namespaces/{tenant}/{namespace}:
+    get:
+      tags:
+        - namespaces
+      summary: PS, PT, AK - Get the dump all the policies specified for a namespace.
+      description: ''
+      operationId: getNamespace
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: tenant
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+        '403':
+          description: Don't have admin permission
+        '404':
+          description: Tenant or cluster or namespace doesn't exist
+    put:
+      tags:
+        - namespaces
+      summary: PS, PT, AK - Creates a new namespace with the specified policies
+      description: ''
+      operationId: createNamespace
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: tenant
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - in: body
+          name: body
+          description: Policies for the namespace
+          required: false
+          schema:
+            type: object
+      responses:
+        '403':
+          description: Don't have admin permission
+        '404':
+          description: Tenant or cluster doesn't exist
+        '409':
+          description: Namespace already exists
+        '412':
+          description: Namespace name is not valid
+    delete:
+      tags:
+        - namespaces
+      summary: PS, PT, AK - Delete a namespace and all the topics under it.
+      description: ''
+      operationId: deleteNamespace
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: tenant
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: force
+          in: query
+          required: false
+          schema:
+            type: boolean
+          default: false
+        - name: authoritative
+          in: query
+          required: false
+          schema:
+            type: boolean
+          default: false
+      responses:
+        '307':
+          description: Current broker doesn't serve the namespace
+        '403':
+          description: Don't have admin permission
+        '404':
+          description: Tenant or cluster or namespace doesn't exist
+        '409':
+          description: Namespace is not empty
 
 
 ## End Astra Streaming paths...
@@ -3981,3 +4090,4 @@ components:
       description: A token must be passed in header to access the API.
       type: http
       scheme: bearer
+
