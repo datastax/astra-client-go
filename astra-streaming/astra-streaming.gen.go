@@ -909,6 +909,12 @@ type Unauthorized = Errors
 // Errors is a collection of individual Error objects.
 type UnprocessableEntity = Errors
 
+// DeleteNamespaceParams defines parameters for DeleteNamespace.
+type DeleteNamespaceParams struct {
+	Force         *bool `form:"force,omitempty" json:"force,omitempty"`
+	Authoritative *bool `form:"authoritative,omitempty" json:"authoritative,omitempty"`
+}
+
 // GetTopicsParams defines parameters for GetTopics.
 type GetTopicsParams struct {
 	// Astra JWT token
@@ -1054,12 +1060,6 @@ type GetBuiltInSinksParams struct {
 
 	// Astra Streaming Cluster Name.
 	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
-}
-
-// DeleteNamespaceParams defines parameters for DeleteNamespace.
-type DeleteNamespaceParams struct {
-	Force         *bool `form:"force,omitempty" json:"force,omitempty"`
-	Authoritative *bool `form:"authoritative,omitempty" json:"authoritative,omitempty"`
 }
 
 // GenerateTokenForClientJSONBody defines parameters for GenerateTokenForClient.
@@ -2001,6 +2001,15 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// DeleteNamespace request
+	DeleteNamespace(ctx context.Context, tenant string, namespace string, params *DeleteNamespaceParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetNamespace request
+	GetNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateNamespace request
+	CreateNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetTopics request
 	GetTopics(ctx context.Context, tenant string, namespace string, params *GetTopicsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2063,15 +2072,6 @@ type ClientInterface interface {
 
 	// GetBuiltInSinks request
 	GetBuiltInSinks(ctx context.Context, params *GetBuiltInSinksParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// DeleteNamespace request
-	DeleteNamespace(ctx context.Context, tenant string, namespace string, params *DeleteNamespaceParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetNamespace request
-	GetNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// CreateNamespace request
-	CreateNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetAccessListTemplate request
 	GetAccessListTemplate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2228,6 +2228,42 @@ type ClientInterface interface {
 
 	// GetTokenByID request
 	GetTokenByID(ctx context.Context, tenant string, tokenId string, params *GetTokenByIDParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) DeleteNamespace(ctx context.Context, tenant string, namespace string, params *DeleteNamespaceParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteNamespaceRequest(c.Server, tenant, namespace, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetNamespaceRequest(c.Server, tenant, namespace)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateNamespaceRequest(c.Server, tenant, namespace)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) GetTopics(ctx context.Context, tenant string, namespace string, params *GetTopicsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2496,42 +2532,6 @@ func (c *Client) UpdateSourceJSON(ctx context.Context, tenant string, namespace 
 
 func (c *Client) GetBuiltInSinks(ctx context.Context, params *GetBuiltInSinksParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetBuiltInSinksRequest(c.Server, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) DeleteNamespace(ctx context.Context, tenant string, namespace string, params *DeleteNamespaceParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteNamespaceRequest(c.Server, tenant, namespace, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetNamespaceRequest(c.Server, tenant, namespace)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateNamespace(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateNamespaceRequest(c.Server, tenant, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -3212,6 +3212,165 @@ func (c *Client) GetTokenByID(ctx context.Context, tenant string, tokenId string
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewDeleteNamespaceRequest generates requests for DeleteNamespace
+func NewDeleteNamespaceRequest(server string, tenant string, namespace string, params *DeleteNamespaceParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "namespace", runtime.ParamLocationPath, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/admin/v2/namespaces/%s/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Force != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "force", runtime.ParamLocationQuery, *params.Force); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Authoritative != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "authoritative", runtime.ParamLocationQuery, *params.Authoritative); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetNamespaceRequest generates requests for GetNamespace
+func NewGetNamespaceRequest(server string, tenant string, namespace string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "namespace", runtime.ParamLocationPath, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/admin/v2/namespaces/%s/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateNamespaceRequest generates requests for CreateNamespace
+func NewCreateNamespaceRequest(server string, tenant string, namespace string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "namespace", runtime.ParamLocationPath, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/admin/v2/namespaces/%s/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 // NewGetTopicsRequest generates requests for GetTopics
@@ -4295,165 +4454,6 @@ func NewGetBuiltInSinksRequest(server string, params *GetBuiltInSinksParams) (*h
 	}
 
 	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam1)
-
-	return req, nil
-}
-
-// NewDeleteNamespaceRequest generates requests for DeleteNamespace
-func NewDeleteNamespaceRequest(server string, tenant string, namespace string, params *DeleteNamespaceParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "namespace", runtime.ParamLocationPath, namespace)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/namespaces/%s/%s", pathParam0, pathParam1)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	queryValues := queryURL.Query()
-
-	if params.Force != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "force", runtime.ParamLocationQuery, *params.Force); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	if params.Authoritative != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "authoritative", runtime.ParamLocationQuery, *params.Authoritative); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	queryURL.RawQuery = queryValues.Encode()
-
-	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetNamespaceRequest generates requests for GetNamespace
-func NewGetNamespaceRequest(server string, tenant string, namespace string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "namespace", runtime.ParamLocationPath, namespace)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/namespaces/%s/%s", pathParam0, pathParam1)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewCreateNamespaceRequest generates requests for CreateNamespace
-func NewCreateNamespaceRequest(server string, tenant string, namespace string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "namespace", runtime.ParamLocationPath, namespace)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/namespaces/%s/%s", pathParam0, pathParam1)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("PUT", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
 
 	return req, nil
 }
@@ -6336,6 +6336,15 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// DeleteNamespace request
+	DeleteNamespaceWithResponse(ctx context.Context, tenant string, namespace string, params *DeleteNamespaceParams, reqEditors ...RequestEditorFn) (*DeleteNamespaceResponse, error)
+
+	// GetNamespace request
+	GetNamespaceWithResponse(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*GetNamespaceResponse, error)
+
+	// CreateNamespace request
+	CreateNamespaceWithResponse(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*CreateNamespaceResponse, error)
+
 	// GetTopics request
 	GetTopicsWithResponse(ctx context.Context, tenant string, namespace string, params *GetTopicsParams, reqEditors ...RequestEditorFn) (*GetTopicsResponse, error)
 
@@ -6398,15 +6407,6 @@ type ClientWithResponsesInterface interface {
 
 	// GetBuiltInSinks request
 	GetBuiltInSinksWithResponse(ctx context.Context, params *GetBuiltInSinksParams, reqEditors ...RequestEditorFn) (*GetBuiltInSinksResponse, error)
-
-	// DeleteNamespace request
-	DeleteNamespaceWithResponse(ctx context.Context, tenant string, namespace string, params *DeleteNamespaceParams, reqEditors ...RequestEditorFn) (*DeleteNamespaceResponse, error)
-
-	// GetNamespace request
-	GetNamespaceWithResponse(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*GetNamespaceResponse, error)
-
-	// CreateNamespace request
-	CreateNamespaceWithResponse(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*CreateNamespaceResponse, error)
 
 	// GetAccessListTemplate request
 	GetAccessListTemplateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAccessListTemplateResponse, error)
@@ -6563,6 +6563,69 @@ type ClientWithResponsesInterface interface {
 
 	// GetTokenByID request
 	GetTokenByIDWithResponse(ctx context.Context, tenant string, tokenId string, params *GetTokenByIDParams, reqEditors ...RequestEditorFn) (*GetTokenByIDResponse, error)
+}
+
+type DeleteNamespaceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteNamespaceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteNamespaceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetNamespaceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r GetNamespaceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetNamespaceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateNamespaceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateNamespaceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateNamespaceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type GetTopicsResponse struct {
@@ -6947,69 +7010,6 @@ func (r GetBuiltInSinksResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetBuiltInSinksResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type DeleteNamespaceResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r DeleteNamespaceResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r DeleteNamespaceResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetNamespaceResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r GetNamespaceResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetNamespaceResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type CreateNamespaceResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r CreateNamespaceResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreateNamespaceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -8105,6 +8105,33 @@ func (r GetTokenByIDResponse) StatusCode() int {
 	return 0
 }
 
+// DeleteNamespaceWithResponse request returning *DeleteNamespaceResponse
+func (c *ClientWithResponses) DeleteNamespaceWithResponse(ctx context.Context, tenant string, namespace string, params *DeleteNamespaceParams, reqEditors ...RequestEditorFn) (*DeleteNamespaceResponse, error) {
+	rsp, err := c.DeleteNamespace(ctx, tenant, namespace, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteNamespaceResponse(rsp)
+}
+
+// GetNamespaceWithResponse request returning *GetNamespaceResponse
+func (c *ClientWithResponses) GetNamespaceWithResponse(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*GetNamespaceResponse, error) {
+	rsp, err := c.GetNamespace(ctx, tenant, namespace, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetNamespaceResponse(rsp)
+}
+
+// CreateNamespaceWithResponse request returning *CreateNamespaceResponse
+func (c *ClientWithResponses) CreateNamespaceWithResponse(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*CreateNamespaceResponse, error) {
+	rsp, err := c.CreateNamespace(ctx, tenant, namespace, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateNamespaceResponse(rsp)
+}
+
 // GetTopicsWithResponse request returning *GetTopicsResponse
 func (c *ClientWithResponses) GetTopicsWithResponse(ctx context.Context, tenant string, namespace string, params *GetTopicsParams, reqEditors ...RequestEditorFn) (*GetTopicsResponse, error) {
 	rsp, err := c.GetTopics(ctx, tenant, namespace, params, reqEditors...)
@@ -8304,33 +8331,6 @@ func (c *ClientWithResponses) GetBuiltInSinksWithResponse(ctx context.Context, p
 		return nil, err
 	}
 	return ParseGetBuiltInSinksResponse(rsp)
-}
-
-// DeleteNamespaceWithResponse request returning *DeleteNamespaceResponse
-func (c *ClientWithResponses) DeleteNamespaceWithResponse(ctx context.Context, tenant string, namespace string, params *DeleteNamespaceParams, reqEditors ...RequestEditorFn) (*DeleteNamespaceResponse, error) {
-	rsp, err := c.DeleteNamespace(ctx, tenant, namespace, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDeleteNamespaceResponse(rsp)
-}
-
-// GetNamespaceWithResponse request returning *GetNamespaceResponse
-func (c *ClientWithResponses) GetNamespaceWithResponse(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*GetNamespaceResponse, error) {
-	rsp, err := c.GetNamespace(ctx, tenant, namespace, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetNamespaceResponse(rsp)
-}
-
-// CreateNamespaceWithResponse request returning *CreateNamespaceResponse
-func (c *ClientWithResponses) CreateNamespaceWithResponse(ctx context.Context, tenant string, namespace string, reqEditors ...RequestEditorFn) (*CreateNamespaceResponse, error) {
-	rsp, err := c.CreateNamespace(ctx, tenant, namespace, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateNamespaceResponse(rsp)
 }
 
 // GetAccessListTemplateWithResponse request returning *GetAccessListTemplateResponse
@@ -8823,6 +8823,54 @@ func (c *ClientWithResponses) GetTokenByIDWithResponse(ctx context.Context, tena
 		return nil, err
 	}
 	return ParseGetTokenByIDResponse(rsp)
+}
+
+// ParseDeleteNamespaceResponse parses an HTTP response from a DeleteNamespaceWithResponse call
+func ParseDeleteNamespaceResponse(rsp *http.Response) (*DeleteNamespaceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteNamespaceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetNamespaceResponse parses an HTTP response from a GetNamespaceWithResponse call
+func ParseGetNamespaceResponse(rsp *http.Response) (*GetNamespaceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetNamespaceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseCreateNamespaceResponse parses an HTTP response from a CreateNamespaceWithResponse call
+func ParseCreateNamespaceResponse(rsp *http.Response) (*CreateNamespaceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateNamespaceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
 }
 
 // ParseGetTopicsResponse parses an HTTP response from a GetTopicsWithResponse call
@@ -9340,54 +9388,6 @@ func ParseGetBuiltInSinksResponse(rsp *http.Response) (*GetBuiltInSinksResponse,
 	}
 
 	response := &GetBuiltInSinksResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseDeleteNamespaceResponse parses an HTTP response from a DeleteNamespaceWithResponse call
-func ParseDeleteNamespaceResponse(rsp *http.Response) (*DeleteNamespaceResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &DeleteNamespaceResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetNamespaceResponse parses an HTTP response from a GetNamespaceWithResponse call
-func ParseGetNamespaceResponse(rsp *http.Response) (*GetNamespaceResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetNamespaceResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseCreateNamespaceResponse parses an HTTP response from a CreateNamespaceWithResponse call
-func ParseCreateNamespaceResponse(rsp *http.Response) (*CreateNamespaceResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &CreateNamespaceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
