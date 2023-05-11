@@ -2327,7 +2327,7 @@ paths:
       tags:
         - connectors
 
-  /namespaces/{tenant}/{namespace}:
+  /admin/v2/namespaces/{tenant}/{namespace}:
     get:
       tags:
         - namespaces
@@ -2354,8 +2354,10 @@ paths:
           description: successful operation
           schema:
             type: object
+        '401':
+          description: unauthorized
         '403':
-          description: Don't have admin permission
+          description: forbidden
         '404':
           description: Tenant or cluster or namespace doesn't exist
     put:
@@ -2386,8 +2388,12 @@ paths:
           schema:
             type: object
       responses:
+        '204':
+          description: successful operation
+        "401":
+          description: unauthorized
         '403':
-          description: Don't have admin permission
+          description: forbidden
         '404':
           description: Tenant or cluster doesn't exist
         '409':
@@ -2428,10 +2434,14 @@ paths:
             type: boolean
           default: false
       responses:
+        '204':
+          description: successful operation
         '307':
           description: Current broker doesn't serve the namespace
+        "401":
+          description: unauthorized
         '403':
-          description: Don't have admin permission
+          description: forbidden
         '404':
           description: Tenant or cluster or namespace doesn't exist
         '409':
