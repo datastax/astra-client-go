@@ -1246,7 +1246,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/tenantClusterPlanResponse"
+                $ref: "#/components/schemas/TenantClusterPlanResponse"
         "401":
           description: Authentication failure
           content:
@@ -3924,12 +3924,6 @@ components:
           additionalProperties:
             $ref: "#/components/schemas/Usage"
           type: object
-      type: object
-      x-go-package: github.com/riptano/bellburnell/src/docs
-    tenantClusterPlanResponse:
-      properties:
-        Body:
-          $ref: "#/components/schemas/TenantClusterPlanResponse"
       type: object
       x-go-package: github.com/riptano/bellburnell/src/docs
     tenantClusterPlansResponse:
