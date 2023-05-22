@@ -627,7 +627,7 @@ paths:
         - "$ref": "#/components/parameters/fields"
         - "$ref": "#/components/parameters/page-size"
         - "$ref": "#/components/parameters/page-state"
-        - "$ref": "#/components/parameters/sort"
+        - "$ref": "#/components/parameters/sort-keys"
         - "$ref": "#/components/parameters/raw"
       responses:
         '200':
@@ -691,7 +691,7 @@ paths:
           "$ref": "#/components/responses/409"
         '500':
           "$ref": "#/components/responses/500"
-  "/v2/keyspaces/{keyspace-id}/{table-id}/{primary-key}":
+  "/v2/keyspaces/{keyspace-id}/{table-id}/{primary-key-value}":
     get:
       tags:
         - Data
@@ -701,11 +701,11 @@ paths:
         - "$ref": "#/components/parameters/X-Cassandra-Token"
         - "$ref": "#/components/parameters/keyspace-id"
         - "$ref": "#/components/parameters/table-id"
-        - "$ref": "#/components/parameters/primary-key"
+        - "$ref": "#/components/parameters/primary-key-value"
         - "$ref": "#/components/parameters/fields"
         - "$ref": "#/components/parameters/page-size"
         - "$ref": "#/components/parameters/page-state"
-        - "$ref": "#/components/parameters/sort"
+        - "$ref": "#/components/parameters/sort-keys"
         - "$ref": "#/components/parameters/raw"
       responses:
         '200':
@@ -738,7 +738,7 @@ paths:
         - "$ref": "#/components/parameters/X-Cassandra-Token"
         - "$ref": "#/components/parameters/keyspace-id"
         - "$ref": "#/components/parameters/table-id"
-        - "$ref": "#/components/parameters/primary-key"
+        - "$ref": "#/components/parameters/primary-key-value"
         - "$ref": "#/components/parameters/raw"
       requestBody:
         description: document
@@ -775,7 +775,7 @@ paths:
         - "$ref": "#/components/parameters/X-Cassandra-Token"
         - "$ref": "#/components/parameters/keyspace-id"
         - "$ref": "#/components/parameters/table-id"
-        - "$ref": "#/components/parameters/primary-key"
+        - "$ref": "#/components/parameters/primary-key-value"
         - "$ref": "#/components/parameters/raw"
       requestBody:
         description: document
@@ -812,7 +812,7 @@ paths:
         - "$ref": "#/components/parameters/X-Cassandra-Token"
         - "$ref": "#/components/parameters/keyspace-id"
         - "$ref": "#/components/parameters/table-id"
-        - "$ref": "#/components/parameters/primary-key"
+        - "$ref": "#/components/parameters/primary-key-value"
       responses:
         '204':
           description: No Content
@@ -873,8 +873,8 @@ components:
       required: true
       schema:
         type: string
-    primary-key:
-      name: primary-key
+    primary-key-value:
+      name: primary-key-value
       in: path
       required: true
       description: |
@@ -892,8 +892,8 @@ components:
         in the response object.
       schema:
         type: string
-    sort:
-      name: sort
+    sort-keys:
+      name: sort-keys
       in: query
       description: keys to sort by
       schema:
