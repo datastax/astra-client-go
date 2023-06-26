@@ -1407,119 +1407,7 @@ paths:
                 $ref: "#/components/schemas/errorResponse"
       tags:
         - delete-tenant-from-cluster
-  /v2/streaming/tenants/{tenant}/tokens:
-    get:
-      description: Lists all Pulsar tokens under the specified tenant
-      operationId: idListTenantTokens
-      parameters:
-        - description: Bearer Astra Keycloak token or AstraCS token.
-          in: header
-          name: Authorization
-          required: true
-          schema:
-            type: string
-        - description: Astra Org ID.
-          in: header
-          name: X-DataStax-Current-Org
-          required: true
-          schema:
-            type: string
-        - description: Astra Streaming Cluster Name.
-          in: header
-          name: X-DataStax-Pulsar-Cluster
-          required: true
-          schema:
-            type: string
-        - description: Name of the pulsar tenant
-          in: path
-          name: tenant
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: List of pulsar JWT token payloads under the given tenant. Returns
-            a list of json objects each representing the payload portion of the token.
-            The claims included in the payload can include (but are not limited to)
-            the standard claims defined in https://datatracker.ietf.org/doc/html/rfc7519.html
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TenantToken'
-        "401":
-          description: Authentication failure
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorResponse'
-        "404":
-          description: Tenant not found
-        "500":
-          description: Failed to retreive tokens
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorResponse'
-      tags:
-        - list-tokens-by-tenant
-  /v2/streaming/tenants/{tenant}/tokens/{tokenId}:
-    get:
-      description: Gets the bearer string for a token id
-      operationId: getTokenByID
-      parameters:
-        - description: Bearer Astra Keycloak token or AstraCS token.
-          in: header
-          name: Authorization
-          required: true
-          schema:
-            type: string
-        - description: Astra Org ID.
-          in: header
-          name: X-DataStax-Current-Org
-          required: true
-          schema:
-            type: string
-        - description: Astra Streaming Cluster Name.
-          in: header
-          name: X-DataStax-Pulsar-Cluster
-          required: true
-          schema:
-            type: string
-        - description: Name of the pulsar tenant
-          in: path
-          name: tenant
-          required: true
-          schema:
-            type: string
-        - description:  token id
-          in: path
-          name: tokenId
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: JWT token payload for the token id
-          content:
-            text/plain:
-              schema:
-                type: string
-        "401":
-          description: Authentication failure
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorResponse'
-        "404":
-          description: Tenant not found
-        "500":
-          description: Failed to retreive tokens
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorResponse'
+
   /v2/streaming/tenants/{tenant}/limits:
     get:
       summary: "Gets number of and limits of namespaces and topics for tenant"
@@ -2447,6 +2335,296 @@ paths:
         '409':
           description: Namespace is not empty
 
+  /v2/streaming/tenants/{tenant}/tokens:
+    get:
+      tags:
+      - pulsar-tokens
+      summary: List all pulsar tokens under the specified tenant
+      operationId: getPulsarTokensByTenant
+      parameters:
+      - name: Authorization
+        in: header
+        description: Astra token (https://docs.datastax.com/en/streaming/astra-streaming/operations/astream-token-gen.html#astra-token)
+        required: true
+        schema:
+          type: string
+      - name: X-DataStax-Current-Org
+        in: header
+        description: Astra Org ID.
+        required: true
+        schema:
+          type: string
+      - name: X-DataStax-Pulsar-Cluster
+        in: header
+        description: Astra Streaming Cluster Name.
+        required: true
+        schema:
+          type: string
+      - name: tenant
+        in: path
+        description: Name of the pulsar tenant
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: List of pulsar JWT token payloads under the given tenant. Returns
+            a list of json objects each representing the payload portion of the token.
+            The claims included in the payload can include (but are not limited to)
+            the standard claims defined in https://datatracker.ietf.org/doc/html/rfc7519.html
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TenantToken'
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        404:
+          description: Tenant not found
+          content: {}
+        500:
+          description: Failed to retreive tokens
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+    post:
+      tags:
+      - pulsar-tokens
+      summary: Create new pulsar token for the given tenant.
+      operationId: CreateTenantTokenHandler
+      parameters:
+      - name: Authorization
+        in: header
+        description: Astra token (https://docs.datastax.com/en/streaming/astra-streaming/operations/astream-token-gen.html#astra-token)
+        required: true
+        schema:
+          type: string
+      - name: X-DataStax-Current-Org
+        in: header
+        description: Astra Org ID.
+        required: true
+        schema:
+          type: string
+      - name: X-DataStax-Pulsar-Cluster
+        in: header
+        description: Astra Streaming Cluster Name.
+        required: true
+        schema:
+          type: string
+      - name: tenant
+        in: path
+        description: Name of the pulsar tenant
+        required: true
+        schema:
+          type: string
+      responses:
+        201:
+          description: New token created.  Returns the JWT token string which can
+            be decoded to get the payload information such as creation time (iat),
+            expiration (exp) and token id (tokenid). More information on the JWT format
+            available on [wikipedia](https://en.wikipedia.org/wiki/JSON_Web_Token)
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/tokenResponse'
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        404:
+          description: Tenant not found
+          content: {}
+        409:
+          description: Exceeded the token limit for this tenant
+          content: {}
+        500:
+          description: Failed to create token
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /v2/streaming/tenants/{tenant}/tokens/{tokenID}:
+    get:
+      tags:
+      - pulsar-tokens
+      description: Get the given token from the given tenant
+      operationId: getPulsarTokenByID
+      parameters:
+      - name: Authorization
+        in: header
+        description: Astra token (https://docs.datastax.com/en/streaming/astra-streaming/operations/astream-token-gen.html#astra-token)
+        required: true
+        schema:
+          type: string
+      - name: X-DataStax-Current-Org
+        in: header
+        description: Astra Org ID.
+        required: true
+        schema:
+          type: string
+      - name: X-DataStax-Pulsar-Cluster
+        in: header
+        description: Astra Streaming Cluster Name.
+        required: true
+        schema:
+          type: string
+      - name: tenant
+        in: path
+        description: Name of the pulsar tenant
+        required: true
+        schema:
+          type: string
+      - name: tokenID
+        in: path
+        description: ID of the token
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Success
+          content: {}
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        404:
+          description: Tenant not found or token not found
+          content: {}
+        500:
+          description: Failed to get token
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+    delete:
+      tags:
+      - pulsar-tokens
+      description: Delete the given token from the given tenant
+      operationId: deletePulsarTokenByID
+      parameters:
+      - name: Authorization
+        in: header
+        description: Astra token (https://docs.datastax.com/en/streaming/astra-streaming/operations/astream-token-gen.html#astra-token)
+        required: true
+        schema:
+          type: string
+      - name: X-DataStax-Current-Org
+        in: header
+        description: Astra Org ID.
+        required: true
+        schema:
+          type: string
+      - name: X-DataStax-Pulsar-Cluster
+        in: header
+        description: Astra Streaming Cluster Name.
+        required: true
+        schema:
+          type: string
+      - name: tenant
+        in: path
+        description: Name of the pulsar tenant
+        required: true
+        schema:
+          type: string
+      - name: tokenID
+        in: path
+        description: ID of the token to delete
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Token deleted
+          content: {}
+        401:
+          description: Authentication failure
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        404:
+          description: Tenant not found
+          content: {}
+        500:
+          description: Failed to delete token
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /v3/streaming/tenants/{tenant}/tokens:
+    post:
+      tags:
+      - pulsar-tokens
+      summary: Create new pulsar token for the given tenant with JSON response.
+      description: Returns a JSON response instead of the string returned by the v2
+        endpoint.
+      operationId: CreateTenantTokenHandlerV3
+      parameters:
+      - name: Authorization
+        in: header
+        description: Astra token (https://docs.datastax.com/en/streaming/astra-streaming/operations/astream-token-gen.html#astra-token)
+          or a Keycloak token.
+        required: true
+        schema:
+          type: string
+      - name: X-DataStax-Current-Org
+        in: header
+        description: Astra Org ID.
+        required: true
+        schema:
+          type: string
+      - name: X-DataStax-Pulsar-Cluster
+        in: header
+        description: Astra Streaming Cluster Name.
+        required: true
+        schema:
+          type: string
+      - name: tenant
+        in: path
+        description: Name of the pulsar tenant
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantTokenV3Request'
+        required: false
+      responses:
+        201:
+          description: New token created.  Returns JSON containing the rolename and
+            the JWT token string which can be decoded to get the payload information
+            such as creation time (iat), expiration (exp) and token id (tokenid).
+            More information on the JWT format available on [wikipedia](https://en.wikipedia.org/wiki/JSON_Web_Token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTenantTokenV3Response'
+        401:
+          description: Authentication failure
+          content: {}
+        404:
+          description: Tenant not found
+          content: {}
+        409:
+          description: Exceeded the token limit for this tenant
+          content: {}
+        500:
+          description: Failed to create token
+          content: {}
+      x-codegen-request-body-name: body
 
 ## End Astra Streaming paths...
 
@@ -3685,6 +3863,41 @@ components:
           x-go-name: WebsocketURL
       type: object
       x-go-package: github.com/riptano/bellburnell/src/policy
+    CreateTenantTokenV3Request:
+      type: object
+      properties:
+        exp:
+          type: string
+          description: Time duration before the token expires.  Expects a string format
+            with a number and unit.  For example, '5m', '2h', '10d', etc.
+          x-go-name: Exp
+        role:
+          type: string
+          x-go-name: Role
+        type:
+          type: string
+          x-go-name: Type
+      description: CreateTenantTokenV3Request requests a new Pulsar token to
+        be created
+      x-go-package: github.com/riptano/bellburnell/src/route
+    CreateTenantTokenV3Response:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID unique within the scope of a Pulsar tenant
+          x-go-name: ID
+        rolename:
+          type: string
+          description: Rolename used for Pulsar authorization
+          x-go-name: Rolename
+        token:
+          type: string
+          description: JWT token string
+          x-go-name: Token
+      description: CreateTenantTokenV3Response wraps a newly generated Pulsar JWT
+        token
+      x-go-package: github.com/riptano/bellburnell/src/route
     LimitResponse:
       description: LimitResponse is a response for tenant limits
       properties:
@@ -4011,6 +4224,21 @@ components:
         type: array
         items:
           type: string
+    tokenResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          x-go-name: ID
+        subject:
+          type: string
+          x-go-name: Subject
+        token:
+          type: string
+          x-go-name: Token
+      description: NewTokenResponse is the json object for token server response
+      x-go-name: NewTokenResponse
+      x-go-package: github.com/riptano/bellburnell/src/route
 
   ## End Astra Streaming schemas
 

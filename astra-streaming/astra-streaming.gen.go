@@ -334,6 +334,26 @@ type CreateRoleRequest struct {
 	Policy Policy `json:"policy"`
 }
 
+// CreateTenantTokenV3Request CreateTenantTokenV3Request requests a new Pulsar token to be created
+type CreateTenantTokenV3Request struct {
+	// Exp Time duration before the token expires.  Expects a string format with a number and unit.  For example, '5m', '2h', '10d', etc.
+	Exp  *string `json:"exp,omitempty"`
+	Role *string `json:"role,omitempty"`
+	Type *string `json:"type,omitempty"`
+}
+
+// CreateTenantTokenV3Response CreateTenantTokenV3Response wraps a newly generated Pulsar JWT token
+type CreateTenantTokenV3Response struct {
+	// Id ID unique within the scope of a Pulsar tenant
+	ID *string `json:"id,omitempty"`
+
+	// Rolename Rolename used for Pulsar authorization
+	Rolename *string `json:"rolename,omitempty"`
+
+	// Token JWT token string
+	Token *string `json:"token,omitempty"`
+}
+
 // CredsURL CredsURL from which the creds zip may be downloaded.
 type CredsURL struct {
 	// DownloadURL DownloadURL is only valid for about 5 minutes.
@@ -837,6 +857,13 @@ type TenantRequest struct {
 	UserEmail     *string `json:"userEmail,omitempty"`
 }
 
+// NewTokenResponse NewTokenResponse is the json object for token server response
+type NewTokenResponse struct {
+	ID      *string `json:"id,omitempty"`
+	Subject *string `json:"subject,omitempty"`
+	Token   *string `json:"token,omitempty"`
+}
+
 // AddressesQueryParam defines model for AddressesQueryParam.
 type AddressesQueryParam = []string
 
@@ -1077,9 +1104,9 @@ type DeleteStreamingTenantParams struct {
 	Opt *string `form:"opt,omitempty" json:"opt,omitempty"`
 }
 
-// IdListTenantTokensParams defines parameters for IdListTenantTokens.
-type IdListTenantTokensParams struct {
-	// Authorization Bearer Astra Keycloak token or AstraCS token.
+// GetPulsarTokensByTenantParams defines parameters for GetPulsarTokensByTenant.
+type GetPulsarTokensByTenantParams struct {
+	// Authorization Astra token (https://docs.datastax.com/en/streaming/astra-streaming/operations/astream-token-gen.html#astra-token)
 	Authorization string `json:"Authorization"`
 
 	// XDataStaxCurrentOrg Astra Org ID.
@@ -1089,9 +1116,45 @@ type IdListTenantTokensParams struct {
 	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
 }
 
-// GetTokenByIDParams defines parameters for GetTokenByID.
-type GetTokenByIDParams struct {
-	// Authorization Bearer Astra Keycloak token or AstraCS token.
+// CreateTenantTokenHandlerParams defines parameters for CreateTenantTokenHandler.
+type CreateTenantTokenHandlerParams struct {
+	// Authorization Astra token (https://docs.datastax.com/en/streaming/astra-streaming/operations/astream-token-gen.html#astra-token)
+	Authorization string `json:"Authorization"`
+
+	// XDataStaxCurrentOrg Astra Org ID.
+	XDataStaxCurrentOrg string `json:"X-DataStax-Current-Org"`
+
+	// XDataStaxPulsarCluster Astra Streaming Cluster Name.
+	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
+}
+
+// DeletePulsarTokenByIDParams defines parameters for DeletePulsarTokenByID.
+type DeletePulsarTokenByIDParams struct {
+	// Authorization Astra token (https://docs.datastax.com/en/streaming/astra-streaming/operations/astream-token-gen.html#astra-token)
+	Authorization string `json:"Authorization"`
+
+	// XDataStaxCurrentOrg Astra Org ID.
+	XDataStaxCurrentOrg string `json:"X-DataStax-Current-Org"`
+
+	// XDataStaxPulsarCluster Astra Streaming Cluster Name.
+	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
+}
+
+// GetPulsarTokenByIDParams defines parameters for GetPulsarTokenByID.
+type GetPulsarTokenByIDParams struct {
+	// Authorization Astra token (https://docs.datastax.com/en/streaming/astra-streaming/operations/astream-token-gen.html#astra-token)
+	Authorization string `json:"Authorization"`
+
+	// XDataStaxCurrentOrg Astra Org ID.
+	XDataStaxCurrentOrg string `json:"X-DataStax-Current-Org"`
+
+	// XDataStaxPulsarCluster Astra Streaming Cluster Name.
+	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
+}
+
+// CreateTenantTokenHandlerV3Params defines parameters for CreateTenantTokenHandlerV3.
+type CreateTenantTokenHandlerV3Params struct {
+	// Authorization Astra token (https://docs.datastax.com/en/streaming/astra-streaming/operations/astream-token-gen.html#astra-token) or a Keycloak token.
 	Authorization string `json:"Authorization"`
 
 	// XDataStaxCurrentOrg Astra Org ID.
@@ -1154,6 +1217,9 @@ type UpdateRolesForUserInOrganizationJSONRequestBody = RoleInviteRequest
 
 // IdOfCreateTenantEndpointJSONRequestBody defines body for IdOfCreateTenantEndpoint for application/json ContentType.
 type IdOfCreateTenantEndpointJSONRequestBody = TenantRequest
+
+// CreateTenantTokenHandlerV3JSONRequestBody defines body for CreateTenantTokenHandlerV3 for application/json ContentType.
+type CreateTenantTokenHandlerV3JSONRequestBody = CreateTenantTokenV3Request
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -1450,11 +1516,22 @@ type ClientInterface interface {
 	// GetLimits request
 	GetLimits(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// IdListTenantTokens request
-	IdListTenantTokens(ctx context.Context, tenant string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetPulsarTokensByTenant request
+	GetPulsarTokensByTenant(ctx context.Context, tenant string, params *GetPulsarTokensByTenantParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetTokenByID request
-	GetTokenByID(ctx context.Context, tenant string, tokenId string, params *GetTokenByIDParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateTenantTokenHandler request
+	CreateTenantTokenHandler(ctx context.Context, tenant string, params *CreateTenantTokenHandlerParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeletePulsarTokenByID request
+	DeletePulsarTokenByID(ctx context.Context, tenant string, tokenID string, params *DeletePulsarTokenByIDParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetPulsarTokenByID request
+	GetPulsarTokenByID(ctx context.Context, tenant string, tokenID string, params *GetPulsarTokenByIDParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateTenantTokenHandlerV3 request with any body
+	CreateTenantTokenHandlerV3WithBody(ctx context.Context, tenant string, params *CreateTenantTokenHandlerV3Params, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateTenantTokenHandlerV3(ctx context.Context, tenant string, params *CreateTenantTokenHandlerV3Params, body CreateTenantTokenHandlerV3JSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) DeleteNamespace(ctx context.Context, tenant string, namespace string, params *DeleteNamespaceParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2417,8 +2494,8 @@ func (c *Client) GetLimits(ctx context.Context, tenant string, reqEditors ...Req
 	return c.Client.Do(req)
 }
 
-func (c *Client) IdListTenantTokens(ctx context.Context, tenant string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewIdListTenantTokensRequest(c.Server, tenant, params)
+func (c *Client) GetPulsarTokensByTenant(ctx context.Context, tenant string, params *GetPulsarTokensByTenantParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPulsarTokensByTenantRequest(c.Server, tenant, params)
 	if err != nil {
 		return nil, err
 	}
@@ -2429,8 +2506,56 @@ func (c *Client) IdListTenantTokens(ctx context.Context, tenant string, params *
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetTokenByID(ctx context.Context, tenant string, tokenId string, params *GetTokenByIDParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetTokenByIDRequest(c.Server, tenant, tokenId, params)
+func (c *Client) CreateTenantTokenHandler(ctx context.Context, tenant string, params *CreateTenantTokenHandlerParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateTenantTokenHandlerRequest(c.Server, tenant, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeletePulsarTokenByID(ctx context.Context, tenant string, tokenID string, params *DeletePulsarTokenByIDParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeletePulsarTokenByIDRequest(c.Server, tenant, tokenID, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetPulsarTokenByID(ctx context.Context, tenant string, tokenID string, params *GetPulsarTokenByIDParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPulsarTokenByIDRequest(c.Server, tenant, tokenID, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateTenantTokenHandlerV3WithBody(ctx context.Context, tenant string, params *CreateTenantTokenHandlerV3Params, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateTenantTokenHandlerV3RequestWithBody(c.Server, tenant, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateTenantTokenHandlerV3(ctx context.Context, tenant string, params *CreateTenantTokenHandlerV3Params, body CreateTenantTokenHandlerV3JSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateTenantTokenHandlerV3Request(c.Server, tenant, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5391,8 +5516,8 @@ func NewGetLimitsRequest(server string, tenant string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewIdListTenantTokensRequest generates requests for IdListTenantTokens
-func NewIdListTenantTokensRequest(server string, tenant string, params *IdListTenantTokensParams) (*http.Request, error) {
+// NewGetPulsarTokensByTenantRequest generates requests for GetPulsarTokensByTenant
+func NewGetPulsarTokensByTenantRequest(server string, tenant string, params *GetPulsarTokensByTenantParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -5452,8 +5577,69 @@ func NewIdListTenantTokensRequest(server string, tenant string, params *IdListTe
 	return req, nil
 }
 
-// NewGetTokenByIDRequest generates requests for GetTokenByID
-func NewGetTokenByIDRequest(server string, tenant string, tokenId string, params *GetTokenByIDParams) (*http.Request, error) {
+// NewCreateTenantTokenHandlerRequest generates requests for CreateTenantTokenHandler
+func NewCreateTenantTokenHandlerRequest(server string, tenant string, params *CreateTenantTokenHandlerParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/streaming/tenants/%s/tokens", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var headerParam0 string
+
+	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, params.Authorization)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", headerParam0)
+
+	var headerParam1 string
+
+	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Current-Org", runtime.ParamLocationHeader, params.XDataStaxCurrentOrg)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Current-Org", headerParam1)
+
+	var headerParam2 string
+
+	headerParam2, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam2)
+
+	return req, nil
+}
+
+// NewDeletePulsarTokenByIDRequest generates requests for DeletePulsarTokenByID
+func NewDeletePulsarTokenByIDRequest(server string, tenant string, tokenID string, params *DeletePulsarTokenByIDParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -5465,7 +5651,75 @@ func NewGetTokenByIDRequest(server string, tenant string, tokenId string, params
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "tokenId", runtime.ParamLocationPath, tokenId)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "tokenID", runtime.ParamLocationPath, tokenID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/streaming/tenants/%s/tokens/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var headerParam0 string
+
+	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, params.Authorization)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", headerParam0)
+
+	var headerParam1 string
+
+	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Current-Org", runtime.ParamLocationHeader, params.XDataStaxCurrentOrg)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Current-Org", headerParam1)
+
+	var headerParam2 string
+
+	headerParam2, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam2)
+
+	return req, nil
+}
+
+// NewGetPulsarTokenByIDRequest generates requests for GetPulsarTokenByID
+func NewGetPulsarTokenByIDRequest(server string, tenant string, tokenID string, params *GetPulsarTokenByIDParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "tokenID", runtime.ParamLocationPath, tokenID)
 	if err != nil {
 		return nil, err
 	}
@@ -5489,6 +5743,80 @@ func NewGetTokenByIDRequest(server string, tenant string, tokenId string, params
 	if err != nil {
 		return nil, err
 	}
+
+	var headerParam0 string
+
+	headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, params.Authorization)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", headerParam0)
+
+	var headerParam1 string
+
+	headerParam1, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Current-Org", runtime.ParamLocationHeader, params.XDataStaxCurrentOrg)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Current-Org", headerParam1)
+
+	var headerParam2 string
+
+	headerParam2, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam2)
+
+	return req, nil
+}
+
+// NewCreateTenantTokenHandlerV3Request calls the generic CreateTenantTokenHandlerV3 builder with application/json body
+func NewCreateTenantTokenHandlerV3Request(server string, tenant string, params *CreateTenantTokenHandlerV3Params, body CreateTenantTokenHandlerV3JSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateTenantTokenHandlerV3RequestWithBody(server, tenant, params, "application/json", bodyReader)
+}
+
+// NewCreateTenantTokenHandlerV3RequestWithBody generates requests for CreateTenantTokenHandlerV3 with any type of body
+func NewCreateTenantTokenHandlerV3RequestWithBody(server string, tenant string, params *CreateTenantTokenHandlerV3Params, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v3/streaming/tenants/%s/tokens", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	var headerParam0 string
 
@@ -5785,11 +6113,22 @@ type ClientWithResponsesInterface interface {
 	// GetLimits request
 	GetLimitsWithResponse(ctx context.Context, tenant string, reqEditors ...RequestEditorFn) (*GetLimitsResponse, error)
 
-	// IdListTenantTokens request
-	IdListTenantTokensWithResponse(ctx context.Context, tenant string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*IdListTenantTokensResponse, error)
+	// GetPulsarTokensByTenant request
+	GetPulsarTokensByTenantWithResponse(ctx context.Context, tenant string, params *GetPulsarTokensByTenantParams, reqEditors ...RequestEditorFn) (*GetPulsarTokensByTenantResponse, error)
 
-	// GetTokenByID request
-	GetTokenByIDWithResponse(ctx context.Context, tenant string, tokenId string, params *GetTokenByIDParams, reqEditors ...RequestEditorFn) (*GetTokenByIDResponse, error)
+	// CreateTenantTokenHandler request
+	CreateTenantTokenHandlerWithResponse(ctx context.Context, tenant string, params *CreateTenantTokenHandlerParams, reqEditors ...RequestEditorFn) (*CreateTenantTokenHandlerResponse, error)
+
+	// DeletePulsarTokenByID request
+	DeletePulsarTokenByIDWithResponse(ctx context.Context, tenant string, tokenID string, params *DeletePulsarTokenByIDParams, reqEditors ...RequestEditorFn) (*DeletePulsarTokenByIDResponse, error)
+
+	// GetPulsarTokenByID request
+	GetPulsarTokenByIDWithResponse(ctx context.Context, tenant string, tokenID string, params *GetPulsarTokenByIDParams, reqEditors ...RequestEditorFn) (*GetPulsarTokenByIDResponse, error)
+
+	// CreateTenantTokenHandlerV3 request with any body
+	CreateTenantTokenHandlerV3WithBodyWithResponse(ctx context.Context, tenant string, params *CreateTenantTokenHandlerV3Params, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTenantTokenHandlerV3Response, error)
+
+	CreateTenantTokenHandlerV3WithResponse(ctx context.Context, tenant string, params *CreateTenantTokenHandlerV3Params, body CreateTenantTokenHandlerV3JSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTenantTokenHandlerV3Response, error)
 }
 
 type DeleteNamespaceResponse struct {
@@ -7285,16 +7624,14 @@ func (r GetLimitsResponse) StatusCode() int {
 	return 0
 }
 
-type IdListTenantTokensResponse struct {
+type GetPulsarTokensByTenantResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *[]TenantToken
-	JSON401      *ErrorResponse
-	JSON500      *ErrorResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r IdListTenantTokensResponse) Status() string {
+func (r GetPulsarTokensByTenantResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7302,22 +7639,20 @@ func (r IdListTenantTokensResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r IdListTenantTokensResponse) StatusCode() int {
+func (r GetPulsarTokensByTenantResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetTokenByIDResponse struct {
+type CreateTenantTokenHandlerResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON401      *ErrorResponse
-	JSON500      *ErrorResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r GetTokenByIDResponse) Status() string {
+func (r CreateTenantTokenHandlerResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7325,7 +7660,71 @@ func (r GetTokenByIDResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetTokenByIDResponse) StatusCode() int {
+func (r CreateTenantTokenHandlerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeletePulsarTokenByIDResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeletePulsarTokenByIDResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeletePulsarTokenByIDResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetPulsarTokenByIDResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r GetPulsarTokenByIDResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetPulsarTokenByIDResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateTenantTokenHandlerV3Response struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *CreateTenantTokenV3Response
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateTenantTokenHandlerV3Response) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateTenantTokenHandlerV3Response) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -8034,22 +8433,57 @@ func (c *ClientWithResponses) GetLimitsWithResponse(ctx context.Context, tenant 
 	return ParseGetLimitsResponse(rsp)
 }
 
-// IdListTenantTokensWithResponse request returning *IdListTenantTokensResponse
-func (c *ClientWithResponses) IdListTenantTokensWithResponse(ctx context.Context, tenant string, params *IdListTenantTokensParams, reqEditors ...RequestEditorFn) (*IdListTenantTokensResponse, error) {
-	rsp, err := c.IdListTenantTokens(ctx, tenant, params, reqEditors...)
+// GetPulsarTokensByTenantWithResponse request returning *GetPulsarTokensByTenantResponse
+func (c *ClientWithResponses) GetPulsarTokensByTenantWithResponse(ctx context.Context, tenant string, params *GetPulsarTokensByTenantParams, reqEditors ...RequestEditorFn) (*GetPulsarTokensByTenantResponse, error) {
+	rsp, err := c.GetPulsarTokensByTenant(ctx, tenant, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseIdListTenantTokensResponse(rsp)
+	return ParseGetPulsarTokensByTenantResponse(rsp)
 }
 
-// GetTokenByIDWithResponse request returning *GetTokenByIDResponse
-func (c *ClientWithResponses) GetTokenByIDWithResponse(ctx context.Context, tenant string, tokenId string, params *GetTokenByIDParams, reqEditors ...RequestEditorFn) (*GetTokenByIDResponse, error) {
-	rsp, err := c.GetTokenByID(ctx, tenant, tokenId, params, reqEditors...)
+// CreateTenantTokenHandlerWithResponse request returning *CreateTenantTokenHandlerResponse
+func (c *ClientWithResponses) CreateTenantTokenHandlerWithResponse(ctx context.Context, tenant string, params *CreateTenantTokenHandlerParams, reqEditors ...RequestEditorFn) (*CreateTenantTokenHandlerResponse, error) {
+	rsp, err := c.CreateTenantTokenHandler(ctx, tenant, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetTokenByIDResponse(rsp)
+	return ParseCreateTenantTokenHandlerResponse(rsp)
+}
+
+// DeletePulsarTokenByIDWithResponse request returning *DeletePulsarTokenByIDResponse
+func (c *ClientWithResponses) DeletePulsarTokenByIDWithResponse(ctx context.Context, tenant string, tokenID string, params *DeletePulsarTokenByIDParams, reqEditors ...RequestEditorFn) (*DeletePulsarTokenByIDResponse, error) {
+	rsp, err := c.DeletePulsarTokenByID(ctx, tenant, tokenID, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeletePulsarTokenByIDResponse(rsp)
+}
+
+// GetPulsarTokenByIDWithResponse request returning *GetPulsarTokenByIDResponse
+func (c *ClientWithResponses) GetPulsarTokenByIDWithResponse(ctx context.Context, tenant string, tokenID string, params *GetPulsarTokenByIDParams, reqEditors ...RequestEditorFn) (*GetPulsarTokenByIDResponse, error) {
+	rsp, err := c.GetPulsarTokenByID(ctx, tenant, tokenID, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPulsarTokenByIDResponse(rsp)
+}
+
+// CreateTenantTokenHandlerV3WithBodyWithResponse request with arbitrary body returning *CreateTenantTokenHandlerV3Response
+func (c *ClientWithResponses) CreateTenantTokenHandlerV3WithBodyWithResponse(ctx context.Context, tenant string, params *CreateTenantTokenHandlerV3Params, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTenantTokenHandlerV3Response, error) {
+	rsp, err := c.CreateTenantTokenHandlerV3WithBody(ctx, tenant, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateTenantTokenHandlerV3Response(rsp)
+}
+
+func (c *ClientWithResponses) CreateTenantTokenHandlerV3WithResponse(ctx context.Context, tenant string, params *CreateTenantTokenHandlerV3Params, body CreateTenantTokenHandlerV3JSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTenantTokenHandlerV3Response, error) {
+	rsp, err := c.CreateTenantTokenHandlerV3(ctx, tenant, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateTenantTokenHandlerV3Response(rsp)
 }
 
 // ParseDeleteNamespaceResponse parses an HTTP response from a DeleteNamespaceWithResponse call
@@ -10537,15 +10971,15 @@ func ParseGetLimitsResponse(rsp *http.Response) (*GetLimitsResponse, error) {
 	return response, nil
 }
 
-// ParseIdListTenantTokensResponse parses an HTTP response from a IdListTenantTokensWithResponse call
-func ParseIdListTenantTokensResponse(rsp *http.Response) (*IdListTenantTokensResponse, error) {
+// ParseGetPulsarTokensByTenantResponse parses an HTTP response from a GetPulsarTokensByTenantWithResponse call
+func ParseGetPulsarTokensByTenantResponse(rsp *http.Response) (*GetPulsarTokensByTenantResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &IdListTenantTokensResponse{
+	response := &GetPulsarTokensByTenantResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10558,52 +10992,79 @@ func ParseIdListTenantTokensResponse(rsp *http.Response) (*IdListTenantTokensRes
 		}
 		response.JSON200 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest ErrorResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest ErrorResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
 	}
 
 	return response, nil
 }
 
-// ParseGetTokenByIDResponse parses an HTTP response from a GetTokenByIDWithResponse call
-func ParseGetTokenByIDResponse(rsp *http.Response) (*GetTokenByIDResponse, error) {
+// ParseCreateTenantTokenHandlerResponse parses an HTTP response from a CreateTenantTokenHandlerWithResponse call
+func ParseCreateTenantTokenHandlerResponse(rsp *http.Response) (*CreateTenantTokenHandlerResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetTokenByIDResponse{
+	response := &CreateTenantTokenHandlerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseDeletePulsarTokenByIDResponse parses an HTTP response from a DeletePulsarTokenByIDWithResponse call
+func ParseDeletePulsarTokenByIDResponse(rsp *http.Response) (*DeletePulsarTokenByIDResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeletePulsarTokenByIDResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetPulsarTokenByIDResponse parses an HTTP response from a GetPulsarTokenByIDWithResponse call
+func ParseGetPulsarTokenByIDResponse(rsp *http.Response) (*GetPulsarTokenByIDResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetPulsarTokenByIDResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseCreateTenantTokenHandlerV3Response parses an HTTP response from a CreateTenantTokenHandlerV3WithResponse call
+func ParseCreateTenantTokenHandlerV3Response(rsp *http.Response) (*CreateTenantTokenHandlerV3Response, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateTenantTokenHandlerV3Response{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest ErrorResponse
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest CreateTenantTokenV3Response
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest ErrorResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
+		response.JSON201 = &dest
 
 	}
 
