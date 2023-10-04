@@ -2212,6 +2212,10 @@ components:
         dataEndpointUrl:
           type: string
           example: "http://path-to-dataendpoint:port/api/rest"
+        dbType:
+          type: string
+          example: vector
+          enum: [vector]
     Datacenter:
       type: object
       description: Datacenter is the definition of a cassandra datacenter
@@ -2317,6 +2321,10 @@ components:
           type: string
           example: "*****"
           description: Password for the user to access the database
+        dbType:
+          type: string
+          example: vector
+          enum: [vector]
     DatabaseInfo:
       type: object
       description: DatabaseInfo is the user-provided information describing a database
@@ -2362,6 +2370,10 @@ components:
             type: string
             example: additionalKeyspace
           description: Additional keyspaces names in database
+        dbType:
+          type: string
+          example: vector
+          enum: [vector]
     MetricsRequest:
       description: Metrics Config
       type: object
