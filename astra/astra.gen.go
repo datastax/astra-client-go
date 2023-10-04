@@ -52,6 +52,21 @@ const (
 	Unpark                         DatabaseAvailableActions = "unpark"
 )
 
+// Defines values for DatabaseDbType.
+const (
+	DatabaseDbTypeVector DatabaseDbType = "vector"
+)
+
+// Defines values for DatabaseInfoDbType.
+const (
+	DatabaseInfoDbTypeVector DatabaseInfoDbType = "vector"
+)
+
+// Defines values for DatabaseInfoCreateDbType.
+const (
+	Vector DatabaseInfoCreateDbType = "vector"
+)
+
 // Defines values for DatacenterRegionClassification.
 const (
 	Premium     DatacenterRegionClassification = "premium"
@@ -429,11 +444,12 @@ type Database struct {
 	CqlshUrl         *string                     `json:"cqlshUrl,omitempty"`
 
 	// CreationTime CreationTime in ISO RFC3339 format
-	CreationTime    *string `json:"creationTime,omitempty"`
-	DataEndpointUrl *string `json:"dataEndpointUrl,omitempty"`
-	GrafanaUrl      *string `json:"grafanaUrl,omitempty"`
-	GraphqlUrl      *string `json:"graphqlUrl,omitempty"`
-	Id              string  `json:"id"`
+	CreationTime    *string         `json:"creationTime,omitempty"`
+	DataEndpointUrl *string         `json:"dataEndpointUrl,omitempty"`
+	DbType          *DatabaseDbType `json:"dbType,omitempty"`
+	GrafanaUrl      *string         `json:"grafanaUrl,omitempty"`
+	GraphqlUrl      *string         `json:"graphqlUrl,omitempty"`
+	Id              string          `json:"id"`
 
 	// Info DatabaseInfo is the user-provided information describing a database
 	Info DatabaseInfo `json:"info"`
@@ -455,6 +471,9 @@ type Database struct {
 // DatabaseAvailableActions defines model for Database.AvailableActions.
 type DatabaseAvailableActions string
 
+// DatabaseDbType defines model for Database.DbType.
+type DatabaseDbType string
+
 // DatabaseInfo DatabaseInfo is the user-provided information describing a database
 type DatabaseInfo struct {
 	// AdditionalKeyspaces Additional keyspaces names in database
@@ -464,8 +483,9 @@ type DatabaseInfo struct {
 	CapacityUnits *int `json:"capacityUnits,omitempty"`
 
 	// CloudProvider Cloud hosting provider
-	CloudProvider *CloudProvider `json:"cloudProvider,omitempty"`
-	Datacenters   *[]Datacenter  `json:"datacenters,omitempty"`
+	CloudProvider *CloudProvider      `json:"cloudProvider,omitempty"`
+	Datacenters   *[]Datacenter       `json:"datacenters,omitempty"`
+	DbType        *DatabaseInfoDbType `json:"dbType,omitempty"`
 
 	// Keyspace Keyspace name in database
 	Keyspace *string `json:"keyspace,omitempty"`
@@ -486,13 +506,17 @@ type DatabaseInfo struct {
 	User *string `json:"user,omitempty"`
 }
 
+// DatabaseInfoDbType defines model for DatabaseInfo.DbType.
+type DatabaseInfoDbType string
+
 // DatabaseInfoCreate DatabaseInfo is the user-provided information describing a database
 type DatabaseInfoCreate struct {
 	// CapacityUnits CapacityUnits is the amount of space available (horizontal scaling) for the database. For free tier the max CU's is 1, and 100 for CXX/DXX the max is 12 on startup.
 	CapacityUnits int `json:"capacityUnits"`
 
 	// CloudProvider Cloud hosting provider
-	CloudProvider CloudProvider `json:"cloudProvider"`
+	CloudProvider CloudProvider             `json:"cloudProvider"`
+	DbType        *DatabaseInfoCreateDbType `json:"dbType,omitempty"`
 
 	// Keyspace Keyspace name in database
 	Keyspace string `json:"keyspace"`
@@ -512,6 +536,9 @@ type DatabaseInfoCreate struct {
 	// User User is the user to access the database
 	User *string `json:"user,omitempty"`
 }
+
+// DatabaseInfoCreateDbType defines model for DatabaseInfoCreate.DbType.
+type DatabaseInfoCreateDbType string
 
 // Datacenter Datacenter is the definition of a cassandra datacenter
 type Datacenter struct {
