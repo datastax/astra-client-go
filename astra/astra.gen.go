@@ -519,7 +519,7 @@ type DatabaseInfoCreate struct {
 	DbType        *DatabaseInfoCreateDbType `json:"dbType,omitempty"`
 
 	// Keyspace Keyspace name in database
-	Keyspace string `json:"keyspace"`
+	Keyspace *string `json:"keyspace,omitempty"`
 
 	// Name Name of the database--user friendly identifier
 	Name string `json:"name"`
