@@ -2284,7 +2284,6 @@ components:
       type: object
       required:
         - name
-        - keyspace
         - cloudProvider
         - tier
         - capacityUnits
