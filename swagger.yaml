@@ -1782,6 +1782,41 @@ paths:
           "$ref": "#/components/responses/NotFound"
         '500':
           "$ref": "#/components/responses/ServerError"
+  /v2/kms/provider/{provider}/region/{region}:
+    get:
+      tags:
+        - Customer Keys
+      summary: "Retrieves a Serverless Customer Key in an organization"
+      description: "Retrieves a Serverless Customer Key in an organization for a given cloud-provider & region combination."
+      operationId: "GetServerlessKey"
+      parameters:
+        - in: path
+          name: "provider"
+          description: "The name of the provider, such as: aws."
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: "region"
+          description: "The region in which the key exists."
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetParticularCustomerKey'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /v2/kms/provider/{provider}/region/{region}/accounts:
     get:
       tags:
