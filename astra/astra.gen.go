@@ -650,6 +650,15 @@ type GetAllCustomerKeys = []ExternalKMSResponse
 // GetCloudProviderAccounts List of Cloud provider accounts in an organization for a cloud-provider & region combination
 type GetCloudProviderAccounts = []CloudProviderAccountDetails
 
+// GetParticularCustomerKey Retrieves a Customer Key for the specified provider and region combination
+type GetParticularCustomerKey struct {
+	Aws *struct {
+		KeyID  *string `json:"keyID,omitempty"`
+		Region *string `json:"region,omitempty"`
+	} `json:"aws,omitempty"`
+	OrgId *string `json:"orgId,omitempty"`
+}
+
 // GoogleVPC Details about a GCP virtual private cloud
 type GoogleVPC struct {
 	// ProjectId ID of the GPC project the VPC belongs to
@@ -1367,6 +1376,9 @@ type ClientInterface interface {
 
 	CreateKey(ctx context.Context, body CreateKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetServerlessKey request
+	GetServerlessKey(ctx context.Context, provider string, region string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetCloudAccounts request
 	GetCloudAccounts(ctx context.Context, provider string, region string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1993,6 +2005,18 @@ func (c *Client) CreateKeyWithBody(ctx context.Context, contentType string, body
 
 func (c *Client) CreateKey(ctx context.Context, body CreateKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateKeyRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetServerlessKey(ctx context.Context, provider string, region string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetServerlessKeyRequest(c.Server, provider, region)
 	if err != nil {
 		return nil, err
 	}
@@ -3786,6 +3810,47 @@ func NewCreateKeyRequestWithBody(server string, contentType string, body io.Read
 	return req, nil
 }
 
+// NewGetServerlessKeyRequest generates requests for GetServerlessKey
+func NewGetServerlessKeyRequest(server string, provider string, region string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "provider", runtime.ParamLocationPath, provider)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "region", runtime.ParamLocationPath, region)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/kms/provider/%s/region/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetCloudAccountsRequest generates requests for GetCloudAccounts
 func NewGetCloudAccountsRequest(server string, provider string, region string) (*http.Request, error) {
 	var err error
@@ -4995,6 +5060,9 @@ type ClientWithResponsesInterface interface {
 
 	CreateKeyWithResponse(ctx context.Context, body CreateKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateKeyResponse, error)
 
+	// GetServerlessKey request
+	GetServerlessKeyWithResponse(ctx context.Context, provider string, region string, reqEditors ...RequestEditorFn) (*GetServerlessKeyResponse, error)
+
 	// GetCloudAccounts request
 	GetCloudAccountsWithResponse(ctx context.Context, provider string, region string, reqEditors ...RequestEditorFn) (*GetCloudAccountsResponse, error)
 
@@ -5907,6 +5975,32 @@ func (r CreateKeyResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateKeyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetServerlessKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *GetParticularCustomerKey
+	JSON400      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r GetServerlessKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetServerlessKeyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -6912,6 +7006,15 @@ func (c *ClientWithResponses) CreateKeyWithResponse(ctx context.Context, body Cr
 		return nil, err
 	}
 	return ParseCreateKeyResponse(rsp)
+}
+
+// GetServerlessKeyWithResponse request returning *GetServerlessKeyResponse
+func (c *ClientWithResponses) GetServerlessKeyWithResponse(ctx context.Context, provider string, region string, reqEditors ...RequestEditorFn) (*GetServerlessKeyResponse, error) {
+	rsp, err := c.GetServerlessKey(ctx, provider, region, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetServerlessKeyResponse(rsp)
 }
 
 // GetCloudAccountsWithResponse request returning *GetCloudAccountsResponse
@@ -8713,6 +8816,60 @@ func ParseCreateKeyResponse(rsp *http.Response) (*CreateKeyResponse, error) {
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetServerlessKeyResponse parses an HTTP response from a GetServerlessKeyWithResponse call
+func ParseGetServerlessKeyResponse(rsp *http.Response) (*GetServerlessKeyResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetServerlessKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GetParticularCustomerKey
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest Errors
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
