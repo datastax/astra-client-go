@@ -883,10 +883,13 @@ type ServerlessRegion struct {
 	Classification string `json:"classification"`
 
 	// CloudProvider Cloud hosting provider
-	CloudProvider CloudProvider `json:"cloudProvider"`
-	DisplayName   string        `json:"displayName"`
-	Name          string        `json:"name"`
-	Zone          string        `json:"zone"`
+	CloudProvider             CloudProvider `json:"cloudProvider"`
+	DisplayName               string        `json:"displayName"`
+	Enabled                   *bool         `json:"enabled,omitempty"`
+	Name                      string        `json:"name"`
+	RegionType                *string       `json:"region_type,omitempty"`
+	ReservedForQualifiedUsers *bool         `json:"reservedForQualifiedUsers,omitempty"`
+	Zone                      string        `json:"zone"`
 }
 
 // ServiceAccountTokenInput defines model for ServiceAccountTokenInput.
@@ -1113,6 +1116,15 @@ type CreateVPCPeeringConnectionJSONBody struct {
 
 // CreateVPCPeeringConnectionParamsProvider defines parameters for CreateVPCPeeringConnection.
 type CreateVPCPeeringConnectionParamsProvider string
+
+// ListServerlessRegionsParams defines parameters for ListServerlessRegions.
+type ListServerlessRegionsParams struct {
+	// RegionType Allows retrieving regions by type (serverless, vector or all)
+	RegionType *string `form:"region-type,omitempty" json:"region-type,omitempty"`
+
+	// FilterByOrg Allows retrieving regions filtered by organization ID
+	FilterByOrg *string `form:"filter-by-org,omitempty" json:"filter-by-org,omitempty"`
+}
 
 // AuthenticateServiceAccountTokenJSONRequestBody defines body for AuthenticateServiceAccountToken for application/json ContentType.
 type AuthenticateServiceAccountTokenJSONRequestBody = ServiceAccountTokenInput
@@ -1472,7 +1484,7 @@ type ClientInterface interface {
 	CreateVPCPeeringConnection(ctx context.Context, provider CreateVPCPeeringConnectionParamsProvider, databaseID string, body CreateVPCPeeringConnectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListServerlessRegions request
-	ListServerlessRegions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListServerlessRegions(ctx context.Context, params *ListServerlessRegionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccessListTemplate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2435,8 +2447,8 @@ func (c *Client) CreateVPCPeeringConnection(ctx context.Context, provider Create
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListServerlessRegions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListServerlessRegionsRequest(c.Server)
+func (c *Client) ListServerlessRegions(ctx context.Context, params *ListServerlessRegionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListServerlessRegionsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -4868,7 +4880,7 @@ func NewCreateVPCPeeringConnectionRequestWithBody(server string, provider Create
 }
 
 // NewListServerlessRegionsRequest generates requests for ListServerlessRegions
-func NewListServerlessRegionsRequest(server string) (*http.Request, error) {
+func NewListServerlessRegionsRequest(server string, params *ListServerlessRegionsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -4885,6 +4897,42 @@ func NewListServerlessRegionsRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	queryValues := queryURL.Query()
+
+	if params.RegionType != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "region-type", runtime.ParamLocationQuery, *params.RegionType); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.FilterByOrg != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "filter-by-org", runtime.ParamLocationQuery, *params.FilterByOrg); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
@@ -5156,7 +5204,7 @@ type ClientWithResponsesInterface interface {
 	CreateVPCPeeringConnectionWithResponse(ctx context.Context, provider CreateVPCPeeringConnectionParamsProvider, databaseID string, body CreateVPCPeeringConnectionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateVPCPeeringConnectionResponse, error)
 
 	// ListServerlessRegions request
-	ListServerlessRegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListServerlessRegionsResponse, error)
+	ListServerlessRegionsWithResponse(ctx context.Context, params *ListServerlessRegionsParams, reqEditors ...RequestEditorFn) (*ListServerlessRegionsResponse, error)
 }
 
 type GetAccessListTemplateResponse struct {
@@ -7314,8 +7362,8 @@ func (c *ClientWithResponses) CreateVPCPeeringConnectionWithResponse(ctx context
 }
 
 // ListServerlessRegionsWithResponse request returning *ListServerlessRegionsResponse
-func (c *ClientWithResponses) ListServerlessRegionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListServerlessRegionsResponse, error) {
-	rsp, err := c.ListServerlessRegions(ctx, reqEditors...)
+func (c *ClientWithResponses) ListServerlessRegionsWithResponse(ctx context.Context, params *ListServerlessRegionsParams, reqEditors ...RequestEditorFn) (*ListServerlessRegionsResponse, error) {
+	rsp, err := c.ListServerlessRegions(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}

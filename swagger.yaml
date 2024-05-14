@@ -645,6 +645,19 @@ paths:
       security:
         - BearerAuth: [org-db-create]
       operationId: listServerlessRegions
+      parameters:
+        - in: query
+          name: region-type
+          description: Allows retrieving regions by type (serverless, vector or all)
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: filter-by-org
+          description: Allows retrieving regions filtered by organization ID
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: successful operation
@@ -2705,6 +2718,15 @@ components:
         classification:
           type: string
           example: standard
+        region_type:
+          type: string
+          example: serverless
+        enabled:
+          type: boolean
+          example: true
+        reservedForQualifiedUsers:
+          type: boolean
+          example: false
     Costs:
       properties:
         costPerMinCents:
