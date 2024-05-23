@@ -3190,7 +3190,6 @@ components:
       properties:
         orgId:
           type: string
-          format: uuid
           description: The unique identifier for the organization.
           example: 368600f6-a1e7-42f1-8266-2960de5313f3
         aws:
