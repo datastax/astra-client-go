@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
-	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
 )
 
 const (
@@ -593,7 +592,7 @@ type ExternalKMS struct {
 	Gcp *GCPKMS `json:"gcp,omitempty"`
 
 	// OrgId The unique identifier for the organization.
-	OrgId *openapi_types.UUID `json:"orgId,omitempty"`
+	OrgId *string `json:"orgId,omitempty"`
 }
 
 // ExternalKMSResponse defines model for ExternalKMSResponse.
