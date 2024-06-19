@@ -384,6 +384,34 @@ type Costs struct {
 	CostPerMonthParkedCents *float64 `json:"costPerMonthParkedCents,omitempty"`
 }
 
+// CreateOrgInEnterpriseRequest The create organization in enterprise model
+type CreateOrgInEnterpriseRequest struct {
+	// AdminUserID The datastax UUID of the user who will be the admin of the organization
+	AdminUserID string `json:"adminUserID"`
+
+	// Email The email of the organization
+	Email string `json:"email"`
+
+	// EnterpriseID The UUID of the enterprise under which the organization needs to be created
+	EnterpriseID string `json:"enterpriseID"`
+
+	// Name The name of the organization
+	Name string `json:"name"`
+}
+
+// CreateOrgInEnterpriseResponse defines model for CreateOrgInEnterpriseResponse.
+type CreateOrgInEnterpriseResponse struct {
+	CreatedAt           *string                 `json:"CreatedAt,omitempty"`
+	EnterpriseId        *string                 `json:"EnterpriseId,omitempty"`
+	LastModified        *string                 `json:"LastModified,omitempty"`
+	MarketplaceData     *map[string]interface{} `json:"MarketplaceData"`
+	OrgType             *string                 `json:"OrgType,omitempty"`
+	OrganizationEmail   *string                 `json:"OrganizationEmail,omitempty"`
+	OrganizationGroupId *string                 `json:"OrganizationGroupId,omitempty"`
+	OrganizationID      *string                 `json:"OrganizationID,omitempty"`
+	OrganizationName    *string                 `json:"OrganizationName,omitempty"`
+}
+
 // CreateRoleRequest The createRole model
 type CreateRoleRequest struct {
 	Name string `json:"name"`
@@ -1158,6 +1186,9 @@ type ResizeDatabaseJSONRequestBody = CapacityUnits
 // ConfigureMetricsExportJSONRequestBody defines body for ConfigureMetricsExport for application/json ContentType.
 type ConfigureMetricsExportJSONRequestBody = MetricsRequest
 
+// CreateOrganizationInEnterpriseJSONRequestBody defines body for CreateOrganizationInEnterprise for application/json ContentType.
+type CreateOrganizationInEnterpriseJSONRequestBody = CreateOrgInEnterpriseRequest
+
 // CreateKeyJSONRequestBody defines body for CreateKey for application/json ContentType.
 type CreateKeyJSONRequestBody = ExternalKMS
 
@@ -1378,6 +1409,11 @@ type ClientInterface interface {
 
 	// UnparkDatabase request
 	UnparkDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateOrganizationInEnterprise request with any body
+	CreateOrganizationInEnterpriseWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateOrganizationInEnterprise(ctx context.Context, body CreateOrganizationInEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListKeys request
 	ListKeys(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1980,6 +2016,30 @@ func (c *Client) ConfigureMetricsExport(ctx context.Context, databaseId Database
 
 func (c *Client) UnparkDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUnparkDatabaseRequest(c.Server, databaseId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateOrganizationInEnterpriseWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationInEnterpriseRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateOrganizationInEnterprise(ctx context.Context, body CreateOrganizationInEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationInEnterpriseRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3754,6 +3814,46 @@ func NewUnparkDatabaseRequest(server string, databaseId DatabaseIdParam) (*http.
 	return req, nil
 }
 
+// NewCreateOrganizationInEnterpriseRequest calls the generic CreateOrganizationInEnterprise builder with application/json body
+func NewCreateOrganizationInEnterpriseRequest(server string, body CreateOrganizationInEnterpriseJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateOrganizationInEnterpriseRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateOrganizationInEnterpriseRequestWithBody generates requests for CreateOrganizationInEnterprise with any type of body
+func NewCreateOrganizationInEnterpriseRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/enterprises/organizations")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListKeysRequest generates requests for ListKeys
 func NewListKeysRequest(server string) (*http.Request, error) {
 	var err error
@@ -5099,6 +5199,11 @@ type ClientWithResponsesInterface interface {
 	// UnparkDatabase request
 	UnparkDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*UnparkDatabaseResponse, error)
 
+	// CreateOrganizationInEnterprise request with any body
+	CreateOrganizationInEnterpriseWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationInEnterpriseResponse, error)
+
+	CreateOrganizationInEnterpriseWithResponse(ctx context.Context, body CreateOrganizationInEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationInEnterpriseResponse, error)
+
 	// ListKeys request
 	ListKeysWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListKeysResponse, error)
 
@@ -5971,6 +6076,33 @@ func (r UnparkDatabaseResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UnparkDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateOrganizationInEnterpriseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *CreateOrgInEnterpriseResponse
+	JSON400      *Errors
+	JSON401      *Errors
+	JSON403      *Errors
+	JSON404      *Errors
+	JSON500      *Errors
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateOrganizationInEnterpriseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateOrganizationInEnterpriseResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -7027,6 +7159,23 @@ func (c *ClientWithResponses) UnparkDatabaseWithResponse(ctx context.Context, da
 		return nil, err
 	}
 	return ParseUnparkDatabaseResponse(rsp)
+}
+
+// CreateOrganizationInEnterpriseWithBodyWithResponse request with arbitrary body returning *CreateOrganizationInEnterpriseResponse
+func (c *ClientWithResponses) CreateOrganizationInEnterpriseWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationInEnterpriseResponse, error) {
+	rsp, err := c.CreateOrganizationInEnterpriseWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationInEnterpriseResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateOrganizationInEnterpriseWithResponse(ctx context.Context, body CreateOrganizationInEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationInEnterpriseResponse, error) {
+	rsp, err := c.CreateOrganizationInEnterprise(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationInEnterpriseResponse(rsp)
 }
 
 // ListKeysWithResponse request returning *ListKeysResponse
@@ -8789,6 +8938,67 @@ func ParseUnparkDatabaseResponse(rsp *http.Response) (*UnparkDatabaseResponse, e
 			return nil, err
 		}
 		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateOrganizationInEnterpriseResponse parses an HTTP response from a CreateOrganizationInEnterpriseWithResponse call
+func ParseCreateOrganizationInEnterpriseResponse(rsp *http.Response) (*CreateOrganizationInEnterpriseResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateOrganizationInEnterpriseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest CreateOrgInEnterpriseResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest Errors
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 

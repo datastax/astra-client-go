@@ -42,6 +42,8 @@ tags:
       classic databases
   - name: Customer Keys
     description: Create and view Customer Keys for your Astra DB organization
+  - name: Enterprise Operations
+    description: The DevOps APIs for your Astra organization
 paths:
   /v2/authenticateServiceAccount:
     post:
@@ -2011,6 +2013,35 @@ paths:
           "$ref": "#/components/responses/NotFound"
         '500':
           "$ref": "#/components/responses/ServerError"
+  /v2/enterprises/organizations:
+    post:
+      tags:
+      - Enterprise Operations
+      summary: Create an organization under an enterprise.
+      description: Create a new organization under the given enterprise.
+      operationId: createOrganizationInEnterprise
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrgInEnterpriseRequest'
+      responses:
+        '201':
+          description: Organization created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrgInEnterpriseResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
 servers:
   - url: https://api.astra.datastax.com/
 components:
@@ -2074,6 +2105,57 @@ components:
           type: string
       description: Array of addresses
   schemas:
+    CreateOrgInEnterpriseRequest:
+      type: "object"
+      description: "The create organization in enterprise model"
+      required:
+        - "name"
+        - "email"
+        - "enterpriseID"
+        - "adminUserID"
+      properties:
+        name:
+          type: "string"
+          description: "The name of the organization"
+        email:
+          type: "string"
+          description: "The email of the organization"
+        adminUserID:
+          type: "string"
+          description: "The datastax UUID of the user who will be the admin of the organization"
+        enterpriseID:
+          type: "string"
+          description: "The UUID of the enterprise under which the organization needs to be created"
+    CreateOrgInEnterpriseResponse:
+      type: object
+      properties:
+        OrganizationName:
+          type: string
+          example: acme production org
+        OrganizationID:
+          type: string
+          example: 8f112467-7b55-4f0a-877f-c97e2bc10074
+        OrganizationEmail:
+          type: string
+          example: admin@acme-enterprises.com
+        MarketplaceData:
+          type: object
+          nullable: true
+        CreatedAt:
+          type: string
+          example: 2024-06-14T15:41:45.395919529Z
+        LastModified:
+          type: string
+          example: 2024-06-14T15:41:45.395919529Z
+        OrgType:
+          type: string
+          example: organization
+        EnterpriseId:
+          type: string
+          example: 9df02cbd-fb84-47c0-a5cf-b7a912928a4e
+        OrganizationGroupId:
+          type: string
+          example: f9336a4e-e489-4db2-ab29-0939af587268
     Tier:
       type: string
       example: developer
