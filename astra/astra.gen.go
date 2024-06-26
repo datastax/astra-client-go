@@ -392,9 +392,6 @@ type CreateOrgInEnterpriseRequest struct {
 	// Email The email of the organization
 	Email string `json:"email"`
 
-	// EnterpriseID The UUID of the enterprise under which the organization needs to be created
-	EnterpriseID string `json:"enterpriseID"`
-
 	// Name The name of the organization
 	Name string `json:"name"`
 }
