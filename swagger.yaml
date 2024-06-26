@@ -2033,15 +2033,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/CreateOrgInEnterpriseResponse'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: "Bad Request"
+          content:
+            text/plain:
+              schema:
+                type: string
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          description: "Unauthorized"
+          content:
+            text/plain:
+              schema:
+                type: string
         '403':
-          $ref: '#/components/responses/Forbidden'
+          description: "Forbidden"
+          content:
+            text/plain:
+              schema:
+                type: string
         '404':
-          $ref: '#/components/responses/NotFound'
+          description: "Not Found"
+          content:
+            text/plain:
+              schema:
+                type: string
         '500':
-          $ref: '#/components/responses/ServerError'
+          description: "Server Error"
+          content:
+            text/plain:
+              schema:
+                type: string
 servers:
   - url: https://api.astra.datastax.com/
 components:
