@@ -646,6 +646,9 @@ type GCPKMS struct {
 
 // GenerateTokenBody The post body to generate a token
 type GenerateTokenBody struct {
+	// OrgId The UUID of the organization under which the token will be created (optional). If not provided, the token will be created under the organization/enterprise of the token making the request.
+	OrgId *string `json:"orgId,omitempty"`
+
 	// Roles The roles for which the token will be generated
 	Roles []string `json:"roles"`
 }
@@ -1219,6 +1222,9 @@ type UpdateRolesForUserInOrganizationJSONRequestBody = RoleInviteRequest
 // CreateVPCPeeringConnectionJSONRequestBody defines body for CreateVPCPeeringConnection for application/json ContentType.
 type CreateVPCPeeringConnectionJSONRequestBody CreateVPCPeeringConnectionJSONBody
 
+// GenerateAppTokenForClientJSONRequestBody defines body for GenerateAppTokenForClient for application/json ContentType.
+type GenerateAppTokenForClientJSONRequestBody = GenerateTokenBody
+
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
 
@@ -1517,6 +1523,11 @@ type ClientInterface interface {
 
 	// ListServerlessRegions request
 	ListServerlessRegions(ctx context.Context, params *ListServerlessRegionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GenerateAppTokenForClient request with any body
+	GenerateAppTokenForClientWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	GenerateAppTokenForClient(ctx context.Context, body GenerateAppTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccessListTemplate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2505,6 +2516,30 @@ func (c *Client) CreateVPCPeeringConnection(ctx context.Context, provider Create
 
 func (c *Client) ListServerlessRegions(ctx context.Context, params *ListServerlessRegionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListServerlessRegionsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GenerateAppTokenForClientWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateAppTokenForClientRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GenerateAppTokenForClient(ctx context.Context, body GenerateAppTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateAppTokenForClientRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5038,6 +5073,46 @@ func NewListServerlessRegionsRequest(server string, params *ListServerlessRegion
 	return req, nil
 }
 
+// NewGenerateAppTokenForClientRequest calls the generic GenerateAppTokenForClient builder with application/json body
+func NewGenerateAppTokenForClientRequest(server string, body GenerateAppTokenForClientJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewGenerateAppTokenForClientRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewGenerateAppTokenForClientRequestWithBody generates requests for GenerateAppTokenForClient with any type of body
+func NewGenerateAppTokenForClientRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/tokens")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -5306,6 +5381,11 @@ type ClientWithResponsesInterface interface {
 
 	// ListServerlessRegions request
 	ListServerlessRegionsWithResponse(ctx context.Context, params *ListServerlessRegionsParams, reqEditors ...RequestEditorFn) (*ListServerlessRegionsResponse, error)
+
+	// GenerateAppTokenForClient request with any body
+	GenerateAppTokenForClientWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GenerateAppTokenForClientResponse, error)
+
+	GenerateAppTokenForClientWithResponse(ctx context.Context, body GenerateAppTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateAppTokenForClientResponse, error)
 }
 
 type GetAccessListTemplateResponse struct {
@@ -6786,6 +6866,28 @@ func (r ListServerlessRegionsResponse) StatusCode() int {
 	return 0
 }
 
+type GenerateAppTokenForClientResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *interface{}
+}
+
+// Status returns HTTPResponse.Status
+func (r GenerateAppTokenForClientResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GenerateAppTokenForClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetAccessListTemplateWithResponse request returning *GetAccessListTemplateResponse
 func (c *ClientWithResponses) GetAccessListTemplateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAccessListTemplateResponse, error) {
 	rsp, err := c.GetAccessListTemplate(ctx, reqEditors...)
@@ -7508,6 +7610,23 @@ func (c *ClientWithResponses) ListServerlessRegionsWithResponse(ctx context.Cont
 		return nil, err
 	}
 	return ParseListServerlessRegionsResponse(rsp)
+}
+
+// GenerateAppTokenForClientWithBodyWithResponse request with arbitrary body returning *GenerateAppTokenForClientResponse
+func (c *ClientWithResponses) GenerateAppTokenForClientWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GenerateAppTokenForClientResponse, error) {
+	rsp, err := c.GenerateAppTokenForClientWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGenerateAppTokenForClientResponse(rsp)
+}
+
+func (c *ClientWithResponses) GenerateAppTokenForClientWithResponse(ctx context.Context, body GenerateAppTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateAppTokenForClientResponse, error) {
+	rsp, err := c.GenerateAppTokenForClient(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGenerateAppTokenForClientResponse(rsp)
 }
 
 // ParseGetAccessListTemplateResponse parses an HTTP response from a GetAccessListTemplateWithResponse call
@@ -10164,6 +10283,32 @@ func ParseListServerlessRegionsResponse(rsp *http.Response) (*ListServerlessRegi
 			return nil, err
 		}
 		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGenerateAppTokenForClientResponse parses an HTTP response from a GenerateAppTokenForClientWithResponse call
+func ParseGenerateAppTokenForClientResponse(rsp *http.Response) (*GenerateAppTokenForClientResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GenerateAppTokenForClientResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest interface{}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 
