@@ -1712,6 +1712,54 @@ paths:
               schema:
                 type: string
                 example: invalid
+  /v2/tokens:
+    post:
+      tags:
+        - Token
+      summary: "generateAppTokenForClient"
+      operationId: "generateAppTokenForClient"
+      requestBody:
+        description: "The model for generating token for client"
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateTokenBody'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/GenerateTokenResponse'
+        '400':
+          description: bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
+        '403':
+          description: forbidden
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
+        '404':
+          description: not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
+        '500':
+          description: server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: invalid
   /v2/clientIdSecrets/{clientId}:
     delete:
       tags:
@@ -3230,6 +3278,10 @@ components:
           items:
             type: "string"
             example: "write"
+        orgId:
+          type: "string"
+          description: "The UUID of the organization under which the token will be created (optional). If not provided, the token will be created under the organization/enterprise of the token making the request."
+          example: "uuid"
     ClientRoleList:
       type: "object"
       description: "The response for a requested token"
