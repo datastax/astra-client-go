@@ -5874,12 +5874,14 @@ func (r ResizeDatabaseResponse) StatusCode() int {
 type GenerateSecureBundleURLResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *SecureBundles
-	JSON400      *Errors
-	JSON401      *Errors
-	JSON404      *Errors
-	JSON409      *Errors
-	JSON5XX      *Errors
+	JSON200      *struct {
+		union json.RawMessage
+	}
+	JSON400 *Errors
+	JSON401 *Errors
+	JSON404 *Errors
+	JSON409 *Errors
+	JSON5XX *Errors
 }
 
 // Status returns HTTPResponse.Status
@@ -8580,22 +8582,13 @@ func ParseGenerateSecureBundleURLResponse(rsp *http.Response) (*GenerateSecureBu
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		// response can be either a JSON array or a single JSON document
-		// try to decode as a single document first, and if unmarshalling fails, assume an array
-		var destObj CredsURL
-		err := json.Unmarshal(bodyBytes, &destObj);
-		if err == nil {
-			response.JSON200 = &SecureBundles{destObj}
-		} else {
-			var destArr SecureBundles
-			err = json.Unmarshal(bodyBytes, &destArr)
-			if err == nil {
-				response.JSON200 = &destArr
-			}
+		var dest struct {
+			union json.RawMessage
 		}
-		if err != nil {
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest Errors

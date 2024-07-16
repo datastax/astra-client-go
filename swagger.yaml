@@ -286,7 +286,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecureBundles'
+                oneOf:
+                  - $ref: '#/components/schemas/CredsURL'
+                  - $ref: '#/components/schemas/SecureBundles'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
