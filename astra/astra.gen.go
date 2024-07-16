@@ -8580,11 +8580,22 @@ func ParseGenerateSecureBundleURLResponse(rsp *http.Response) (*GenerateSecureBu
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest SecureBundles
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+		// response can be either a JSON array or a single JSON document
+		// try to decode as a single document first, and if unmarshalling fails, assume an array
+		var destObj CredsURL
+		err := json.Unmarshal(bodyBytes, &destObj);
+		if err == nil {
+			response.JSON200 = &SecureBundles{destObj}
+		} else {
+			var destArr SecureBundles
+			err = json.Unmarshal(bodyBytes, &destArr)
+			if err == nil {
+				response.JSON200 = &destArr
+			}
+		}
+		if err != nil {
 			return nil, err
 		}
-		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest Errors
