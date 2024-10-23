@@ -2180,7 +2180,6 @@ components:
         - "name"
         - "email"
         - "adminUserID"
-        - "enterpriseID"
       properties:
         name:
           type: "string"
