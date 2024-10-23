@@ -2180,6 +2180,7 @@ components:
         - "name"
         - "email"
         - "adminUserID"
+        - "enterpriseID"
       properties:
         name:
           type: "string"
@@ -2190,6 +2191,9 @@ components:
         adminUserID:
           type: "string"
           description: "The datastax UUID of the user who will be the admin of the organization"
+        enterpriseID:
+          type: "string"
+          description: "The UUID of the enterprise under which the organization needs to be created"
     CreateOrgInEnterpriseResponse:
       type: object
       properties:
