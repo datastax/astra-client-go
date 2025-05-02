@@ -2,7 +2,7 @@
 generate: generate-client generate-streaming-client generate-rest-api-client
 
 tools:
-	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12
+	go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.4.1
 
 generate-client: tools
 	oapi-codegen -old-config-style -generate types,client -package astra -o astra/astra.gen.go swagger.yaml
