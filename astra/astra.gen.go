@@ -600,6 +600,54 @@ type DatacenterRegionClassification string
 // DatacenterRegionZone defines model for Datacenter.RegionZone.
 type DatacenterRegionZone string
 
+// DeleteCDCRequest Request schema for deleting CDC on a database
+type DeleteCDCRequest struct {
+	// DatabaseID Unique identifier for the database
+	DatabaseID string `json:"databaseID"`
+
+	// Tables List of tables for which CDC needs to be deleted
+	Tables []struct {
+		// KeyspaceName Name of the keyspace
+		KeyspaceName string `json:"keyspaceName"`
+
+		// TableName Name of the table
+		TableName string `json:"tableName"`
+	} `json:"tables"`
+}
+
+// EnableCDCRequest Request schema for enabling CDC on a database
+type EnableCDCRequest struct {
+	// DatabaseID Unique identifier for the database
+	DatabaseID string `json:"databaseID"`
+
+	// DatabaseName Name of the database
+	DatabaseName string `json:"databaseName"`
+
+	// Regions List of regions where CDC will be enabled
+	Regions []struct {
+		// DatacenterID Unique identifier for the data center
+		DatacenterID string `json:"datacenterID"`
+
+		// DatacenterRegion Cloud region where the data center is located
+		DatacenterRegion string `json:"datacenterRegion"`
+
+		// StreamingClusterName Name of the streaming cluster
+		StreamingClusterName string `json:"streamingClusterName"`
+
+		// StreamingTenantName Name of the streaming tenant
+		StreamingTenantName string `json:"streamingTenantName"`
+	} `json:"regions"`
+
+	// Tables List of tables for which CDC needs to be enabled
+	Tables []struct {
+		// KeyspaceName Name of the keyspace
+		KeyspaceName string `json:"keyspaceName"`
+
+		// TableName Name of the table
+		TableName string `json:"tableName"`
+	} `json:"tables"`
+}
+
 // Error ModelError information that is returned to users
 type Error struct {
 	// ID API specific error code
@@ -677,6 +725,36 @@ type GenerateTokenResponse struct {
 // GetAllCustomerKeys List of Customer Keys in an organization
 type GetAllCustomerKeys = []ExternalKMSResponse
 
+// GetCDCTableResponse Request schema for enabling CDC on a database
+type GetCDCTableResponse struct {
+	// DatabaseID Unique identifier for the database
+	DatabaseID string `json:"databaseID"`
+
+	// DatabaseName Name of the database
+	DatabaseName string `json:"databaseName"`
+
+	// OrgID Unique identifier for the user org
+	OrgID string `json:"orgID"`
+
+	// Regions List of regions where CDC is enabled
+	Regions []struct {
+		// DatacenterID Unique identifier for the data center
+		DatacenterID string `json:"datacenterID"`
+
+		// DatacenterRegion Cloud region where the data center is located
+		DatacenterRegion string `json:"datacenterRegion"`
+
+		// StreamingClusterName Name of the streaming cluster
+		StreamingClusterName string `json:"streamingClusterName"`
+
+		// StreamingTenantName Name of the streaming tenant
+		StreamingTenantName string `json:"streamingTenantName"`
+	} `json:"regions"`
+
+	// Status CDC config status
+	Status string `json:"status"`
+}
+
 // GetCloudProviderAccounts List of Cloud provider accounts in an organization for a cloud-provider & region combination
 type GetCloudProviderAccounts = []CloudProviderAccountDetails
 
@@ -700,6 +778,42 @@ type GoogleVPC struct {
 
 // KafkaBootstrapServer Kafka bootstrap server
 type KafkaBootstrapServer = string
+
+// ListCDCResponse Request schema for enabling CDC on a database
+type ListCDCResponse struct {
+	// DatabaseID Unique identifier for the database
+	DatabaseID string `json:"databaseID"`
+
+	// DatabaseName Name of the database
+	DatabaseName string `json:"databaseName"`
+
+	// OrgID Unique identifier for the user org
+	OrgID string `json:"orgID"`
+
+	// Regions List of regions where CDC is enabled
+	Regions []struct {
+		// DatacenterID Unique identifier for the data center
+		DatacenterID string `json:"datacenterID"`
+
+		// DatacenterRegion Cloud region where the data center is located
+		DatacenterRegion string `json:"datacenterRegion"`
+
+		// StreamingClusterName Name of the streaming cluster
+		StreamingClusterName string `json:"streamingClusterName"`
+
+		// StreamingTenantName Name of the streaming tenant
+		StreamingTenantName string `json:"streamingTenantName"`
+	} `json:"regions"`
+
+	// Tables List of tables where CDC is enabled
+	Tables []struct {
+		// KeyspaceName Name of the keyspace
+		KeyspaceName string `json:"keyspaceName"`
+
+		// TableName Name of the table
+		TableName string `json:"tableName"`
+	} `json:"tables"`
+}
 
 // MetricsRequest Metrics Config
 type MetricsRequest struct {
@@ -1055,6 +1169,9 @@ type KeyspaceNameParam = string
 // RoleIdParam defines model for RoleIdParam.
 type RoleIdParam = string
 
+// TableNameParam defines model for TableNameParam.
+type TableNameParam = string
+
 // UserIdParam defines model for UserIdParam.
 type UserIdParam = string
 
@@ -1227,6 +1344,12 @@ type CreateVPCPeeringConnectionJSONRequestBody CreateVPCPeeringConnectionJSONBod
 
 // GenerateAppTokenForClientJSONRequestBody defines body for GenerateAppTokenForClient for application/json ContentType.
 type GenerateAppTokenForClientJSONRequestBody = GenerateTokenBody
+
+// DeleteCDCJSONRequestBody defines body for DeleteCDC for application/json ContentType.
+type DeleteCDCJSONRequestBody = DeleteCDCRequest
+
+// EnableCDCJSONRequestBody defines body for EnableCDC for application/json ContentType.
+type EnableCDCJSONRequestBody = EnableCDCRequest
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -1531,6 +1654,22 @@ type ClientInterface interface {
 	GenerateAppTokenForClientWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	GenerateAppTokenForClient(ctx context.Context, body GenerateAppTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteCDCWithBody request with any body
+	DeleteCDCWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	DeleteCDC(ctx context.Context, databaseId DatabaseIdParam, body DeleteCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCDC request
+	GetCDC(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// EnableCDCWithBody request with any body
+	EnableCDCWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	EnableCDC(ctx context.Context, databaseId DatabaseIdParam, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCDCTableStatus request
+	GetCDCTableStatus(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, tableName TableNameParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccessListTemplate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2543,6 +2682,78 @@ func (c *Client) GenerateAppTokenForClientWithBody(ctx context.Context, contentT
 
 func (c *Client) GenerateAppTokenForClient(ctx context.Context, body GenerateAppTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGenerateAppTokenForClientRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCDCWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCDCRequestWithBody(c.Server, databaseId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCDC(ctx context.Context, databaseId DatabaseIdParam, body DeleteCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCDCRequest(c.Server, databaseId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCDC(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCDCRequest(c.Server, databaseId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EnableCDCWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEnableCDCRequestWithBody(c.Server, databaseId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EnableCDC(ctx context.Context, databaseId DatabaseIdParam, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEnableCDCRequest(c.Server, databaseId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCDCTableStatus(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, tableName TableNameParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCDCTableStatusRequest(c.Server, databaseId, keyspaceName, tableName)
 	if err != nil {
 		return nil, err
 	}
@@ -5128,6 +5339,182 @@ func NewGenerateAppTokenForClientRequestWithBody(server string, contentType stri
 	return req, nil
 }
 
+// NewDeleteCDCRequest calls the generic DeleteCDC builder with application/json body
+func NewDeleteCDCRequest(server string, databaseId DatabaseIdParam, body DeleteCDCJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeleteCDCRequestWithBody(server, databaseId, "application/json", bodyReader)
+}
+
+// NewDeleteCDCRequestWithBody generates requests for DeleteCDC with any type of body
+func NewDeleteCDCRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v3/databases/%s/cdc", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetCDCRequest generates requests for GetCDC
+func NewGetCDCRequest(server string, databaseId DatabaseIdParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v3/databases/%s/cdc", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewEnableCDCRequest calls the generic EnableCDC builder with application/json body
+func NewEnableCDCRequest(server string, databaseId DatabaseIdParam, body EnableCDCJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewEnableCDCRequestWithBody(server, databaseId, "application/json", bodyReader)
+}
+
+// NewEnableCDCRequestWithBody generates requests for EnableCDC with any type of body
+func NewEnableCDCRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v3/databases/%s/cdc", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetCDCTableStatusRequest generates requests for GetCDCTableStatus
+func NewGetCDCTableStatusRequest(server string, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, tableName TableNameParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "keyspaceName", runtime.ParamLocationPath, keyspaceName)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "tableName", runtime.ParamLocationPath, tableName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v3/databases/%s/keyspaces/%s/tables/%s/cdc", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -5401,6 +5788,22 @@ type ClientWithResponsesInterface interface {
 	GenerateAppTokenForClientWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GenerateAppTokenForClientResponse, error)
 
 	GenerateAppTokenForClientWithResponse(ctx context.Context, body GenerateAppTokenForClientJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateAppTokenForClientResponse, error)
+
+	// DeleteCDCWithBodyWithResponse request with any body
+	DeleteCDCWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteCDCResponse, error)
+
+	DeleteCDCWithResponse(ctx context.Context, databaseId DatabaseIdParam, body DeleteCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteCDCResponse, error)
+
+	// GetCDCWithResponse request
+	GetCDCWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GetCDCResponse, error)
+
+	// EnableCDCWithBodyWithResponse request with any body
+	EnableCDCWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error)
+
+	EnableCDCWithResponse(ctx context.Context, databaseId DatabaseIdParam, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error)
+
+	// GetCDCTableStatusWithResponse request
+	GetCDCTableStatusWithResponse(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, tableName TableNameParam, reqEditors ...RequestEditorFn) (*GetCDCTableStatusResponse, error)
 }
 
 type GetAccessListTemplateResponse struct {
@@ -6903,6 +7306,108 @@ func (r GenerateAppTokenForClientResponse) StatusCode() int {
 	return 0
 }
 
+type DeleteCDCResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON409      *Conflict
+	JSON5XX      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteCDCResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteCDCResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCDCResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ListCDCResponse
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON5XX      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCDCResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCDCResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type EnableCDCResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON409      *Conflict
+	JSON5XX      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r EnableCDCResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r EnableCDCResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCDCTableStatusResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]GetCDCTableResponse
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON5XX      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCDCTableStatusResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCDCTableStatusResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetAccessListTemplateWithResponse request returning *GetAccessListTemplateResponse
 func (c *ClientWithResponses) GetAccessListTemplateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetAccessListTemplateResponse, error) {
 	rsp, err := c.GetAccessListTemplate(ctx, reqEditors...)
@@ -7642,6 +8147,58 @@ func (c *ClientWithResponses) GenerateAppTokenForClientWithResponse(ctx context.
 		return nil, err
 	}
 	return ParseGenerateAppTokenForClientResponse(rsp)
+}
+
+// DeleteCDCWithBodyWithResponse request with arbitrary body returning *DeleteCDCResponse
+func (c *ClientWithResponses) DeleteCDCWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteCDCResponse, error) {
+	rsp, err := c.DeleteCDCWithBody(ctx, databaseId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCDCResponse(rsp)
+}
+
+func (c *ClientWithResponses) DeleteCDCWithResponse(ctx context.Context, databaseId DatabaseIdParam, body DeleteCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteCDCResponse, error) {
+	rsp, err := c.DeleteCDC(ctx, databaseId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCDCResponse(rsp)
+}
+
+// GetCDCWithResponse request returning *GetCDCResponse
+func (c *ClientWithResponses) GetCDCWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*GetCDCResponse, error) {
+	rsp, err := c.GetCDC(ctx, databaseId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCDCResponse(rsp)
+}
+
+// EnableCDCWithBodyWithResponse request with arbitrary body returning *EnableCDCResponse
+func (c *ClientWithResponses) EnableCDCWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error) {
+	rsp, err := c.EnableCDCWithBody(ctx, databaseId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEnableCDCResponse(rsp)
+}
+
+func (c *ClientWithResponses) EnableCDCWithResponse(ctx context.Context, databaseId DatabaseIdParam, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error) {
+	rsp, err := c.EnableCDC(ctx, databaseId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEnableCDCResponse(rsp)
+}
+
+// GetCDCTableStatusWithResponse request returning *GetCDCTableStatusResponse
+func (c *ClientWithResponses) GetCDCTableStatusWithResponse(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, tableName TableNameParam, reqEditors ...RequestEditorFn) (*GetCDCTableStatusResponse, error) {
+	rsp, err := c.GetCDCTableStatus(ctx, databaseId, keyspaceName, tableName, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCDCTableStatusResponse(rsp)
 }
 
 // ParseGetAccessListTemplateResponse parses an HTTP response from a GetAccessListTemplateWithResponse call
@@ -10324,6 +10881,208 @@ func ParseGenerateAppTokenForClientResponse(rsp *http.Response) (*GenerateAppTok
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteCDCResponse parses an HTTP response from a DeleteCDCWithResponse call
+func ParseDeleteCDCResponse(rsp *http.Response) (*DeleteCDCResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteCDCResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCDCResponse parses an HTTP response from a GetCDCWithResponse call
+func ParseGetCDCResponse(rsp *http.Response) (*GetCDCResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCDCResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListCDCResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseEnableCDCResponse parses an HTTP response from a EnableCDCWithResponse call
+func ParseEnableCDCResponse(rsp *http.Response) (*EnableCDCResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &EnableCDCResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCDCTableStatusResponse parses an HTTP response from a GetCDCTableStatusWithResponse call
+func ParseGetCDCTableStatusResponse(rsp *http.Response) (*GetCDCTableStatusResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCDCTableStatusResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []GetCDCTableResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
 
 	}
 

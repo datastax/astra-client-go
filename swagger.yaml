@@ -561,6 +561,122 @@ paths:
           $ref: '#/components/responses/Conflict'
         '5XX':
           $ref: '#/components/responses/ServerError'
+  /v3/databases/{databaseId}/cdc:
+    post:
+      summary: Enable CDC for a Database
+      description: Configure CDC for specified tables in a given database
+      security:
+        - BearerAuth:
+            - org-admin
+      operationId: enableCDC
+      tags:
+        - Database Operations
+      parameters:
+        - $ref: '#/components/parameters/DatabaseIdParam'
+      requestBody:
+        description: Request payload containing the necessary configuration for enabling CDC, including tables and regions
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnableCDCRequest'
+      responses:
+        "201":
+          $ref: '#/components/responses/Created'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "409":
+          $ref: '#/components/responses/Conflict'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+    get:
+      summary: List all active CDC configs
+      description: Returns a list of all tables with active CDC configurations for the specified database
+      security:
+        - BearerAuth:
+            - org-admin
+      operationId: getCDC
+      tags:
+        - Database Operations
+      parameters:
+        - $ref: '#/components/parameters/DatabaseIdParam'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCDCResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+    delete:
+      summary: Delete CDC for tables in Database
+      description: Delete CDC for specified tables in a given database
+      security:
+        - BearerAuth:
+            - org-admin
+      operationId: deleteCDC
+      tags:
+        - Database Operations
+      parameters:
+        - $ref: '#/components/parameters/DatabaseIdParam'
+      requestBody:
+        description: Request payload containing details of the tables for which CDC should be removed
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteCDCRequest'
+      responses:
+        "204":
+          $ref: '#/components/responses/NoContent'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "409":
+          $ref: '#/components/responses/Conflict'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+  /v3/databases/{databaseId}/keyspaces/{keyspaceName}/tables/{tableName}/cdc:
+    get:
+      summary: Check CDC status for a table
+      description: Fetches the CDC status and configuration for the specified table in the given database
+      security:
+        - BearerAuth:
+            - org-admin
+      operationId: getCDCTableStatus
+      tags:
+        - Database Operations
+      parameters:
+        - $ref: '#/components/parameters/DatabaseIdParam'
+        - $ref: '#/components/parameters/TableNameParam'
+        - $ref: '#/components/parameters/KeyspaceNameParam'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetCDCTableResponse'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        5XX:
+          $ref: '#/components/responses/ServerError'
   /v2/databases/{databaseId}/migrationProxy:
     put:
       tags:
@@ -2140,6 +2256,13 @@ components:
       name: keyspaceName
       required: true
       description: Name of database keyspace
+      schema:
+        type: string
+    TableNameParam:
+      in: path
+      name: tableName
+      required: true
+      description: Name of database table
       schema:
         type: string
     ClientIdParam:
@@ -3845,6 +3968,215 @@ components:
           type: string
           description: Connection ID for the database peered to
       description: Details about an Azure database to database VPC connection
+    EnableCDCRequest:
+      description: Request schema for enabling CDC on a database
+      type: object
+      required:
+        - databaseID
+        - databaseName
+        - tables
+        - regions
+      properties:
+        databaseID:
+          type: string
+          example: 1234-5678-91011121-3141
+          description: Unique identifier for the database
+        databaseName:
+          type: string
+          example: dbName
+          description: Name of the database
+        tables:
+          type: array
+          description: List of tables for which CDC needs to be enabled
+          items:
+            type: object
+            required:
+              - tableName
+              - keyspaceName
+            properties:
+              tableName:
+                type: string
+                example: tableName
+                description: Name of the table
+              keyspaceName:
+                type: string
+                example: default
+                description: Name of the keyspace
+        regions:
+          type: array
+          description: List of regions where CDC will be enabled
+          items:
+            type: object
+            required:
+              - datacenterID
+              - datacenterRegion
+              - streamingClusterName
+              - streamingTenantName
+            properties:
+              datacenterID:
+                type: string
+                example: 1234-5678-91011121-3141-1
+                description: Unique identifier for the data center
+              datacenterRegion:
+                type: string
+                example: us-east1
+                description: Cloud region where the data center is located
+              streamingClusterName:
+                type: string
+                example: pulsar-gcp-useast1-dev
+                description: Name of the streaming cluster
+              streamingTenantName:
+                type: string
+                example: cdc-streaming
+                description: Name of the streaming tenant
+    ListCDCResponse:
+      description: Request schema for enabling CDC on a database
+      type: object
+      required:
+        - orgID
+        - databaseID
+        - databaseName
+        - tables
+        - regions
+      properties:
+        orgID:
+          type: string
+          example: 7142-1283-54249566-3707
+          description: Unique identifier for the user org
+        databaseID:
+          type: string
+          example: 1234-5678-91011121-3141
+          description: Unique identifier for the database
+        databaseName:
+          type: string
+          example: dbName
+          description: Name of the database
+        tables:
+          type: array
+          description: List of tables where CDC is enabled
+          items:
+            type: object
+            required:
+              - tableName
+              - keyspaceName
+            properties:
+              tableName:
+                type: string
+                example: tableName
+                description: Name of the table
+              keyspaceName:
+                type: string
+                example: default
+                description: Name of the keyspace
+        regions:
+          type: array
+          description: List of regions where CDC is enabled
+          items:
+            type: object
+            required:
+              - datacenterID
+              - datacenterRegion
+              - streamingClusterName
+              - streamingTenantName
+            properties:
+              datacenterID:
+                type: string
+                example: 1234-5678-91011121-3141-1
+                description: Unique identifier for the data center
+              datacenterRegion:
+                type: string
+                example: us-east1
+                description: Cloud region where the data center is located
+              streamingClusterName:
+                type: string
+                example: pulsar-gcp-useast1-dev
+                description: Name of the streaming cluster
+              streamingTenantName:
+                type: string
+                example: cdc-streaming
+                description: Name of the streaming tenant
+    DeleteCDCRequest:
+      description: Request schema for deleting CDC on a database
+      type: object
+      required:
+        - databaseID
+        - tables
+      properties:
+        databaseID:
+          type: string
+          example: 1234-5678-91011121-3141
+          description: Unique identifier for the database
+        tables:
+          type: array
+          description: List of tables for which CDC needs to be deleted
+          items:
+            type: object
+            required:
+              - tableName
+              - keyspaceName
+            properties:
+              tableName:
+                type: string
+                example: tableName
+                description: Name of the table
+              keyspaceName:
+                type: string
+                example: default
+                description: Name of the keyspace
+    GetCDCTableResponse:
+      description: Request schema for enabling CDC on a database
+      type: object
+      required:
+        - orgID
+        - databaseID
+        - databaseName
+        - tables
+        - regions
+        - status
+      properties:
+        orgID:
+          type: string
+          example: 7142-1283-54249566-3707
+          description: Unique identifier for the user org
+        databaseID:
+          type: string
+          example: 1234-5678-91011121-3141
+          description: Unique identifier for the database
+        databaseName:
+          type: string
+          example: dbName
+          description: Name of the database
+        regions:
+          type: array
+          description: List of regions where CDC is enabled
+          items:
+            type: object
+            required:
+              - datacenterID
+              - datacenterRegion
+              - streamingClusterName
+              - streamingTenantName
+            properties:
+              datacenterID:
+                type: string
+                example: 1234-5678-91011121-3141-1
+                description: Unique identifier for the data center
+              datacenterRegion:
+                type: string
+                example: us-east1
+                description: Cloud region where the data center is located
+              streamingClusterName:
+                type: string
+                example: pulsar-gcp-useast1-dev
+                description: Name of the streaming cluster
+              streamingTenantName:
+                type: string
+                example: cdc-streaming
+                description: Name of the streaming tenant
+        status:
+          type: string
+          example: Active
+          description: CDC config status
 
   responses:
     # 200
