@@ -1132,7 +1132,8 @@ paths:
     get:
       summary: "Get tenant under organization"
       description: "Get the specified tenant under the specified organization"
-      operationId: getStreamingTenant
+      deprecated: true
+      operationId: getStreamingTenantsByOrg
       parameters:
         - name: tenant
           in: path
@@ -1354,7 +1355,44 @@ paths:
                 $ref: "#/components/schemas/errorResponse"
       tags:
         - get-tenant-limit-usage
-  /v2/streaming/tenants/{tenantName}:
+  /v2/streaming/tenants/{tenant}:
+    get:
+      tags:
+      - tenants
+      description: Returns 200 if the tenant details were retrieved successfully
+      operationId: getStreamingTenant
+      parameters:
+      - name: Authorization
+        in: header
+        description: Astra token (https://docs.datastax.com/en/streaming/astra-streaming/operations/astream-token-gen.html#astra-token)
+        required: true
+        schema:
+          type: string
+      - name: X-DataStax-Pulsar-Cluster
+        in: header
+        description: The name of the Pulsar cluster on which the tenant resides.
+        required: true
+        schema:
+          type: string
+      - name: tenant
+        in: path
+        description: Name of the Pulsar streaming tenant
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful response containing tenant data.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/TenantClusterPlanResponse'
+        "401":
+          description: Authentication failure
+          content: {}
+        "404":
+          description: Tenant not found
+          content: {}
     head:
       summary: "Returns 200 if the tenant is reserved under the specified query
         parameters"
@@ -1363,9 +1401,9 @@ paths:
         parameters
       operationId: getTeneantLimitUsage
       parameters:
-        - name: tenantName
+        - name: tenant
           in: path
-          description: tenantName
+          description: Name of the streaming tenant
           required: true
           schema:
             type: string

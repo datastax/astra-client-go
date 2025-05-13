@@ -1089,6 +1089,15 @@ type IdOfCreateTenantEndpointParams struct {
 	Topic *string `form:"topic,omitempty" json:"topic,omitempty"`
 }
 
+// GetStreamingTenantParams defines parameters for GetStreamingTenant.
+type GetStreamingTenantParams struct {
+	// Authorization Astra token (https://docs.datastax.com/en/streaming/astra-streaming/operations/astream-token-gen.html#astra-token)
+	Authorization string `json:"Authorization"`
+
+	// XDataStaxPulsarCluster The name of the Pulsar cluster on which the tenant resides.
+	XDataStaxPulsarCluster string `json:"X-DataStax-Pulsar-Cluster"`
+}
+
 // GetTeneantLimitUsageParams defines parameters for GetTeneantLimitUsage.
 type GetTeneantLimitUsageParams struct {
 	// Provider Cloud provider, for example, aws, gcp, azure; this is required to evaluate whether a tenant has been reserved by its org owner
@@ -1493,8 +1502,8 @@ type ClientInterface interface {
 	// GetPulsarClusters request
 	GetPulsarClusters(ctx context.Context, org string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetStreamingTenant request
-	GetStreamingTenant(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetStreamingTenantsByOrg request
+	GetStreamingTenantsByOrg(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetStreamingProviders request
 	GetStreamingProviders(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1507,8 +1516,11 @@ type ClientInterface interface {
 
 	IdOfCreateTenantEndpoint(ctx context.Context, params *IdOfCreateTenantEndpointParams, body IdOfCreateTenantEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetStreamingTenant request
+	GetStreamingTenant(ctx context.Context, tenant string, params *GetStreamingTenantParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetTeneantLimitUsage request
-	GetTeneantLimitUsage(ctx context.Context, tenantName string, params *GetTeneantLimitUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetTeneantLimitUsage(ctx context.Context, tenant string, params *GetTeneantLimitUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteStreamingTenant request
 	DeleteStreamingTenant(ctx context.Context, tenant string, cluster string, params *DeleteStreamingTenantParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2398,8 +2410,8 @@ func (c *Client) GetPulsarClusters(ctx context.Context, org string, reqEditors .
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetStreamingTenant(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetStreamingTenantRequest(c.Server, org, tenant)
+func (c *Client) GetStreamingTenantsByOrg(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStreamingTenantsByOrgRequest(c.Server, org, tenant)
 	if err != nil {
 		return nil, err
 	}
@@ -2458,8 +2470,20 @@ func (c *Client) IdOfCreateTenantEndpoint(ctx context.Context, params *IdOfCreat
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetTeneantLimitUsage(ctx context.Context, tenantName string, params *GetTeneantLimitUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetTeneantLimitUsageRequest(c.Server, tenantName, params)
+func (c *Client) GetStreamingTenant(ctx context.Context, tenant string, params *GetStreamingTenantParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStreamingTenantRequest(c.Server, tenant, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetTeneantLimitUsage(ctx context.Context, tenant string, params *GetTeneantLimitUsageParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTeneantLimitUsageRequest(c.Server, tenant, params)
 	if err != nil {
 		return nil, err
 	}
@@ -5258,8 +5282,8 @@ func NewGetPulsarClustersRequest(server string, org string) (*http.Request, erro
 	return req, nil
 }
 
-// NewGetStreamingTenantRequest generates requests for GetStreamingTenant
-func NewGetStreamingTenantRequest(server string, org string, tenant string) (*http.Request, error) {
+// NewGetStreamingTenantsByOrgRequest generates requests for GetStreamingTenantsByOrg
+func NewGetStreamingTenantsByOrgRequest(server string, org string, tenant string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -5415,13 +5439,69 @@ func NewIdOfCreateTenantEndpointRequestWithBody(server string, params *IdOfCreat
 	return req, nil
 }
 
-// NewGetTeneantLimitUsageRequest generates requests for GetTeneantLimitUsage
-func NewGetTeneantLimitUsageRequest(server string, tenantName string, params *GetTeneantLimitUsageParams) (*http.Request, error) {
+// NewGetStreamingTenantRequest generates requests for GetStreamingTenant
+func NewGetStreamingTenantRequest(server string, tenant string, params *GetStreamingTenantParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenantName", runtime.ParamLocationPath, tenantName)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/streaming/tenants/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, params.Authorization)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Authorization", headerParam0)
+
+		var headerParam1 string
+
+		headerParam1, err = runtime.StyleParamWithLocation("simple", false, "X-DataStax-Pulsar-Cluster", runtime.ParamLocationHeader, params.XDataStaxPulsarCluster)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-DataStax-Pulsar-Cluster", headerParam1)
+
+	}
+
+	return req, nil
+}
+
+// NewGetTeneantLimitUsageRequest generates requests for GetTeneantLimitUsage
+func NewGetTeneantLimitUsageRequest(server string, tenant string, params *GetTeneantLimitUsageParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "tenant", runtime.ParamLocationPath, tenant)
 	if err != nil {
 		return nil, err
 	}
@@ -6178,8 +6258,8 @@ type ClientWithResponsesInterface interface {
 	// GetPulsarClustersWithResponse request
 	GetPulsarClustersWithResponse(ctx context.Context, org string, reqEditors ...RequestEditorFn) (*GetPulsarClustersResponse, error)
 
-	// GetStreamingTenantWithResponse request
-	GetStreamingTenantWithResponse(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*GetStreamingTenantResponse, error)
+	// GetStreamingTenantsByOrgWithResponse request
+	GetStreamingTenantsByOrgWithResponse(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*GetStreamingTenantsByOrgResponse, error)
 
 	// GetStreamingProvidersWithResponse request
 	GetStreamingProvidersWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetStreamingProvidersResponse, error)
@@ -6192,8 +6272,11 @@ type ClientWithResponsesInterface interface {
 
 	IdOfCreateTenantEndpointWithResponse(ctx context.Context, params *IdOfCreateTenantEndpointParams, body IdOfCreateTenantEndpointJSONRequestBody, reqEditors ...RequestEditorFn) (*IdOfCreateTenantEndpointResponse, error)
 
+	// GetStreamingTenantWithResponse request
+	GetStreamingTenantWithResponse(ctx context.Context, tenant string, params *GetStreamingTenantParams, reqEditors ...RequestEditorFn) (*GetStreamingTenantResponse, error)
+
 	// GetTeneantLimitUsageWithResponse request
-	GetTeneantLimitUsageWithResponse(ctx context.Context, tenantName string, params *GetTeneantLimitUsageParams, reqEditors ...RequestEditorFn) (*GetTeneantLimitUsageResponse, error)
+	GetTeneantLimitUsageWithResponse(ctx context.Context, tenant string, params *GetTeneantLimitUsageParams, reqEditors ...RequestEditorFn) (*GetTeneantLimitUsageResponse, error)
 
 	// DeleteStreamingTenantWithResponse request
 	DeleteStreamingTenantWithResponse(ctx context.Context, tenant string, cluster string, params *DeleteStreamingTenantParams, reqEditors ...RequestEditorFn) (*DeleteStreamingTenantResponse, error)
@@ -7547,7 +7630,7 @@ func (r GetPulsarClustersResponse) StatusCode() int {
 	return 0
 }
 
-type GetStreamingTenantResponse struct {
+type GetStreamingTenantsByOrgResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *TenantClusterPlanResponse
@@ -7556,7 +7639,7 @@ type GetStreamingTenantResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetStreamingTenantResponse) Status() string {
+func (r GetStreamingTenantsByOrgResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7564,7 +7647,7 @@ func (r GetStreamingTenantResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetStreamingTenantResponse) StatusCode() int {
+func (r GetStreamingTenantsByOrgResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -7638,6 +7721,27 @@ func (r IdOfCreateTenantEndpointResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r IdOfCreateTenantEndpointResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetStreamingTenantResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r GetStreamingTenantResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetStreamingTenantResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -8450,13 +8554,13 @@ func (c *ClientWithResponses) GetPulsarClustersWithResponse(ctx context.Context,
 	return ParseGetPulsarClustersResponse(rsp)
 }
 
-// GetStreamingTenantWithResponse request returning *GetStreamingTenantResponse
-func (c *ClientWithResponses) GetStreamingTenantWithResponse(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*GetStreamingTenantResponse, error) {
-	rsp, err := c.GetStreamingTenant(ctx, org, tenant, reqEditors...)
+// GetStreamingTenantsByOrgWithResponse request returning *GetStreamingTenantsByOrgResponse
+func (c *ClientWithResponses) GetStreamingTenantsByOrgWithResponse(ctx context.Context, org string, tenant string, reqEditors ...RequestEditorFn) (*GetStreamingTenantsByOrgResponse, error) {
+	rsp, err := c.GetStreamingTenantsByOrg(ctx, org, tenant, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetStreamingTenantResponse(rsp)
+	return ParseGetStreamingTenantsByOrgResponse(rsp)
 }
 
 // GetStreamingProvidersWithResponse request returning *GetStreamingProvidersResponse
@@ -8494,9 +8598,18 @@ func (c *ClientWithResponses) IdOfCreateTenantEndpointWithResponse(ctx context.C
 	return ParseIdOfCreateTenantEndpointResponse(rsp)
 }
 
+// GetStreamingTenantWithResponse request returning *GetStreamingTenantResponse
+func (c *ClientWithResponses) GetStreamingTenantWithResponse(ctx context.Context, tenant string, params *GetStreamingTenantParams, reqEditors ...RequestEditorFn) (*GetStreamingTenantResponse, error) {
+	rsp, err := c.GetStreamingTenant(ctx, tenant, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetStreamingTenantResponse(rsp)
+}
+
 // GetTeneantLimitUsageWithResponse request returning *GetTeneantLimitUsageResponse
-func (c *ClientWithResponses) GetTeneantLimitUsageWithResponse(ctx context.Context, tenantName string, params *GetTeneantLimitUsageParams, reqEditors ...RequestEditorFn) (*GetTeneantLimitUsageResponse, error) {
-	rsp, err := c.GetTeneantLimitUsage(ctx, tenantName, params, reqEditors...)
+func (c *ClientWithResponses) GetTeneantLimitUsageWithResponse(ctx context.Context, tenant string, params *GetTeneantLimitUsageParams, reqEditors ...RequestEditorFn) (*GetTeneantLimitUsageResponse, error) {
+	rsp, err := c.GetTeneantLimitUsage(ctx, tenant, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -10803,15 +10916,15 @@ func ParseGetPulsarClustersResponse(rsp *http.Response) (*GetPulsarClustersRespo
 	return response, nil
 }
 
-// ParseGetStreamingTenantResponse parses an HTTP response from a GetStreamingTenantWithResponse call
-func ParseGetStreamingTenantResponse(rsp *http.Response) (*GetStreamingTenantResponse, error) {
+// ParseGetStreamingTenantsByOrgResponse parses an HTTP response from a GetStreamingTenantsByOrgWithResponse call
+func ParseGetStreamingTenantsByOrgResponse(rsp *http.Response) (*GetStreamingTenantsByOrgResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetStreamingTenantResponse{
+	response := &GetStreamingTenantsByOrgResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10965,6 +11078,22 @@ func ParseIdOfCreateTenantEndpointResponse(rsp *http.Response) (*IdOfCreateTenan
 		}
 		response.JSON500 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseGetStreamingTenantResponse parses an HTTP response from a GetStreamingTenantWithResponse call
+func ParseGetStreamingTenantResponse(rsp *http.Response) (*GetStreamingTenantResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetStreamingTenantResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
