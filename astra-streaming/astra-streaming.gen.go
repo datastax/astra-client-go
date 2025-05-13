@@ -7730,6 +7730,7 @@ func (r IdOfCreateTenantEndpointResponse) StatusCode() int {
 type GetStreamingTenantResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *TenantClusterPlanResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -11094,6 +11095,16 @@ func ParseGetStreamingTenantResponse(rsp *http.Response) (*GetStreamingTenantRes
 	response := &GetStreamingTenantResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TenantClusterPlanResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil

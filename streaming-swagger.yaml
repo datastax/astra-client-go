@@ -1384,9 +1384,9 @@ paths:
         "200":
           description: Successful response containing tenant data.
           content:
-            '*/*':
+            application/json:
               schema:
-                $ref: '#/components/schemas/TenantClusterPlanResponse'
+                $ref: "#/components/schemas/TenantClusterPlanResponse"
         "401":
           description: Authentication failure
           content: {}
