@@ -1351,6 +1351,9 @@ type DeleteCDCJSONRequestBody = DeleteCDCRequest
 // EnableCDCJSONRequestBody defines body for EnableCDC for application/json ContentType.
 type EnableCDCJSONRequestBody = EnableCDCRequest
 
+// UpdateCDCJSONRequestBody defines body for UpdateCDC for application/json ContentType.
+type UpdateCDCJSONRequestBody = EnableCDCRequest
+
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
 
@@ -1667,6 +1670,11 @@ type ClientInterface interface {
 	EnableCDCWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	EnableCDC(ctx context.Context, databaseId DatabaseIdParam, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateCDCWithBody request with any body
+	UpdateCDCWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateCDC(ctx context.Context, databaseId DatabaseIdParam, body UpdateCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCDCTableStatus request
 	GetCDCTableStatus(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, tableName TableNameParam, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2742,6 +2750,30 @@ func (c *Client) EnableCDCWithBody(ctx context.Context, databaseId DatabaseIdPar
 
 func (c *Client) EnableCDC(ctx context.Context, databaseId DatabaseIdParam, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewEnableCDCRequest(c.Server, databaseId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateCDCWithBody(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateCDCRequestWithBody(c.Server, databaseId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateCDC(ctx context.Context, databaseId DatabaseIdParam, body UpdateCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateCDCRequest(c.Server, databaseId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5467,6 +5499,53 @@ func NewEnableCDCRequestWithBody(server string, databaseId DatabaseIdParam, cont
 	return req, nil
 }
 
+// NewUpdateCDCRequest calls the generic UpdateCDC builder with application/json body
+func NewUpdateCDCRequest(server string, databaseId DatabaseIdParam, body UpdateCDCJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateCDCRequestWithBody(server, databaseId, "application/json", bodyReader)
+}
+
+// NewUpdateCDCRequestWithBody generates requests for UpdateCDC with any type of body
+func NewUpdateCDCRequestWithBody(server string, databaseId DatabaseIdParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v3/databases/%s/cdc", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetCDCTableStatusRequest generates requests for GetCDCTableStatus
 func NewGetCDCTableStatusRequest(server string, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, tableName TableNameParam) (*http.Request, error) {
 	var err error
@@ -5801,6 +5880,11 @@ type ClientWithResponsesInterface interface {
 	EnableCDCWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error)
 
 	EnableCDCWithResponse(ctx context.Context, databaseId DatabaseIdParam, body EnableCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*EnableCDCResponse, error)
+
+	// UpdateCDCWithBodyWithResponse request with any body
+	UpdateCDCWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCDCResponse, error)
+
+	UpdateCDCWithResponse(ctx context.Context, databaseId DatabaseIdParam, body UpdateCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCDCResponse, error)
 
 	// GetCDCTableStatusWithResponse request
 	GetCDCTableStatusWithResponse(ctx context.Context, databaseId DatabaseIdParam, keyspaceName KeyspaceNameParam, tableName TableNameParam, reqEditors ...RequestEditorFn) (*GetCDCTableStatusResponse, error)
@@ -7383,6 +7467,32 @@ func (r EnableCDCResponse) StatusCode() int {
 	return 0
 }
 
+type UpdateCDCResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON404      *NotFound
+	JSON409      *Conflict
+	JSON5XX      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateCDCResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateCDCResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetCDCTableStatusResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -8190,6 +8300,23 @@ func (c *ClientWithResponses) EnableCDCWithResponse(ctx context.Context, databas
 		return nil, err
 	}
 	return ParseEnableCDCResponse(rsp)
+}
+
+// UpdateCDCWithBodyWithResponse request with arbitrary body returning *UpdateCDCResponse
+func (c *ClientWithResponses) UpdateCDCWithBodyWithResponse(ctx context.Context, databaseId DatabaseIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCDCResponse, error) {
+	rsp, err := c.UpdateCDCWithBody(ctx, databaseId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateCDCResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateCDCWithResponse(ctx context.Context, databaseId DatabaseIdParam, body UpdateCDCJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCDCResponse, error) {
+	rsp, err := c.UpdateCDC(ctx, databaseId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateCDCResponse(rsp)
 }
 
 // GetCDCTableStatusWithResponse request returning *GetCDCTableStatusResponse
@@ -10997,6 +11124,60 @@ func ParseEnableCDCResponse(rsp *http.Response) (*EnableCDCResponse, error) {
 	}
 
 	response := &EnableCDCResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest Conflict
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateCDCResponse parses an HTTP response from a UpdateCDCWithResponse call
+func ParseUpdateCDCResponse(rsp *http.Response) (*UpdateCDCResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateCDCResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
