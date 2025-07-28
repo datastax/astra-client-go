@@ -567,7 +567,7 @@ paths:
       description: Configure CDC for specified tables in a given database
       security:
         - BearerAuth:
-            - org-admin
+            - org-db-create
       operationId: enableCDC
       tags:
         - Database Operations
@@ -593,12 +593,43 @@ paths:
           $ref: '#/components/responses/Conflict'
         5XX:
           $ref: '#/components/responses/ServerError'
+    put:
+      summary: Update CDC config
+      description: Update CDC config for tables in a given database
+      security:
+        - BearerAuth:
+            - org-db-create
+      operationId: updateCDC
+      tags:
+        - Database Operations
+      parameters:
+        - $ref: '#/components/parameters/DatabaseIdParam'
+      requestBody:
+        description: Request payload with CDC config to add, remove, or update tables and regions
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnableCDCRequest'
+      responses:
+        "201":
+          $ref: '#/components/responses/Created'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+        "409":
+          $ref: '#/components/responses/Conflict'
+        5XX:
+          $ref: '#/components/responses/ServerError'
     get:
       summary: List all active CDC configs
       description: Returns a list of all tables with active CDC configurations for the specified database
       security:
         - BearerAuth:
-            - org-admin
+            - org-db-view
       operationId: getCDC
       tags:
         - Database Operations
@@ -622,7 +653,7 @@ paths:
       description: Delete CDC for specified tables in a given database
       security:
         - BearerAuth:
-            - org-admin
+            - org-db-terminate
       operationId: deleteCDC
       tags:
         - Database Operations
@@ -654,7 +685,7 @@ paths:
       description: Fetches the CDC status and configuration for the specified table in the given database
       security:
         - BearerAuth:
-            - org-admin
+            - org-db-view
       operationId: getCDCTableStatus
       tags:
         - Database Operations
