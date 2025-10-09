@@ -1,6 +1,6 @@
 # Astra Client Go
 
-Golang client sources for [Astra](astra.datastax.com/).
+Golang client sources for [Astra](https://astra.datastax.com/).
 
 ## Importing client library
 
