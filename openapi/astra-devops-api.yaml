@@ -2688,6 +2688,35 @@ components:
         - AWS
         - GCP
         - AZURE
+    InstanceType:
+      type: string
+      description: "Instance type for PCU groups"
+      enum:
+        - standard
+        - storageOptimized
+    ProvisionType:
+      type: string
+      description: "Provision type for PCU groups"
+      enum:
+        - shared
+        - dedicated
+    PCUGroupStatus:
+      type: string
+      description: "PCU Group lifecycle status"
+      enum:
+        - CREATED
+        - PLACING
+        - INITIALIZING
+        - PARKING
+        - PARKED
+        - UNPARKING
+        - ACTIVE
+    PCUAssociationStatus:
+      type: string
+      description: "PCU Association provisioning status"
+      enum:
+        - Created
+        - Accepted
     UserInvite:
       type: "object"
       description: "The userInvite model"
@@ -4521,21 +4550,15 @@ components:
             description: Title of the PCU group
             example: "some title"
           cloudProvider:
-            type: string
-            description: Cloud provider of the PCU group
-            example: [ "AWS", "GCP", "AZURE" ]
+            $ref: '#/components/schemas/CloudProvider'
           region:
             type: string
             description: Region of the PCU group
             example: "us-east-1"
           instanceType:
-            type: string
-            description: Instance type of the PCU group
-            example: "standard"
+            $ref: '#/components/schemas/InstanceType'
           provisionType:
-            type: string
-            description: Provision type of the PCU group
-            example: "shared"
+            $ref: '#/components/schemas/ProvisionType'
           min:
             type: integer
             description: Minimum shared hourly PCUs in the PCU group
@@ -4569,9 +4592,7 @@ components:
             description: User who updated the PCU group
             example: "user"
           status:
-            type: string
-            description: Status of the PCU Group
-            example: "INITIALIZING"
+            $ref: '#/components/schemas/PCUGroupStatus'
     PCUGroupCreateRequest:
         type: object
         description: PCU Group Create Request Model
@@ -4585,21 +4606,15 @@ components:
             description: Title of the PCU group
             example: "some title"
           cloudProvider:
-            type: string
-            description: Cloud provider of the PCU group
-            example: [ "AWS", "GCP", "AZURE" ]
+            $ref: '#/components/schemas/CloudProvider'
           region:
             type: string
             description: Region of the PCU group
             example: "us-east-1"
           instanceType:
-            type: string
-            description: Instance type of the PCU group
-            example: "standard"
+            $ref: '#/components/schemas/InstanceType'
           provisionType:
-            type: string
-            description: Provision type of the PCU group
-            example: "shared"
+            $ref: '#/components/schemas/ProvisionType'
           min:
             type: integer
             description: Minimum shared hourly PCUs in the PCU group
@@ -4629,13 +4644,9 @@ components:
             description: Title of the PCU group
             example: "some title"
           instanceType:
-            type: string
-            description: Instance type of the PCU group
-            example: "standard"
+            $ref: '#/components/schemas/InstanceType'
           provisionType:
-            type: string
-            description: Provision type of the PCU group
-            example: "shared"
+            $ref: '#/components/schemas/ProvisionType'
           min:
             type: integer
             description: Minimum shared hourly PCUs in the PCU group
@@ -4681,9 +4692,7 @@ components:
             description: PCU group this association belongs to
             example: '48de8fc3-b8ec-4ed2-8951-4aeaf4c9e626'
           provisioningStatus:
-            type: string
-            description: Provisioning status of the PCU association
-            example: 'Accepted'
+            $ref: '#/components/schemas/PCUAssociationStatus'
           createdAt:
             type: string
             description: Creation time of the PCU association

@@ -68,9 +68,9 @@ const (
 
 // Defines values for DatacenterRegionClassification.
 const (
-	Premium     DatacenterRegionClassification = "premium"
-	PremiumPlus DatacenterRegionClassification = "premium_plus"
-	Standard    DatacenterRegionClassification = "standard"
+	DatacenterRegionClassificationPremium     DatacenterRegionClassification = "premium"
+	DatacenterRegionClassificationPremiumPlus DatacenterRegionClassification = "premium_plus"
+	DatacenterRegionClassificationStandard    DatacenterRegionClassification = "standard"
 )
 
 // Defines values for DatacenterRegionZone.
@@ -79,6 +79,29 @@ const (
 	Emea DatacenterRegionZone = "emea"
 	Na   DatacenterRegionZone = "na"
 	Sa   DatacenterRegionZone = "sa"
+)
+
+// Defines values for InstanceType.
+const (
+	InstanceTypeStandard         InstanceType = "standard"
+	InstanceTypeStorageOptimized InstanceType = "storageOptimized"
+)
+
+// Defines values for PCUAssociationStatus.
+const (
+	PCUAssociationStatusAccepted PCUAssociationStatus = "Accepted"
+	PCUAssociationStatusCreated  PCUAssociationStatus = "Created"
+)
+
+// Defines values for PCUGroupStatus.
+const (
+	PCUGroupStatusACTIVE       PCUGroupStatus = "ACTIVE"
+	PCUGroupStatusCREATED      PCUGroupStatus = "CREATED"
+	PCUGroupStatusINITIALIZING PCUGroupStatus = "INITIALIZING"
+	PCUGroupStatusPARKED       PCUGroupStatus = "PARKED"
+	PCUGroupStatusPARKING      PCUGroupStatus = "PARKING"
+	PCUGroupStatusPLACING      PCUGroupStatus = "PLACING"
+	PCUGroupStatusUNPARKING    PCUGroupStatus = "UNPARKING"
 )
 
 // Defines values for PolicyEffect.
@@ -135,27 +158,33 @@ const (
 
 // Defines values for PrivateLinkEndpointStatus.
 const (
-	Accepted PrivateLinkEndpointStatus = "Accepted"
-	Rejected PrivateLinkEndpointStatus = "Rejected"
+	PrivateLinkEndpointStatusAccepted PrivateLinkEndpointStatus = "Accepted"
+	PrivateLinkEndpointStatusRejected PrivateLinkEndpointStatus = "Rejected"
+)
+
+// Defines values for ProvisionType.
+const (
+	Dedicated ProvisionType = "dedicated"
+	Shared    ProvisionType = "shared"
 )
 
 // Defines values for StatusEnum.
 const (
-	ACTIVE       StatusEnum = "ACTIVE"
-	ERROR        StatusEnum = "ERROR"
-	INITIALIZING StatusEnum = "INITIALIZING"
-	MAINTENANCE  StatusEnum = "MAINTENANCE"
-	PARKED       StatusEnum = "PARKED"
-	PARKING      StatusEnum = "PARKING"
-	PENDING      StatusEnum = "PENDING"
-	PREPARED     StatusEnum = "PREPARED"
-	PREPARING    StatusEnum = "PREPARING"
-	RESIZING     StatusEnum = "RESIZING"
-	SUSPENDED    StatusEnum = "SUSPENDED"
-	TERMINATED   StatusEnum = "TERMINATED"
-	TERMINATING  StatusEnum = "TERMINATING"
-	UNKNOWN      StatusEnum = "UNKNOWN"
-	UNPARKING    StatusEnum = "UNPARKING"
+	StatusEnumACTIVE       StatusEnum = "ACTIVE"
+	StatusEnumERROR        StatusEnum = "ERROR"
+	StatusEnumINITIALIZING StatusEnum = "INITIALIZING"
+	StatusEnumMAINTENANCE  StatusEnum = "MAINTENANCE"
+	StatusEnumPARKED       StatusEnum = "PARKED"
+	StatusEnumPARKING      StatusEnum = "PARKING"
+	StatusEnumPENDING      StatusEnum = "PENDING"
+	StatusEnumPREPARED     StatusEnum = "PREPARED"
+	StatusEnumPREPARING    StatusEnum = "PREPARING"
+	StatusEnumRESIZING     StatusEnum = "RESIZING"
+	StatusEnumSUSPENDED    StatusEnum = "SUSPENDED"
+	StatusEnumTERMINATED   StatusEnum = "TERMINATED"
+	StatusEnumTERMINATING  StatusEnum = "TERMINATING"
+	StatusEnumUNKNOWN      StatusEnum = "UNKNOWN"
+	StatusEnumUNPARKING    StatusEnum = "UNPARKING"
 )
 
 // Defines values for Tier.
@@ -776,6 +805,9 @@ type GoogleVPC struct {
 	VpcNetworkName string `json:"vpcNetworkName"`
 }
 
+// InstanceType Instance type for PCU groups
+type InstanceType string
+
 // KafkaBootstrapServer Kafka bootstrap server
 type KafkaBootstrapServer = string
 
@@ -902,8 +934,8 @@ type PCUAssociation struct {
 	// PcuGroupUUID PCU group this association belongs to
 	PcuGroupUUID *string `json:"pcuGroupUUID,omitempty"`
 
-	// ProvisioningStatus Provisioning status of the PCU association
-	ProvisioningStatus *string `json:"provisioningStatus,omitempty"`
+	// ProvisioningStatus PCU Association provisioning status
+	ProvisioningStatus *PCUAssociationStatus `json:"provisioningStatus,omitempty"`
 
 	// UpdatedAt Update time of the PCU association
 	UpdatedAt *string `json:"updatedAt,omitempty"`
@@ -911,6 +943,9 @@ type PCUAssociation struct {
 	// UpdatedBy User who updated the PCU association
 	UpdatedBy *string `json:"updatedBy,omitempty"`
 }
+
+// PCUAssociationStatus PCU Association provisioning status
+type PCUAssociationStatus string
 
 // PCUAssociationTransferRequest PCU association transfer
 type PCUAssociationTransferRequest struct {
@@ -926,8 +961,8 @@ type PCUAssociationTransferRequest struct {
 
 // PCUGroup PCU Group Model
 type PCUGroup struct {
-	// CloudProvider Cloud provider of the PCU group
-	CloudProvider *string `json:"cloudProvider,omitempty"`
+	// CloudProvider Cloud hosting provider
+	CloudProvider *CloudProvider `json:"cloudProvider,omitempty"`
 
 	// CreatedAt Creation time of the PCU group
 	CreatedAt *string `json:"createdAt,omitempty"`
@@ -938,8 +973,8 @@ type PCUGroup struct {
 	// Description Description of the PCU group
 	Description *string `json:"description,omitempty"`
 
-	// InstanceType Instance type of the PCU group
-	InstanceType *string `json:"instanceType,omitempty"`
+	// InstanceType Instance type for PCU groups
+	InstanceType *InstanceType `json:"instanceType,omitempty"`
 
 	// Max Maximum shared hourly PCUs in the PCU group
 	Max *int `json:"max,omitempty"`
@@ -950,8 +985,8 @@ type PCUGroup struct {
 	// OrgId Organization ID
 	OrgId *string `json:"orgId,omitempty"`
 
-	// ProvisionType Provision type of the PCU group
-	ProvisionType *string `json:"provisionType,omitempty"`
+	// ProvisionType Provision type for PCU groups
+	ProvisionType *ProvisionType `json:"provisionType,omitempty"`
 
 	// Region Region of the PCU group
 	Region *string `json:"region,omitempty"`
@@ -959,8 +994,8 @@ type PCUGroup struct {
 	// Reserved Absolute required PCUs in the PCU group
 	Reserved *int `json:"reserved,omitempty"`
 
-	// Status Status of the PCU Group
-	Status *string `json:"status,omitempty"`
+	// Status PCU Group lifecycle status
+	Status *PCUGroupStatus `json:"status,omitempty"`
 
 	// Title Title of the PCU group
 	Title *string `json:"title,omitempty"`
@@ -977,14 +1012,14 @@ type PCUGroup struct {
 
 // PCUGroupCreateRequest PCU Group Create Request Model
 type PCUGroupCreateRequest struct {
-	// CloudProvider Cloud provider of the PCU group
-	CloudProvider *string `json:"cloudProvider,omitempty"`
+	// CloudProvider Cloud hosting provider
+	CloudProvider *CloudProvider `json:"cloudProvider,omitempty"`
 
 	// Description Description of the PCU group
 	Description *string `json:"description,omitempty"`
 
-	// InstanceType Instance type of the PCU group
-	InstanceType *string `json:"instanceType,omitempty"`
+	// InstanceType Instance type for PCU groups
+	InstanceType *InstanceType `json:"instanceType,omitempty"`
 
 	// Max Maximum shared hourly PCUs in the PCU group
 	Max *int `json:"max,omitempty"`
@@ -995,8 +1030,8 @@ type PCUGroupCreateRequest struct {
 	// OrgID OrganizationID of the PCU group, ignored for authenticated users
 	OrgID *string `json:"orgID,omitempty"`
 
-	// ProvisionType Provision type of the PCU group
-	ProvisionType *string `json:"provisionType,omitempty"`
+	// ProvisionType Provision type for PCU groups
+	ProvisionType *ProvisionType `json:"provisionType,omitempty"`
 
 	// Region Region of the PCU group
 	Region *string `json:"region,omitempty"`
@@ -1014,13 +1049,16 @@ type PCUGroupGetRequest struct {
 	PcuGroupUUIDs *[]string `json:"pcuGroupUUIDs,omitempty"`
 }
 
+// PCUGroupStatus PCU Group lifecycle status
+type PCUGroupStatus string
+
 // PCUGroupUpdateRequest PCU Group Update Request Model
 type PCUGroupUpdateRequest struct {
 	// Description Description of the PCU group
 	Description *string `json:"description,omitempty"`
 
-	// InstanceType Instance type of the PCU group
-	InstanceType *string `json:"instanceType,omitempty"`
+	// InstanceType Instance type for PCU groups
+	InstanceType *InstanceType `json:"instanceType,omitempty"`
 
 	// Max Maximum shared hourly PCUs in the PCU group
 	Max *int `json:"max,omitempty"`
@@ -1031,8 +1069,8 @@ type PCUGroupUpdateRequest struct {
 	// PcuGroupUUID UUID of the PCU group to update
 	PcuGroupUUID *string `json:"pcuGroupUUID,omitempty"`
 
-	// ProvisionType Provision type of the PCU group
-	ProvisionType *string `json:"provisionType,omitempty"`
+	// ProvisionType Provision type for PCU groups
+	ProvisionType *ProvisionType `json:"provisionType,omitempty"`
 
 	// Reserved Absolute required PCUs in the PCU group
 	Reserved *int `json:"reserved,omitempty"`
@@ -1148,6 +1186,9 @@ type PrivateLinkUpdateEndpointInput struct {
 	// Description User defined description of the endpoint
 	Description *string `json:"description,omitempty"`
 }
+
+// ProvisionType Provision type for PCU groups
+type ProvisionType string
 
 // Role Details of a user role and its policy details
 type Role struct {
@@ -8068,6 +8109,7 @@ type PcuCreateResponse struct {
 	HTTPResponse *http.Response
 	JSON201      *[]PCUGroup
 	JSON400      *BadRequest
+	JSON403      *Forbidden
 	JSON5XX      *ServerError
 }
 
@@ -8090,7 +8132,10 @@ func (r PcuCreateResponse) StatusCode() int {
 type PcuUpdateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *[]PCUGroup
 	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON404      *NotFound
 	JSON5XX      *ServerError
 }
 
@@ -8115,6 +8160,8 @@ type PcuGetResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *[]PCUGroup
 	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON404      *NotFound
 	JSON5XX      *ServerError
 }
 
@@ -8138,6 +8185,7 @@ type PcuAssociationTransferResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *BadRequest
+	JSON403      *Forbidden
 	JSON5XX      *ServerError
 }
 
@@ -8162,6 +8210,8 @@ type PcuAssociationGetResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *[]PCUAssociation
 	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON404      *NotFound
 	JSON5XX      *ServerError
 }
 
@@ -8185,6 +8235,8 @@ type PcuAssociationDeleteResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON404      *NotFound
 	JSON5XX      *ServerError
 }
 
@@ -8208,6 +8260,8 @@ type PcuAssociationCreateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON404      *NotFound
 	JSON5XX      *ServerError
 }
 
@@ -8231,6 +8285,7 @@ type PcuGroupParkResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *BadRequest
+	JSON403      *Forbidden
 	JSON5XX      *ServerError
 }
 
@@ -8254,6 +8309,7 @@ type PcuGroupUnparkResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *BadRequest
+	JSON403      *Forbidden
 	JSON5XX      *ServerError
 }
 
@@ -8277,6 +8333,8 @@ type PcuDeleteResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON404      *NotFound
 	JSON5XX      *ServerError
 }
 
@@ -11990,6 +12048,13 @@ func ParsePcuCreateResponse(rsp *http.Response) (*PcuCreateResponse, error) {
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -12016,12 +12081,33 @@ func ParsePcuUpdateResponse(rsp *http.Response) (*PcuUpdateResponse, error) {
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []PCUGroup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest BadRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
@@ -12063,6 +12149,20 @@ func ParsePcuGetResponse(rsp *http.Response) (*PcuGetResponse, error) {
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -12095,6 +12195,13 @@ func ParsePcuAssociationTransferResponse(rsp *http.Response) (*PcuAssociationTra
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
@@ -12136,6 +12243,20 @@ func ParsePcuAssociationGetResponse(rsp *http.Response) (*PcuAssociationGetRespo
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -12168,6 +12289,20 @@ func ParsePcuAssociationDeleteResponse(rsp *http.Response) (*PcuAssociationDelet
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
@@ -12202,6 +12337,20 @@ func ParsePcuAssociationCreateResponse(rsp *http.Response) (*PcuAssociationCreat
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -12234,6 +12383,13 @@ func ParsePcuGroupParkResponse(rsp *http.Response) (*PcuGroupParkResponse, error
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
@@ -12268,6 +12424,13 @@ func ParsePcuGroupUnparkResponse(rsp *http.Response) (*PcuGroupUnparkResponse, e
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -12300,6 +12463,20 @@ func ParsePcuDeleteResponse(rsp *http.Response) (*PcuDeleteResponse, error) {
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
