@@ -68,9 +68,9 @@ const (
 
 // Defines values for DatacenterRegionClassification.
 const (
-	DatacenterRegionClassificationPremium     DatacenterRegionClassification = "premium"
-	DatacenterRegionClassificationPremiumPlus DatacenterRegionClassification = "premium_plus"
-	DatacenterRegionClassificationStandard    DatacenterRegionClassification = "standard"
+	Premium     DatacenterRegionClassification = "premium"
+	PremiumPlus DatacenterRegionClassification = "premium_plus"
+	Standard    DatacenterRegionClassification = "standard"
 )
 
 // Defines values for DatacenterRegionZone.
@@ -158,8 +158,8 @@ const (
 
 // Defines values for PrivateLinkEndpointStatus.
 const (
-	PrivateLinkEndpointStatusAccepted PrivateLinkEndpointStatus = "Accepted"
-	PrivateLinkEndpointStatusRejected PrivateLinkEndpointStatus = "Rejected"
+	Accepted PrivateLinkEndpointStatus = "Accepted"
+	Rejected PrivateLinkEndpointStatus = "Rejected"
 )
 
 // Defines values for ProvisionType.
@@ -170,21 +170,21 @@ const (
 
 // Defines values for StatusEnum.
 const (
-	StatusEnumACTIVE       StatusEnum = "ACTIVE"
-	StatusEnumERROR        StatusEnum = "ERROR"
-	StatusEnumINITIALIZING StatusEnum = "INITIALIZING"
-	StatusEnumMAINTENANCE  StatusEnum = "MAINTENANCE"
-	StatusEnumPARKED       StatusEnum = "PARKED"
-	StatusEnumPARKING      StatusEnum = "PARKING"
-	StatusEnumPENDING      StatusEnum = "PENDING"
-	StatusEnumPREPARED     StatusEnum = "PREPARED"
-	StatusEnumPREPARING    StatusEnum = "PREPARING"
-	StatusEnumRESIZING     StatusEnum = "RESIZING"
-	StatusEnumSUSPENDED    StatusEnum = "SUSPENDED"
-	StatusEnumTERMINATED   StatusEnum = "TERMINATED"
-	StatusEnumTERMINATING  StatusEnum = "TERMINATING"
-	StatusEnumUNKNOWN      StatusEnum = "UNKNOWN"
-	StatusEnumUNPARKING    StatusEnum = "UNPARKING"
+	ACTIVE       StatusEnum = "ACTIVE"
+	ERROR        StatusEnum = "ERROR"
+	INITIALIZING StatusEnum = "INITIALIZING"
+	MAINTENANCE  StatusEnum = "MAINTENANCE"
+	PARKED       StatusEnum = "PARKED"
+	PARKING      StatusEnum = "PARKING"
+	PENDING      StatusEnum = "PENDING"
+	PREPARED     StatusEnum = "PREPARED"
+	PREPARING    StatusEnum = "PREPARING"
+	RESIZING     StatusEnum = "RESIZING"
+	SUSPENDED    StatusEnum = "SUSPENDED"
+	TERMINATED   StatusEnum = "TERMINATED"
+	TERMINATING  StatusEnum = "TERMINATING"
+	UNKNOWN      StatusEnum = "UNKNOWN"
+	UNPARKING    StatusEnum = "UNPARKING"
 )
 
 // Defines values for Tier.

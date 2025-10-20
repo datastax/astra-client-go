@@ -2694,6 +2694,9 @@ components:
       enum:
         - standard
         - storageOptimized
+      x-enum-varnames:
+        - InstanceTypeStandard
+        - InstanceTypeStorageOptimized
     ProvisionType:
       type: string
       description: "Provision type for PCU groups"
@@ -2711,12 +2714,23 @@ components:
         - PARKED
         - UNPARKING
         - ACTIVE
+      x-enum-varnames:
+        - PCUGroupStatusCREATED
+        - PCUGroupStatusPLACING
+        - PCUGroupStatusINITIALIZING
+        - PCUGroupStatusPARKING
+        - PCUGroupStatusPARKED
+        - PCUGroupStatusUNPARKING
+        - PCUGroupStatusACTIVE
     PCUAssociationStatus:
       type: string
       description: "PCU Association provisioning status"
       enum:
         - Created
         - Accepted
+      x-enum-varnames:
+        - PCUAssociationStatusCreated
+        - PCUAssociationStatusAccepted
     UserInvite:
       type: "object"
       description: "The userInvite model"
@@ -2802,6 +2816,7 @@ components:
       type: string
       enum: [ACTIVE, PENDING, PREPARING, PREPARED, INITIALIZING, PARKED, PARKING, UNPARKING, TERMINATED, TERMINATING, RESIZING, ERROR, MAINTENANCE, SUSPENDED, UNKNOWN]
       example: ACTIVE
+      x-enum-varnames: [ACTIVE, PENDING, PREPARING, PREPARED, INITIALIZING, PARKED, PARKING, UNPARKING, TERMINATED, TERMINATING, RESIZING, ERROR, MAINTENANCE, SUSPENDED, UNKNOWN]
     Database:
       type: object
       description: Database contains the key information about a database
@@ -2915,6 +2930,7 @@ components:
           type: string
           example: standard
           enum: [standard, premium, premium_plus]
+          x-enum-varnames: [Standard, Premium, PremiumPlus]
         capacityUnits:
           type: integer
           example: 1
@@ -3594,6 +3610,9 @@ components:
           description: The current status of the connection
           example: Accepted
           enum:
+            - Accepted
+            - Rejected
+          x-enum-varnames:
             - Accepted
             - Rejected
         createdDateTime:
