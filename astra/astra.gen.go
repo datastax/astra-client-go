@@ -83,8 +83,8 @@ const (
 
 // Defines values for InstanceType.
 const (
-	InstanceTypeStandard         InstanceType = "standard"
-	InstanceTypeStorageOptimized InstanceType = "storageOptimized"
+	PcuInstanceTypeStandard         InstanceType = "standard"
+	PcuInstanceTypeStorageOptimized InstanceType = "storageOptimized"
 )
 
 // Defines values for PCUAssociationStatus.
@@ -164,8 +164,8 @@ const (
 
 // Defines values for ProvisionType.
 const (
-	Dedicated ProvisionType = "dedicated"
-	Shared    ProvisionType = "shared"
+	PcuProvisionTypeDedicated ProvisionType = "dedicated"
+	PcuProvisionTypeShared    ProvisionType = "shared"
 )
 
 // Defines values for StatusEnum.

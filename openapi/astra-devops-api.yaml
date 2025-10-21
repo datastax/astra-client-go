@@ -2695,14 +2695,17 @@ components:
         - standard
         - storageOptimized
       x-enum-varnames:
-        - InstanceTypeStandard
-        - InstanceTypeStorageOptimized
+        - PcuInstanceTypeStandard
+        - PcuInstanceTypeStorageOptimized
     ProvisionType:
       type: string
       description: "Provision type for PCU groups"
       enum:
         - shared
         - dedicated
+      x-enum-varnames:
+        - PcuProvisionTypeShared
+        - PcuProvisionTypeDedicated
     PCUGroupStatus:
       type: string
       description: "PCU Group lifecycle status"
