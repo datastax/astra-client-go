@@ -4615,6 +4615,15 @@ components:
     PCUGroupCreateRequest:
         type: object
         description: PCU Group Create Request Model
+        required:
+          - cloudProvider
+          - instanceType
+          - provisionType
+          - reserved
+          - min
+          - max
+          - region
+          - title
         properties:
           orgID:
             type: string
@@ -4653,6 +4662,16 @@ components:
     PCUGroupUpdateRequest:
         type: object
         description: PCU Group Update Request Model
+        required:
+          - pcuGroupUUID
+          - cloudProvider
+          - instanceType
+          - provisionType
+          - reserved
+          - min
+          - max
+          - region
+          - title
         properties:
           pcuGroupUUID:
             type: string

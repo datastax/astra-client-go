@@ -1013,34 +1013,34 @@ type PCUGroup struct {
 // PCUGroupCreateRequest PCU Group Create Request Model
 type PCUGroupCreateRequest struct {
 	// CloudProvider Cloud hosting provider
-	CloudProvider *CloudProvider `json:"cloudProvider,omitempty"`
+	CloudProvider CloudProvider `json:"cloudProvider"`
 
 	// Description Description of the PCU group
 	Description *string `json:"description,omitempty"`
 
 	// InstanceType Instance type for PCU groups
-	InstanceType *InstanceType `json:"instanceType,omitempty"`
+	InstanceType InstanceType `json:"instanceType"`
 
 	// Max Maximum shared hourly PCUs in the PCU group
-	Max *int `json:"max,omitempty"`
+	Max int `json:"max"`
 
 	// Min Minimum shared hourly PCUs in the PCU group
-	Min *int `json:"min,omitempty"`
+	Min int `json:"min"`
 
 	// OrgID OrganizationID of the PCU group, ignored for authenticated users
 	OrgID *string `json:"orgID,omitempty"`
 
 	// ProvisionType Provision type for PCU groups
-	ProvisionType *ProvisionType `json:"provisionType,omitempty"`
+	ProvisionType ProvisionType `json:"provisionType"`
 
 	// Region Region of the PCU group
-	Region *string `json:"region,omitempty"`
+	Region string `json:"region"`
 
 	// Reserved Absolute required PCUs in the PCU group
-	Reserved *int `json:"reserved,omitempty"`
+	Reserved int `json:"reserved"`
 
 	// Title Title of the PCU group
-	Title *string `json:"title,omitempty"`
+	Title string `json:"title"`
 }
 
 // PCUGroupGetRequest PCU groups to get
@@ -1058,25 +1058,25 @@ type PCUGroupUpdateRequest struct {
 	Description *string `json:"description,omitempty"`
 
 	// InstanceType Instance type for PCU groups
-	InstanceType *InstanceType `json:"instanceType,omitempty"`
+	InstanceType InstanceType `json:"instanceType"`
 
 	// Max Maximum shared hourly PCUs in the PCU group
-	Max *int `json:"max,omitempty"`
+	Max int `json:"max"`
 
 	// Min Minimum shared hourly PCUs in the PCU group
-	Min *int `json:"min,omitempty"`
+	Min int `json:"min"`
 
 	// PcuGroupUUID UUID of the PCU group to update
-	PcuGroupUUID *string `json:"pcuGroupUUID,omitempty"`
+	PcuGroupUUID string `json:"pcuGroupUUID"`
 
 	// ProvisionType Provision type for PCU groups
-	ProvisionType *ProvisionType `json:"provisionType,omitempty"`
+	ProvisionType ProvisionType `json:"provisionType"`
 
 	// Reserved Absolute required PCUs in the PCU group
-	Reserved *int `json:"reserved,omitempty"`
+	Reserved int `json:"reserved"`
 
 	// Title Title of the PCU group
-	Title *string `json:"title,omitempty"`
+	Title string `json:"title"`
 }
 
 // Policy A policy for a role in Astra.
