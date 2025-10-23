@@ -81,12 +81,6 @@ const (
 	Sa   DatacenterRegionZone = "sa"
 )
 
-// Defines values for InstanceType.
-const (
-	PcuInstanceTypeStandard         InstanceType = "standard"
-	PcuInstanceTypeStorageOptimized InstanceType = "storageOptimized"
-)
-
 // Defines values for PCUAssociationStatus.
 const (
 	PCUAssociationStatusAccepted PCUAssociationStatus = "Accepted"
@@ -805,9 +799,6 @@ type GoogleVPC struct {
 	VpcNetworkName string `json:"vpcNetworkName"`
 }
 
-// InstanceType Instance type for PCU groups
-type InstanceType string
-
 // KafkaBootstrapServer Kafka bootstrap server
 type KafkaBootstrapServer = string
 
@@ -974,7 +965,7 @@ type PCUGroup struct {
 	Description *string `json:"description,omitempty"`
 
 	// InstanceType Instance type for PCU groups
-	InstanceType *InstanceType `json:"instanceType,omitempty"`
+	InstanceType *string `json:"instanceType,omitempty"`
 
 	// Max Maximum shared hourly PCUs in the PCU group
 	Max *int `json:"max,omitempty"`
@@ -1019,7 +1010,7 @@ type PCUGroupCreateRequest struct {
 	Description *string `json:"description,omitempty"`
 
 	// InstanceType Instance type for PCU groups
-	InstanceType InstanceType `json:"instanceType"`
+	InstanceType string `json:"instanceType"`
 
 	// Max Maximum shared hourly PCUs in the PCU group
 	Max int `json:"max"`
@@ -1058,7 +1049,7 @@ type PCUGroupUpdateRequest struct {
 	Description *string `json:"description,omitempty"`
 
 	// InstanceType Instance type for PCU groups
-	InstanceType InstanceType `json:"instanceType"`
+	InstanceType string `json:"instanceType"`
 
 	// Max Maximum shared hourly PCUs in the PCU group
 	Max int `json:"max"`
