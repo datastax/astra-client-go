@@ -44,6 +44,8 @@ tags:
     description: Create and view Customer Keys for your Astra DB organization
   - name: Enterprise Operations
     description: The DevOps APIs for your Astra organization
+  - name: PCU
+    description: The DevOps PCU (Provisioned Capacity Units) APIs for managing PCU groups and associations
 paths:
   /v2/authenticateServiceAccount:
     post:
@@ -2208,6 +2210,290 @@ paths:
           "$ref": "#/components/responses/NotFound"
         '500':
           "$ref": "#/components/responses/ServerError"
+  /v2/pcus/actions/get:
+    post:
+      tags:
+        - PCU
+      summary: Gets the PCU groups
+      description: Gets the PCU groups
+      operationId: pcuGet
+      requestBody:
+        description: PCU group UUIDs
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PCUGroupGetRequest'
+      responses:
+        '200':
+          description: Returns the PCU group
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PCUGroup'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          "$ref": "#/components/responses/ServerError"
+  /v2/pcus/{pcuGroupUUID}:
+    delete:
+      tags:
+        - PCU
+      summary: Deletes a PCU Group
+      description: Deletes a flexible capacity PCU group, based on the given PCU Group UUID.
+      operationId: pcuDelete
+      parameters:
+        - in: path
+          name: pcuGroupUUID
+          required: true
+          description: The PCU Group UUID to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "PCU Group deleted"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          "$ref": "#/components/responses/ServerError"
+  /v2/pcus:
+    post:
+      tags:
+        - PCU
+      summary: Creates a PCU group
+      description: Given PCU group information, creates a PCU group
+      operationId: pcuCreate
+      requestBody:
+        description: PCU group model.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              maxItems: 1
+              items:
+                $ref: '#/components/schemas/PCUGroupCreateRequest'
+      responses:
+        '201':
+          description: Returns the created PCU groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PCUGroup'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    put:
+      tags:
+        - PCU
+      summary: Updates one or more PCU groups
+      description: Given PCU group information, updates the PCU groups
+      operationId: pcuUpdate
+      requestBody:
+        description: PCU Group model.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              maxItems: 1
+              items:
+                $ref: '#/components/schemas/PCUGroupUpdateRequest'
+      responses:
+        '200':
+          description: "PCU groups updated"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PCUGroup'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v2/pcus/association/{pcuGroupUUID}:
+    get:
+      tags:
+        - PCU
+      summary: Gets a PCU group UUID returns all associated datacenters and their status
+      description: Given a PCU group UUID, returns all associated datacenters and their status
+      operationId: pcuAssociationGet
+      parameters:
+        - in: path
+          name: pcuGroupUUID
+          required: true
+          description: The PCU group UUID to get the associated datacenters and their status
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns the associated datacenters and their status
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PCUAssociation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v2/pcus/association/transfer:
+    post:
+      tags:
+        - PCU
+      summary: Transfers a PCU group association
+      description: Transfers a database, specified by datacenter ID, from one PCU group to another.
+      operationId: pcuAssociationTransfer
+      requestBody:
+        description: PCUAssociation Transfer Request.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PCUAssociationTransferRequest'
+      responses:
+        '202':
+          description: Successfully accepted the PCU Association Transfer request
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v2/pcus/association/{pcuGroupUUID}/{datacenterUUID}:
+    post:
+      tags:
+        - PCU
+      summary: Creates a PCU group association
+      description: Given PCU group UUID and datacenter UUID, creates a PCU group association
+      operationId: pcuAssociationCreate
+      parameters:
+        - in: path
+          name: pcuGroupUUID
+          required: true
+          description: The PCU group UUID part of this association
+          schema:
+            type: string
+        - in: path
+          name: datacenterUUID
+          required: true
+          description: The datacenter UUID part of this association
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Created PCU association
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags:
+        - PCU
+      summary: Deletes a PCU group association
+      description: Given datacenter UUID and PCU group UUID, delete the association
+      operationId: pcuAssociationDelete
+      parameters:
+        - in: path
+          name: pcuGroupUUID
+          required: true
+          description: The PCU group UUID part of this association
+          schema:
+            type: string
+        - in: path
+          name: datacenterUUID
+          required: true
+          description: The datacenter UUID part of this association
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "PCU association deleted"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v2/pcus/park/{pcuGroupUUID}:
+    post:
+      tags:
+        - PCU
+      summary: Parks a PCU group
+      description: Parks a flexible capacity PCU group
+      operationId: pcuGroupPark
+      parameters:
+        - in: path
+          name: pcuGroupUUID
+          required: true
+          description: The PCU Group UUID to park
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully initialized the parking operation
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v2/pcus/unpark/{pcuGroupUUID}:
+    post:
+      tags:
+        - PCU
+      summary: Unparks a PCU group
+      description: Unparks a flexible capacity PCU group
+      operationId: pcuGroupUnpark
+      parameters:
+        - in: path
+          name: pcuGroupUUID
+          required: true
+          description: The PCU Group UUID to unpark
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully initialized the unparking operation
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /v2/enterprises/organizations:
     post:
       tags:
@@ -2402,6 +2688,43 @@ components:
         - AWS
         - GCP
         - AZURE
+    ProvisionType:
+      type: string
+      description: "Provision type for PCU groups"
+      enum:
+        - shared
+        - dedicated
+      x-enum-varnames:
+        - PcuProvisionTypeShared
+        - PcuProvisionTypeDedicated
+    PCUGroupStatus:
+      type: string
+      description: "PCU Group lifecycle status"
+      enum:
+        - CREATED
+        - PLACING
+        - INITIALIZING
+        - PARKING
+        - PARKED
+        - UNPARKING
+        - ACTIVE
+      x-enum-varnames:
+        - PCUGroupStatusCREATED
+        - PCUGroupStatusPLACING
+        - PCUGroupStatusINITIALIZING
+        - PCUGroupStatusPARKING
+        - PCUGroupStatusPARKED
+        - PCUGroupStatusUNPARKING
+        - PCUGroupStatusACTIVE
+    PCUAssociationStatus:
+      type: string
+      description: "PCU Association provisioning status"
+      enum:
+        - Created
+        - Accepted
+      x-enum-varnames:
+        - PCUAssociationStatusCreated
+        - PCUAssociationStatusAccepted
     UserInvite:
       type: "object"
       description: "The userInvite model"
@@ -2487,6 +2810,7 @@ components:
       type: string
       enum: [ACTIVE, PENDING, PREPARING, PREPARED, INITIALIZING, PARKED, PARKING, UNPARKING, TERMINATED, TERMINATING, RESIZING, ERROR, MAINTENANCE, SUSPENDED, UNKNOWN]
       example: ACTIVE
+      x-enum-varnames: [ACTIVE, PENDING, PREPARING, PREPARED, INITIALIZING, PARKED, PARKING, UNPARKING, TERMINATED, TERMINATING, RESIZING, ERROR, MAINTENANCE, SUSPENDED, UNKNOWN]
     Database:
       type: object
       description: Database contains the key information about a database
@@ -2600,6 +2924,7 @@ components:
           type: string
           example: standard
           enum: [standard, premium, premium_plus]
+          x-enum-varnames: [Standard, Premium, PremiumPlus]
         capacityUnits:
           type: integer
           example: 1
@@ -3279,6 +3604,9 @@ components:
           description: The current status of the connection
           example: Accepted
           enum:
+            - Accepted
+            - Rejected
+          x-enum-varnames:
             - Accepted
             - Rejected
         createdDateTime:
@@ -4208,6 +4536,217 @@ components:
           type: string
           example: Active
           description: CDC config status
+    PCUGroupGetRequest:
+        type: object
+        description: PCU groups to get
+        properties:
+          pcuGroupUUIDs:
+            type: array
+            description: PCU group UIDs
+            items:
+              type: string
+              example: 1
+    PCUGroup:
+        type: object
+        description: PCU Group Model
+        properties:
+          uuid:
+            type: string
+            description: UUID of the PCU group
+            example: "9aaddbb5-4622-447c-9bc5-b036bb9d7ed8"
+          orgId:
+            type: string
+            description: Organization ID
+            example: "org-id"
+          title:
+            type: string
+            description: Title of the PCU group
+            example: "some title"
+          cloudProvider:
+            $ref: '#/components/schemas/CloudProvider'
+          region:
+            type: string
+            description: Region of the PCU group
+            example: "us-east-1"
+          instanceType:
+            type: string
+            description: "Instance type for PCU groups"
+            example: "standard"
+          provisionType:
+            $ref: '#/components/schemas/ProvisionType'
+          min:
+            type: integer
+            description: Minimum shared hourly PCUs in the PCU group
+            example: 1
+          max:
+            type: integer
+            description: Maximum shared hourly PCUs in the PCU group
+            example: 1
+          reserved:
+            type: integer
+            description: Absolute required PCUs in the PCU group
+            example: 1
+          description:
+            type: string
+            description: Description of the PCU group
+            example: "some description"
+          createdAt:
+            type: string
+            description: Creation time of the PCU group
+            example: "2021-06-01T12:00:00.000Z"
+          updatedAt:
+            type: string
+            description: Update time of the PCU group
+            example: "2021-06-01T12:00:00.000Z"
+          createdBy:
+            type: string
+            description: User who created the PCU group
+            example: "user"
+          updatedBy:
+            type: string
+            description: User who updated the PCU group
+            example: "user"
+          status:
+            $ref: '#/components/schemas/PCUGroupStatus'
+    PCUGroupCreateRequest:
+        type: object
+        description: PCU Group Create Request Model
+        required:
+          - cloudProvider
+          - instanceType
+          - provisionType
+          - reserved
+          - min
+          - max
+          - region
+          - title
+        properties:
+          orgID:
+            type: string
+            description: OrganizationID of the PCU group, ignored for authenticated users
+            example: "some-org"
+          title:
+            type: string
+            description: Title of the PCU group
+            example: "some title"
+          cloudProvider:
+            $ref: '#/components/schemas/CloudProvider'
+          region:
+            type: string
+            description: Region of the PCU group
+            example: "us-east-1"
+          instanceType:
+            type: string
+            description: "Instance type for PCU groups"
+            example: "standard"
+          provisionType:
+            $ref: '#/components/schemas/ProvisionType'
+          min:
+            type: integer
+            description: Minimum shared hourly PCUs in the PCU group
+            example: 1
+          max:
+            type: integer
+            description: Maximum shared hourly PCUs in the PCU group
+            example: 1
+          reserved:
+            type: integer
+            description: Absolute required PCUs in the PCU group
+            example: 1
+          description:
+            type: string
+            description: Description of the PCU group
+            example: "some-description"
+    PCUGroupUpdateRequest:
+        type: object
+        description: PCU Group Update Request Model
+        required:
+          - pcuGroupUUID
+          - cloudProvider
+          - instanceType
+          - provisionType
+          - reserved
+          - min
+          - max
+          - region
+          - title
+        properties:
+          pcuGroupUUID:
+            type: string
+            description: UUID of the PCU group to update
+            example: "9aaddbb5-4622-447c-9bc5-b036bb9d7ed8"
+          title:
+            type: string
+            description: Title of the PCU group
+            example: "some title"
+          instanceType:
+            type: string
+            description: "Instance type for PCU groups"
+            example: "standard"
+          provisionType:
+            $ref: '#/components/schemas/ProvisionType'
+          min:
+            type: integer
+            description: Minimum shared hourly PCUs in the PCU group
+            example: 1
+          max:
+            type: integer
+            description: Maximum shared hourly PCUs in the PCU group
+            example: 1
+          reserved:
+            type: integer
+            description: Absolute required PCUs in the PCU group
+            example: 1
+          description:
+            type: string
+            description: Description of the PCU group
+            example: "some-description"
+    PCUAssociationTransferRequest:
+      type: object
+      description: PCU association transfer
+      properties:
+        fromPCUGroupUUID:
+          type: string
+          description: The PCU Group UUID from which we want to move an association
+          example: '48de8fc3-b8ec-4ed2-8951-4aeaf4c9e626'
+        toPCUGroupUUID:
+          type: string
+          description: The PCU Group UUID to which we want to move the association
+          example: '48de8fc3-b8ec-4ed2-8951-4aeaf4c9e626'
+        datacenterUUID:
+          type: string
+          description: The Datacenter UUID that is part of the fromPCUGroupUUID which we want to move to the toPCUGroupUUID
+          example: '48de8fc3-b8ec-4ed2-8951-4aeaf4c9e626-1'
+    PCUAssociation:
+        type: object
+        description: PCUAssociation information
+        properties:
+          datacenterUUID:
+            type: string
+            description: Datacenter UUID of the PCU association
+            example: '48de8fc3-b8ec-4ed2-8951-4aeaf4c9e626'
+          pcuGroupUUID:
+            type: string
+            description: PCU group this association belongs to
+            example: '48de8fc3-b8ec-4ed2-8951-4aeaf4c9e626'
+          provisioningStatus:
+            $ref: '#/components/schemas/PCUAssociationStatus'
+          createdAt:
+            type: string
+            description: Creation time of the PCU association
+            example: "2021-06-01T12:00:00.000Z"
+          updatedAt:
+            type: string
+            description: Update time of the PCU association
+            example: "2021-06-01T12:00:00.000Z"
+          createdBy:
+            type: string
+            description: User who created the PCU association
+            example: "user"
+          updatedBy:
+            type: string
+            description: User who updated the PCU association
+            example: "user"
 
   responses:
     # 200

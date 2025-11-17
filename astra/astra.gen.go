@@ -81,6 +81,23 @@ const (
 	Sa   DatacenterRegionZone = "sa"
 )
 
+// Defines values for PCUAssociationStatus.
+const (
+	PCUAssociationStatusAccepted PCUAssociationStatus = "Accepted"
+	PCUAssociationStatusCreated  PCUAssociationStatus = "Created"
+)
+
+// Defines values for PCUGroupStatus.
+const (
+	PCUGroupStatusACTIVE       PCUGroupStatus = "ACTIVE"
+	PCUGroupStatusCREATED      PCUGroupStatus = "CREATED"
+	PCUGroupStatusINITIALIZING PCUGroupStatus = "INITIALIZING"
+	PCUGroupStatusPARKED       PCUGroupStatus = "PARKED"
+	PCUGroupStatusPARKING      PCUGroupStatus = "PARKING"
+	PCUGroupStatusPLACING      PCUGroupStatus = "PLACING"
+	PCUGroupStatusUNPARKING    PCUGroupStatus = "UNPARKING"
+)
+
 // Defines values for PolicyEffect.
 const (
 	Allow PolicyEffect = "allow"
@@ -137,6 +154,12 @@ const (
 const (
 	Accepted PrivateLinkEndpointStatus = "Accepted"
 	Rejected PrivateLinkEndpointStatus = "Rejected"
+)
+
+// Defines values for ProvisionType.
+const (
+	PcuProvisionTypeDedicated ProvisionType = "dedicated"
+	PcuProvisionTypeShared    ProvisionType = "shared"
 )
 
 // Defines values for StatusEnum.
@@ -888,6 +911,165 @@ type OrganizationUsers struct {
 	Users []UserResponse `json:"users"`
 }
 
+// PCUAssociation PCUAssociation information
+type PCUAssociation struct {
+	// CreatedAt Creation time of the PCU association
+	CreatedAt *string `json:"createdAt,omitempty"`
+
+	// CreatedBy User who created the PCU association
+	CreatedBy *string `json:"createdBy,omitempty"`
+
+	// DatacenterUUID Datacenter UUID of the PCU association
+	DatacenterUUID *string `json:"datacenterUUID,omitempty"`
+
+	// PcuGroupUUID PCU group this association belongs to
+	PcuGroupUUID *string `json:"pcuGroupUUID,omitempty"`
+
+	// ProvisioningStatus PCU Association provisioning status
+	ProvisioningStatus *PCUAssociationStatus `json:"provisioningStatus,omitempty"`
+
+	// UpdatedAt Update time of the PCU association
+	UpdatedAt *string `json:"updatedAt,omitempty"`
+
+	// UpdatedBy User who updated the PCU association
+	UpdatedBy *string `json:"updatedBy,omitempty"`
+}
+
+// PCUAssociationStatus PCU Association provisioning status
+type PCUAssociationStatus string
+
+// PCUAssociationTransferRequest PCU association transfer
+type PCUAssociationTransferRequest struct {
+	// DatacenterUUID The Datacenter UUID that is part of the fromPCUGroupUUID which we want to move to the toPCUGroupUUID
+	DatacenterUUID *string `json:"datacenterUUID,omitempty"`
+
+	// FromPCUGroupUUID The PCU Group UUID from which we want to move an association
+	FromPCUGroupUUID *string `json:"fromPCUGroupUUID,omitempty"`
+
+	// ToPCUGroupUUID The PCU Group UUID to which we want to move the association
+	ToPCUGroupUUID *string `json:"toPCUGroupUUID,omitempty"`
+}
+
+// PCUGroup PCU Group Model
+type PCUGroup struct {
+	// CloudProvider Cloud hosting provider
+	CloudProvider *CloudProvider `json:"cloudProvider,omitempty"`
+
+	// CreatedAt Creation time of the PCU group
+	CreatedAt *string `json:"createdAt,omitempty"`
+
+	// CreatedBy User who created the PCU group
+	CreatedBy *string `json:"createdBy,omitempty"`
+
+	// Description Description of the PCU group
+	Description *string `json:"description,omitempty"`
+
+	// InstanceType Instance type for PCU groups
+	InstanceType *string `json:"instanceType,omitempty"`
+
+	// Max Maximum shared hourly PCUs in the PCU group
+	Max *int `json:"max,omitempty"`
+
+	// Min Minimum shared hourly PCUs in the PCU group
+	Min *int `json:"min,omitempty"`
+
+	// OrgId Organization ID
+	OrgId *string `json:"orgId,omitempty"`
+
+	// ProvisionType Provision type for PCU groups
+	ProvisionType *ProvisionType `json:"provisionType,omitempty"`
+
+	// Region Region of the PCU group
+	Region *string `json:"region,omitempty"`
+
+	// Reserved Absolute required PCUs in the PCU group
+	Reserved *int `json:"reserved,omitempty"`
+
+	// Status PCU Group lifecycle status
+	Status *PCUGroupStatus `json:"status,omitempty"`
+
+	// Title Title of the PCU group
+	Title *string `json:"title,omitempty"`
+
+	// UpdatedAt Update time of the PCU group
+	UpdatedAt *string `json:"updatedAt,omitempty"`
+
+	// UpdatedBy User who updated the PCU group
+	UpdatedBy *string `json:"updatedBy,omitempty"`
+
+	// Uuid UUID of the PCU group
+	Uuid *string `json:"uuid,omitempty"`
+}
+
+// PCUGroupCreateRequest PCU Group Create Request Model
+type PCUGroupCreateRequest struct {
+	// CloudProvider Cloud hosting provider
+	CloudProvider CloudProvider `json:"cloudProvider"`
+
+	// Description Description of the PCU group
+	Description *string `json:"description,omitempty"`
+
+	// InstanceType Instance type for PCU groups
+	InstanceType string `json:"instanceType"`
+
+	// Max Maximum shared hourly PCUs in the PCU group
+	Max int `json:"max"`
+
+	// Min Minimum shared hourly PCUs in the PCU group
+	Min int `json:"min"`
+
+	// OrgID OrganizationID of the PCU group, ignored for authenticated users
+	OrgID *string `json:"orgID,omitempty"`
+
+	// ProvisionType Provision type for PCU groups
+	ProvisionType ProvisionType `json:"provisionType"`
+
+	// Region Region of the PCU group
+	Region string `json:"region"`
+
+	// Reserved Absolute required PCUs in the PCU group
+	Reserved int `json:"reserved"`
+
+	// Title Title of the PCU group
+	Title string `json:"title"`
+}
+
+// PCUGroupGetRequest PCU groups to get
+type PCUGroupGetRequest struct {
+	// PcuGroupUUIDs PCU group UIDs
+	PcuGroupUUIDs *[]string `json:"pcuGroupUUIDs,omitempty"`
+}
+
+// PCUGroupStatus PCU Group lifecycle status
+type PCUGroupStatus string
+
+// PCUGroupUpdateRequest PCU Group Update Request Model
+type PCUGroupUpdateRequest struct {
+	// Description Description of the PCU group
+	Description *string `json:"description,omitempty"`
+
+	// InstanceType Instance type for PCU groups
+	InstanceType string `json:"instanceType"`
+
+	// Max Maximum shared hourly PCUs in the PCU group
+	Max int `json:"max"`
+
+	// Min Minimum shared hourly PCUs in the PCU group
+	Min int `json:"min"`
+
+	// PcuGroupUUID UUID of the PCU group to update
+	PcuGroupUUID string `json:"pcuGroupUUID"`
+
+	// ProvisionType Provision type for PCU groups
+	ProvisionType ProvisionType `json:"provisionType"`
+
+	// Reserved Absolute required PCUs in the PCU group
+	Reserved int `json:"reserved"`
+
+	// Title Title of the PCU group
+	Title string `json:"title"`
+}
+
 // Policy A policy for a role in Astra.
 type Policy struct {
 	// Actions The actions this policy can take. Example Actions: 'org-billing-write' 'db-keyspace-create'
@@ -995,6 +1177,9 @@ type PrivateLinkUpdateEndpointInput struct {
 	// Description User defined description of the endpoint
 	Description *string `json:"description,omitempty"`
 }
+
+// ProvisionType Provision type for PCU groups
+type ProvisionType string
 
 // Role Details of a user role and its policy details
 type Role struct {
@@ -1250,6 +1435,12 @@ type TerminateDatabaseParams struct {
 	PreparedStateOnly *bool `form:"preparedStateOnly,omitempty" json:"preparedStateOnly,omitempty"`
 }
 
+// PcuCreateJSONBody defines parameters for PcuCreate.
+type PcuCreateJSONBody = []PCUGroupCreateRequest
+
+// PcuUpdateJSONBody defines parameters for PcuUpdate.
+type PcuUpdateJSONBody = []PCUGroupUpdateRequest
+
 // DeleteVPCPeeringConnectionParamsProvider defines parameters for DeleteVPCPeeringConnection.
 type DeleteVPCPeeringConnectionParamsProvider string
 
@@ -1338,6 +1529,18 @@ type InviteUserToOrganizationJSONRequestBody = UserInvite
 
 // UpdateRolesForUserInOrganizationJSONRequestBody defines body for UpdateRolesForUserInOrganization for application/json ContentType.
 type UpdateRolesForUserInOrganizationJSONRequestBody = RoleInviteRequest
+
+// PcuCreateJSONRequestBody defines body for PcuCreate for application/json ContentType.
+type PcuCreateJSONRequestBody = PcuCreateJSONBody
+
+// PcuUpdateJSONRequestBody defines body for PcuUpdate for application/json ContentType.
+type PcuUpdateJSONRequestBody = PcuUpdateJSONBody
+
+// PcuGetJSONRequestBody defines body for PcuGet for application/json ContentType.
+type PcuGetJSONRequestBody = PCUGroupGetRequest
+
+// PcuAssociationTransferJSONRequestBody defines body for PcuAssociationTransfer for application/json ContentType.
+type PcuAssociationTransferJSONRequestBody = PCUAssociationTransferRequest
 
 // CreateVPCPeeringConnectionJSONRequestBody defines body for CreateVPCPeeringConnection for application/json ContentType.
 type CreateVPCPeeringConnectionJSONRequestBody CreateVPCPeeringConnectionJSONBody
@@ -1638,6 +1841,44 @@ type ClientInterface interface {
 	UpdateRolesForUserInOrganizationWithBody(ctx context.Context, userID UserIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateRolesForUserInOrganization(ctx context.Context, userID UserIdParam, body UpdateRolesForUserInOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PcuCreateWithBody request with any body
+	PcuCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PcuCreate(ctx context.Context, body PcuCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PcuUpdateWithBody request with any body
+	PcuUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PcuUpdate(ctx context.Context, body PcuUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PcuGetWithBody request with any body
+	PcuGetWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PcuGet(ctx context.Context, body PcuGetJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PcuAssociationTransferWithBody request with any body
+	PcuAssociationTransferWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PcuAssociationTransfer(ctx context.Context, body PcuAssociationTransferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PcuAssociationGet request
+	PcuAssociationGet(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PcuAssociationDelete request
+	PcuAssociationDelete(ctx context.Context, pcuGroupUUID string, datacenterUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PcuAssociationCreate request
+	PcuAssociationCreate(ctx context.Context, pcuGroupUUID string, datacenterUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PcuGroupPark request
+	PcuGroupPark(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PcuGroupUnpark request
+	PcuGroupUnpark(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PcuDelete request
+	PcuDelete(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteVPCPeeringConnection request
 	DeleteVPCPeeringConnection(ctx context.Context, provider DeleteVPCPeeringConnectionParamsProvider, databaseID string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2606,6 +2847,174 @@ func (c *Client) UpdateRolesForUserInOrganizationWithBody(ctx context.Context, u
 
 func (c *Client) UpdateRolesForUserInOrganization(ctx context.Context, userID UserIdParam, body UpdateRolesForUserInOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateRolesForUserInOrganizationRequest(c.Server, userID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PcuCreateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuCreateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PcuCreate(ctx context.Context, body PcuCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuCreateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PcuUpdateWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuUpdateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PcuUpdate(ctx context.Context, body PcuUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuUpdateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PcuGetWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuGetRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PcuGet(ctx context.Context, body PcuGetJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuGetRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PcuAssociationTransferWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuAssociationTransferRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PcuAssociationTransfer(ctx context.Context, body PcuAssociationTransferJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuAssociationTransferRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PcuAssociationGet(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuAssociationGetRequest(c.Server, pcuGroupUUID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PcuAssociationDelete(ctx context.Context, pcuGroupUUID string, datacenterUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuAssociationDeleteRequest(c.Server, pcuGroupUUID, datacenterUUID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PcuAssociationCreate(ctx context.Context, pcuGroupUUID string, datacenterUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuAssociationCreateRequest(c.Server, pcuGroupUUID, datacenterUUID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PcuGroupPark(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuGroupParkRequest(c.Server, pcuGroupUUID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PcuGroupUnpark(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuGroupUnparkRequest(c.Server, pcuGroupUUID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PcuDelete(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuDeleteRequest(c.Server, pcuGroupUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -5130,6 +5539,384 @@ func NewUpdateRolesForUserInOrganizationRequestWithBody(server string, userID Us
 	return req, nil
 }
 
+// NewPcuCreateRequest calls the generic PcuCreate builder with application/json body
+func NewPcuCreateRequest(server string, body PcuCreateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPcuCreateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPcuCreateRequestWithBody generates requests for PcuCreate with any type of body
+func NewPcuCreateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/pcus")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPcuUpdateRequest calls the generic PcuUpdate builder with application/json body
+func NewPcuUpdateRequest(server string, body PcuUpdateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPcuUpdateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPcuUpdateRequestWithBody generates requests for PcuUpdate with any type of body
+func NewPcuUpdateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/pcus")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPcuGetRequest calls the generic PcuGet builder with application/json body
+func NewPcuGetRequest(server string, body PcuGetJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPcuGetRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPcuGetRequestWithBody generates requests for PcuGet with any type of body
+func NewPcuGetRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/pcus/actions/get")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPcuAssociationTransferRequest calls the generic PcuAssociationTransfer builder with application/json body
+func NewPcuAssociationTransferRequest(server string, body PcuAssociationTransferJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPcuAssociationTransferRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPcuAssociationTransferRequestWithBody generates requests for PcuAssociationTransfer with any type of body
+func NewPcuAssociationTransferRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/pcus/association/transfer")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPcuAssociationGetRequest generates requests for PcuAssociationGet
+func NewPcuAssociationGetRequest(server string, pcuGroupUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "pcuGroupUUID", runtime.ParamLocationPath, pcuGroupUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/pcus/association/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPcuAssociationDeleteRequest generates requests for PcuAssociationDelete
+func NewPcuAssociationDeleteRequest(server string, pcuGroupUUID string, datacenterUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "pcuGroupUUID", runtime.ParamLocationPath, pcuGroupUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterUUID", runtime.ParamLocationPath, datacenterUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/pcus/association/%s/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPcuAssociationCreateRequest generates requests for PcuAssociationCreate
+func NewPcuAssociationCreateRequest(server string, pcuGroupUUID string, datacenterUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "pcuGroupUUID", runtime.ParamLocationPath, pcuGroupUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "datacenterUUID", runtime.ParamLocationPath, datacenterUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/pcus/association/%s/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPcuGroupParkRequest generates requests for PcuGroupPark
+func NewPcuGroupParkRequest(server string, pcuGroupUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "pcuGroupUUID", runtime.ParamLocationPath, pcuGroupUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/pcus/park/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPcuGroupUnparkRequest generates requests for PcuGroupUnpark
+func NewPcuGroupUnparkRequest(server string, pcuGroupUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "pcuGroupUUID", runtime.ParamLocationPath, pcuGroupUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/pcus/unpark/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPcuDeleteRequest generates requests for PcuDelete
+func NewPcuDeleteRequest(server string, pcuGroupUUID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "pcuGroupUUID", runtime.ParamLocationPath, pcuGroupUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/pcus/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewDeleteVPCPeeringConnectionRequest generates requests for DeleteVPCPeeringConnection
 func NewDeleteVPCPeeringConnectionRequest(server string, provider DeleteVPCPeeringConnectionParamsProvider, databaseID string) (*http.Request, error) {
 	var err error
@@ -5848,6 +6635,44 @@ type ClientWithResponsesInterface interface {
 	UpdateRolesForUserInOrganizationWithBodyWithResponse(ctx context.Context, userID UserIdParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRolesForUserInOrganizationResponse, error)
 
 	UpdateRolesForUserInOrganizationWithResponse(ctx context.Context, userID UserIdParam, body UpdateRolesForUserInOrganizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRolesForUserInOrganizationResponse, error)
+
+	// PcuCreateWithBodyWithResponse request with any body
+	PcuCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PcuCreateResponse, error)
+
+	PcuCreateWithResponse(ctx context.Context, body PcuCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*PcuCreateResponse, error)
+
+	// PcuUpdateWithBodyWithResponse request with any body
+	PcuUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PcuUpdateResponse, error)
+
+	PcuUpdateWithResponse(ctx context.Context, body PcuUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*PcuUpdateResponse, error)
+
+	// PcuGetWithBodyWithResponse request with any body
+	PcuGetWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PcuGetResponse, error)
+
+	PcuGetWithResponse(ctx context.Context, body PcuGetJSONRequestBody, reqEditors ...RequestEditorFn) (*PcuGetResponse, error)
+
+	// PcuAssociationTransferWithBodyWithResponse request with any body
+	PcuAssociationTransferWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PcuAssociationTransferResponse, error)
+
+	PcuAssociationTransferWithResponse(ctx context.Context, body PcuAssociationTransferJSONRequestBody, reqEditors ...RequestEditorFn) (*PcuAssociationTransferResponse, error)
+
+	// PcuAssociationGetWithResponse request
+	PcuAssociationGetWithResponse(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*PcuAssociationGetResponse, error)
+
+	// PcuAssociationDeleteWithResponse request
+	PcuAssociationDeleteWithResponse(ctx context.Context, pcuGroupUUID string, datacenterUUID string, reqEditors ...RequestEditorFn) (*PcuAssociationDeleteResponse, error)
+
+	// PcuAssociationCreateWithResponse request
+	PcuAssociationCreateWithResponse(ctx context.Context, pcuGroupUUID string, datacenterUUID string, reqEditors ...RequestEditorFn) (*PcuAssociationCreateResponse, error)
+
+	// PcuGroupParkWithResponse request
+	PcuGroupParkWithResponse(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*PcuGroupParkResponse, error)
+
+	// PcuGroupUnparkWithResponse request
+	PcuGroupUnparkWithResponse(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*PcuGroupUnparkResponse, error)
+
+	// PcuDeleteWithResponse request
+	PcuDeleteWithResponse(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*PcuDeleteResponse, error)
 
 	// DeleteVPCPeeringConnectionWithResponse request
 	DeleteVPCPeeringConnectionWithResponse(ctx context.Context, provider DeleteVPCPeeringConnectionParamsProvider, databaseID string, reqEditors ...RequestEditorFn) (*DeleteVPCPeeringConnectionResponse, error)
@@ -7270,6 +8095,256 @@ func (r UpdateRolesForUserInOrganizationResponse) StatusCode() int {
 	return 0
 }
 
+type PcuCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *[]PCUGroup
+	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON500      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r PcuCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PcuCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PcuUpdateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]PCUGroup
+	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON404      *NotFound
+	JSON500      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r PcuUpdateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PcuUpdateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PcuGetResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]PCUGroup
+	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON404      *NotFound
+	JSON500      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r PcuGetResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PcuGetResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PcuAssociationTransferResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON500      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r PcuAssociationTransferResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PcuAssociationTransferResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PcuAssociationGetResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]PCUAssociation
+	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON404      *NotFound
+	JSON500      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r PcuAssociationGetResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PcuAssociationGetResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PcuAssociationDeleteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON404      *NotFound
+	JSON500      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r PcuAssociationDeleteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PcuAssociationDeleteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PcuAssociationCreateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON404      *NotFound
+	JSON500      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r PcuAssociationCreateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PcuAssociationCreateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PcuGroupParkResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON500      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r PcuGroupParkResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PcuGroupParkResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PcuGroupUnparkResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON500      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r PcuGroupUnparkResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PcuGroupUnparkResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PcuDeleteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *BadRequest
+	JSON403      *Forbidden
+	JSON404      *NotFound
+	JSON500      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r PcuDeleteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PcuDeleteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type DeleteVPCPeeringConnectionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -8196,6 +9271,128 @@ func (c *ClientWithResponses) UpdateRolesForUserInOrganizationWithResponse(ctx c
 		return nil, err
 	}
 	return ParseUpdateRolesForUserInOrganizationResponse(rsp)
+}
+
+// PcuCreateWithBodyWithResponse request with arbitrary body returning *PcuCreateResponse
+func (c *ClientWithResponses) PcuCreateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PcuCreateResponse, error) {
+	rsp, err := c.PcuCreateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePcuCreateResponse(rsp)
+}
+
+func (c *ClientWithResponses) PcuCreateWithResponse(ctx context.Context, body PcuCreateJSONRequestBody, reqEditors ...RequestEditorFn) (*PcuCreateResponse, error) {
+	rsp, err := c.PcuCreate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePcuCreateResponse(rsp)
+}
+
+// PcuUpdateWithBodyWithResponse request with arbitrary body returning *PcuUpdateResponse
+func (c *ClientWithResponses) PcuUpdateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PcuUpdateResponse, error) {
+	rsp, err := c.PcuUpdateWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePcuUpdateResponse(rsp)
+}
+
+func (c *ClientWithResponses) PcuUpdateWithResponse(ctx context.Context, body PcuUpdateJSONRequestBody, reqEditors ...RequestEditorFn) (*PcuUpdateResponse, error) {
+	rsp, err := c.PcuUpdate(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePcuUpdateResponse(rsp)
+}
+
+// PcuGetWithBodyWithResponse request with arbitrary body returning *PcuGetResponse
+func (c *ClientWithResponses) PcuGetWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PcuGetResponse, error) {
+	rsp, err := c.PcuGetWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePcuGetResponse(rsp)
+}
+
+func (c *ClientWithResponses) PcuGetWithResponse(ctx context.Context, body PcuGetJSONRequestBody, reqEditors ...RequestEditorFn) (*PcuGetResponse, error) {
+	rsp, err := c.PcuGet(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePcuGetResponse(rsp)
+}
+
+// PcuAssociationTransferWithBodyWithResponse request with arbitrary body returning *PcuAssociationTransferResponse
+func (c *ClientWithResponses) PcuAssociationTransferWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PcuAssociationTransferResponse, error) {
+	rsp, err := c.PcuAssociationTransferWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePcuAssociationTransferResponse(rsp)
+}
+
+func (c *ClientWithResponses) PcuAssociationTransferWithResponse(ctx context.Context, body PcuAssociationTransferJSONRequestBody, reqEditors ...RequestEditorFn) (*PcuAssociationTransferResponse, error) {
+	rsp, err := c.PcuAssociationTransfer(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePcuAssociationTransferResponse(rsp)
+}
+
+// PcuAssociationGetWithResponse request returning *PcuAssociationGetResponse
+func (c *ClientWithResponses) PcuAssociationGetWithResponse(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*PcuAssociationGetResponse, error) {
+	rsp, err := c.PcuAssociationGet(ctx, pcuGroupUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePcuAssociationGetResponse(rsp)
+}
+
+// PcuAssociationDeleteWithResponse request returning *PcuAssociationDeleteResponse
+func (c *ClientWithResponses) PcuAssociationDeleteWithResponse(ctx context.Context, pcuGroupUUID string, datacenterUUID string, reqEditors ...RequestEditorFn) (*PcuAssociationDeleteResponse, error) {
+	rsp, err := c.PcuAssociationDelete(ctx, pcuGroupUUID, datacenterUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePcuAssociationDeleteResponse(rsp)
+}
+
+// PcuAssociationCreateWithResponse request returning *PcuAssociationCreateResponse
+func (c *ClientWithResponses) PcuAssociationCreateWithResponse(ctx context.Context, pcuGroupUUID string, datacenterUUID string, reqEditors ...RequestEditorFn) (*PcuAssociationCreateResponse, error) {
+	rsp, err := c.PcuAssociationCreate(ctx, pcuGroupUUID, datacenterUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePcuAssociationCreateResponse(rsp)
+}
+
+// PcuGroupParkWithResponse request returning *PcuGroupParkResponse
+func (c *ClientWithResponses) PcuGroupParkWithResponse(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*PcuGroupParkResponse, error) {
+	rsp, err := c.PcuGroupPark(ctx, pcuGroupUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePcuGroupParkResponse(rsp)
+}
+
+// PcuGroupUnparkWithResponse request returning *PcuGroupUnparkResponse
+func (c *ClientWithResponses) PcuGroupUnparkWithResponse(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*PcuGroupUnparkResponse, error) {
+	rsp, err := c.PcuGroupUnpark(ctx, pcuGroupUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePcuGroupUnparkResponse(rsp)
+}
+
+// PcuDeleteWithResponse request returning *PcuDeleteResponse
+func (c *ClientWithResponses) PcuDeleteWithResponse(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*PcuDeleteResponse, error) {
+	rsp, err := c.PcuDelete(ctx, pcuGroupUUID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePcuDeleteResponse(rsp)
 }
 
 // DeleteVPCPeeringConnectionWithResponse request returning *DeleteVPCPeeringConnectionResponse
@@ -10776,6 +11973,476 @@ func ParseUpdateRolesForUserInOrganizationResponse(rsp *http.Response) (*UpdateR
 	}
 
 	response := &UpdateRolesForUserInOrganizationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePcuCreateResponse parses an HTTP response from a PcuCreateWithResponse call
+func ParsePcuCreateResponse(rsp *http.Response) (*PcuCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PcuCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest []PCUGroup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePcuUpdateResponse parses an HTTP response from a PcuUpdateWithResponse call
+func ParsePcuUpdateResponse(rsp *http.Response) (*PcuUpdateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PcuUpdateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []PCUGroup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePcuGetResponse parses an HTTP response from a PcuGetWithResponse call
+func ParsePcuGetResponse(rsp *http.Response) (*PcuGetResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PcuGetResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []PCUGroup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePcuAssociationTransferResponse parses an HTTP response from a PcuAssociationTransferWithResponse call
+func ParsePcuAssociationTransferResponse(rsp *http.Response) (*PcuAssociationTransferResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PcuAssociationTransferResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePcuAssociationGetResponse parses an HTTP response from a PcuAssociationGetWithResponse call
+func ParsePcuAssociationGetResponse(rsp *http.Response) (*PcuAssociationGetResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PcuAssociationGetResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []PCUAssociation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePcuAssociationDeleteResponse parses an HTTP response from a PcuAssociationDeleteWithResponse call
+func ParsePcuAssociationDeleteResponse(rsp *http.Response) (*PcuAssociationDeleteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PcuAssociationDeleteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePcuAssociationCreateResponse parses an HTTP response from a PcuAssociationCreateWithResponse call
+func ParsePcuAssociationCreateResponse(rsp *http.Response) (*PcuAssociationCreateResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PcuAssociationCreateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePcuGroupParkResponse parses an HTTP response from a PcuGroupParkWithResponse call
+func ParsePcuGroupParkResponse(rsp *http.Response) (*PcuGroupParkResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PcuGroupParkResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePcuGroupUnparkResponse parses an HTTP response from a PcuGroupUnparkWithResponse call
+func ParsePcuGroupUnparkResponse(rsp *http.Response) (*PcuGroupUnparkResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PcuGroupUnparkResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePcuDeleteResponse parses an HTTP response from a PcuDeleteWithResponse call
+func ParsePcuDeleteResponse(rsp *http.Response) (*PcuDeleteResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PcuDeleteResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
