@@ -8101,7 +8101,7 @@ type PcuCreateResponse struct {
 	JSON201      *[]PCUGroup
 	JSON400      *BadRequest
 	JSON403      *Forbidden
-	JSON5XX      *ServerError
+	JSON500      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8127,7 +8127,7 @@ type PcuUpdateResponse struct {
 	JSON400      *BadRequest
 	JSON403      *Forbidden
 	JSON404      *NotFound
-	JSON5XX      *ServerError
+	JSON500      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8153,7 +8153,7 @@ type PcuGetResponse struct {
 	JSON400      *BadRequest
 	JSON403      *Forbidden
 	JSON404      *NotFound
-	JSON5XX      *ServerError
+	JSON500      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8177,7 +8177,7 @@ type PcuAssociationTransferResponse struct {
 	HTTPResponse *http.Response
 	JSON400      *BadRequest
 	JSON403      *Forbidden
-	JSON5XX      *ServerError
+	JSON500      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8203,7 +8203,7 @@ type PcuAssociationGetResponse struct {
 	JSON400      *BadRequest
 	JSON403      *Forbidden
 	JSON404      *NotFound
-	JSON5XX      *ServerError
+	JSON500      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8228,7 +8228,7 @@ type PcuAssociationDeleteResponse struct {
 	JSON400      *BadRequest
 	JSON403      *Forbidden
 	JSON404      *NotFound
-	JSON5XX      *ServerError
+	JSON500      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8253,7 +8253,7 @@ type PcuAssociationCreateResponse struct {
 	JSON400      *BadRequest
 	JSON403      *Forbidden
 	JSON404      *NotFound
-	JSON5XX      *ServerError
+	JSON500      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8277,7 +8277,7 @@ type PcuGroupParkResponse struct {
 	HTTPResponse *http.Response
 	JSON400      *BadRequest
 	JSON403      *Forbidden
-	JSON5XX      *ServerError
+	JSON500      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8301,7 +8301,7 @@ type PcuGroupUnparkResponse struct {
 	HTTPResponse *http.Response
 	JSON400      *BadRequest
 	JSON403      *Forbidden
-	JSON5XX      *ServerError
+	JSON500      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8326,7 +8326,7 @@ type PcuDeleteResponse struct {
 	JSON400      *BadRequest
 	JSON403      *Forbidden
 	JSON404      *NotFound
-	JSON5XX      *ServerError
+	JSON500      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -12046,12 +12046,12 @@ func ParsePcuCreateResponse(rsp *http.Response) (*PcuCreateResponse, error) {
 		}
 		response.JSON403 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON5XX = &dest
+		response.JSON500 = &dest
 
 	}
 
@@ -12100,12 +12100,12 @@ func ParsePcuUpdateResponse(rsp *http.Response) (*PcuUpdateResponse, error) {
 		}
 		response.JSON404 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON5XX = &dest
+		response.JSON500 = &dest
 
 	}
 
@@ -12154,12 +12154,12 @@ func ParsePcuGetResponse(rsp *http.Response) (*PcuGetResponse, error) {
 		}
 		response.JSON404 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON5XX = &dest
+		response.JSON500 = &dest
 
 	}
 
@@ -12194,12 +12194,12 @@ func ParsePcuAssociationTransferResponse(rsp *http.Response) (*PcuAssociationTra
 		}
 		response.JSON403 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON5XX = &dest
+		response.JSON500 = &dest
 
 	}
 
@@ -12248,12 +12248,12 @@ func ParsePcuAssociationGetResponse(rsp *http.Response) (*PcuAssociationGetRespo
 		}
 		response.JSON404 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON5XX = &dest
+		response.JSON500 = &dest
 
 	}
 
@@ -12295,12 +12295,12 @@ func ParsePcuAssociationDeleteResponse(rsp *http.Response) (*PcuAssociationDelet
 		}
 		response.JSON404 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON5XX = &dest
+		response.JSON500 = &dest
 
 	}
 
@@ -12342,12 +12342,12 @@ func ParsePcuAssociationCreateResponse(rsp *http.Response) (*PcuAssociationCreat
 		}
 		response.JSON404 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON5XX = &dest
+		response.JSON500 = &dest
 
 	}
 
@@ -12382,12 +12382,12 @@ func ParsePcuGroupParkResponse(rsp *http.Response) (*PcuGroupParkResponse, error
 		}
 		response.JSON403 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON5XX = &dest
+		response.JSON500 = &dest
 
 	}
 
@@ -12422,12 +12422,12 @@ func ParsePcuGroupUnparkResponse(rsp *http.Response) (*PcuGroupUnparkResponse, e
 		}
 		response.JSON403 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON5XX = &dest
+		response.JSON500 = &dest
 
 	}
 
@@ -12469,12 +12469,12 @@ func ParsePcuDeleteResponse(rsp *http.Response) (*PcuDeleteResponse, error) {
 		}
 		response.JSON404 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON5XX = &dest
+		response.JSON500 = &dest
 
 	}
 
