@@ -2688,6 +2688,15 @@ components:
         - AWS
         - GCP
         - AZURE
+    InstanceType:
+      type: string
+      description: "Instance type for PCU groups"
+      enum:
+        - standard
+        - storageOptimized
+      x-enum-varnames:
+        - PcuInstanceTypeStandard
+        - PcuInstanceTypeStorageOptimized
     ProvisionType:
       type: string
       description: "Provision type for PCU groups"
@@ -4569,9 +4578,7 @@ components:
             description: Region of the PCU group
             example: "us-east-1"
           instanceType:
-            type: string
-            description: "Instance type for PCU groups"
-            example: "standard"
+            $ref: '#/components/schemas/InstanceType'
           provisionType:
             $ref: '#/components/schemas/ProvisionType'
           min:
@@ -4636,9 +4643,7 @@ components:
             description: Region of the PCU group
             example: "us-east-1"
           instanceType:
-            type: string
-            description: "Instance type for PCU groups"
-            example: "standard"
+            $ref: '#/components/schemas/InstanceType'
           provisionType:
             $ref: '#/components/schemas/ProvisionType'
           min:
@@ -4680,9 +4685,7 @@ components:
             description: Title of the PCU group
             example: "some title"
           instanceType:
-            type: string
-            description: "Instance type for PCU groups"
-            example: "standard"
+            $ref: '#/components/schemas/InstanceType'
           provisionType:
             $ref: '#/components/schemas/ProvisionType'
           min:
