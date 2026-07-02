@@ -6957,7 +6957,7 @@ type AuthenticateServiceAccountTokenResponse struct {
 	JSON200      *ServiceAccountTokenResponse
 	JSON400      *BadRequest
 	JSON401      *Unauthorized
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -6981,7 +6981,7 @@ type ListAvailableRegionsResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *[]AvailableRegionCombination
 	JSON401      *Unauthorized
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7103,7 +7103,7 @@ type ListDatabasesResponse struct {
 	JSON200      *[]Database
 	JSON400      *BadRequest
 	JSON401      *Unauthorized
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7154,7 +7154,7 @@ type GetDatabaseResponse struct {
 	JSON400      *BadRequest
 	JSON401      *Unauthorized
 	JSON404      *NotFound
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7298,7 +7298,7 @@ type ListDatacentersResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *[]Datacenter
 	JSON401      *Unauthorized
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7323,7 +7323,7 @@ type AddDatacentersResponse struct {
 	JSON400      *BadRequest
 	JSON401      *Unauthorized
 	JSON404      *NotFound
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7349,7 +7349,7 @@ type TerminateDatacenterResponse struct {
 	JSON401      *Unauthorized
 	JSON404      *NotFound
 	JSON409      *Conflict
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7372,7 +7372,7 @@ type DropKeyspaceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON422      *UnprocessableEntity
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7396,7 +7396,7 @@ type AddKeyspaceResponse struct {
 	HTTPResponse *http.Response
 	JSON404      *NotFound
 	JSON422      *UnprocessableEntity
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7422,7 +7422,7 @@ type RemoveMigrationProxyResponse struct {
 	JSON401      *Unauthorized
 	JSON404      *NotFound
 	JSON409      *Conflict
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7448,7 +7448,7 @@ type LaunchMigrationProxyResponse struct {
 	JSON401      *Unauthorized
 	JSON404      *NotFound
 	JSON409      *Conflict
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7474,7 +7474,7 @@ type ParkDatabaseResponse struct {
 	JSON401      *Unauthorized
 	JSON404      *NotFound
 	JSON409      *Conflict
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7500,7 +7500,7 @@ type ResetPasswordResponse struct {
 	JSON401      *Unauthorized
 	JSON404      *NotFound
 	JSON409      *Conflict
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7526,7 +7526,7 @@ type ResizeDatabaseResponse struct {
 	JSON401      *Unauthorized
 	JSON404      *NotFound
 	JSON409      *Conflict
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7553,7 +7553,7 @@ type GenerateSecureBundleURLResponse struct {
 	JSON401      *Unauthorized
 	JSON404      *NotFound
 	JSON409      *Conflict
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7579,7 +7579,7 @@ type TerminateDatabaseResponse struct {
 	JSON401      *Unauthorized
 	JSON404      *NotFound
 	JSON409      *Conflict
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7606,7 +7606,7 @@ type ConfigureMetricsExportResponse struct {
 	JSON401      *Unauthorized
 	JSON404      *NotFound
 	JSON409      *Conflict
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -7632,7 +7632,7 @@ type UnparkDatabaseResponse struct {
 	JSON401      *Unauthorized
 	JSON404      *NotFound
 	JSON409      *Conflict
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8637,7 +8637,7 @@ type ListServerlessRegionsResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *[]ServerlessRegion
 	JSON401      *Unauthorized
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8685,7 +8685,7 @@ type DeleteCDCResponse struct {
 	JSON401      *Unauthorized
 	JSON404      *NotFound
 	JSON409      *Conflict
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8710,7 +8710,7 @@ type GetCDCResponse struct {
 	JSON200      *ListCDCResponse
 	JSON401      *Unauthorized
 	JSON404      *NotFound
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8736,7 +8736,7 @@ type EnableCDCResponse struct {
 	JSON401      *Unauthorized
 	JSON404      *NotFound
 	JSON409      *Conflict
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8762,7 +8762,7 @@ type UpdateCDCResponse struct {
 	JSON401      *Unauthorized
 	JSON404      *NotFound
 	JSON409      *Conflict
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -8787,7 +8787,7 @@ type GetCDCTableStatusResponse struct {
 	JSON200      *[]GetCDCTableResponse
 	JSON401      *Unauthorized
 	JSON404      *NotFound
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -9912,12 +9912,12 @@ func ParseAuthenticateServiceAccountTokenResponse(rsp *http.Response) (*Authenti
 		}
 		response.JSON401 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -9952,12 +9952,12 @@ func ParseListAvailableRegionsResponse(rsp *http.Response) (*ListAvailableRegion
 		}
 		response.JSON401 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -10166,12 +10166,12 @@ func ParseListDatabasesResponse(rsp *http.Response) (*ListDatabasesResponse, err
 		}
 		response.JSON401 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -10267,12 +10267,12 @@ func ParseGetDatabaseResponse(rsp *http.Response) (*GetDatabaseResponse, error) 
 		}
 		response.JSON404 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -10504,12 +10504,12 @@ func ParseListDatacentersResponse(rsp *http.Response) (*ListDatacentersResponse,
 		}
 		response.JSON401 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -10551,12 +10551,12 @@ func ParseAddDatacentersResponse(rsp *http.Response) (*AddDatacentersResponse, e
 		}
 		response.JSON404 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -10605,12 +10605,12 @@ func ParseTerminateDatacenterResponse(rsp *http.Response) (*TerminateDatacenterR
 		}
 		response.JSON409 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -10638,12 +10638,12 @@ func ParseDropKeyspaceResponse(rsp *http.Response) (*DropKeyspaceResponse, error
 		}
 		response.JSON422 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -10678,12 +10678,12 @@ func ParseAddKeyspaceResponse(rsp *http.Response) (*AddKeyspaceResponse, error) 
 		}
 		response.JSON422 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -10732,12 +10732,12 @@ func ParseRemoveMigrationProxyResponse(rsp *http.Response) (*RemoveMigrationProx
 		}
 		response.JSON409 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -10786,12 +10786,12 @@ func ParseLaunchMigrationProxyResponse(rsp *http.Response) (*LaunchMigrationProx
 		}
 		response.JSON409 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -10840,12 +10840,12 @@ func ParseParkDatabaseResponse(rsp *http.Response) (*ParkDatabaseResponse, error
 		}
 		response.JSON409 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -10894,12 +10894,12 @@ func ParseResetPasswordResponse(rsp *http.Response) (*ResetPasswordResponse, err
 		}
 		response.JSON409 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -10948,12 +10948,12 @@ func ParseResizeDatabaseResponse(rsp *http.Response) (*ResizeDatabaseResponse, e
 		}
 		response.JSON409 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -11009,12 +11009,12 @@ func ParseGenerateSecureBundleURLResponse(rsp *http.Response) (*GenerateSecureBu
 		}
 		response.JSON409 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -11063,12 +11063,12 @@ func ParseTerminateDatabaseResponse(rsp *http.Response) (*TerminateDatabaseRespo
 		}
 		response.JSON409 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -11124,12 +11124,12 @@ func ParseConfigureMetricsExportResponse(rsp *http.Response) (*ConfigureMetricsE
 		}
 		response.JSON409 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -11178,12 +11178,12 @@ func ParseUnparkDatabaseResponse(rsp *http.Response) (*UnparkDatabaseResponse, e
 		}
 		response.JSON409 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -12962,12 +12962,12 @@ func ParseListServerlessRegionsResponse(rsp *http.Response) (*ListServerlessRegi
 		}
 		response.JSON401 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -13042,12 +13042,12 @@ func ParseDeleteCDCResponse(rsp *http.Response) (*DeleteCDCResponse, error) {
 		}
 		response.JSON409 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -13089,12 +13089,12 @@ func ParseGetCDCResponse(rsp *http.Response) (*GetCDCResponse, error) {
 		}
 		response.JSON404 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -13143,12 +13143,12 @@ func ParseEnableCDCResponse(rsp *http.Response) (*EnableCDCResponse, error) {
 		}
 		response.JSON409 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -13197,12 +13197,12 @@ func ParseUpdateCDCResponse(rsp *http.Response) (*UpdateCDCResponse, error) {
 		}
 		response.JSON409 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
@@ -13244,12 +13244,12 @@ func ParseGetCDCTableStatusResponse(rsp *http.Response) (*GetCDCTableStatusRespo
 		}
 		response.JSON404 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
