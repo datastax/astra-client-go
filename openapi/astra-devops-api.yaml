@@ -2494,6 +2494,60 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '500':
           $ref: '#/components/responses/ServerError'
+  /v2/pcus/types:
+    post:
+      tags:
+        - PCU
+      summary: Gets the PCU Types
+      description: Gets the PCU Types
+      operationId: pcuGetTypes
+      requestBody:
+        description: PCU Types request
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PCUGroupTypesRequest'
+      responses:
+        '200':
+          description: Returns the PCU Types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PCUGroupTypeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /v2/pcus/actions/get/{datacenterUUID}:
+    get:
+      tags:
+        - PCU
+      summary: Gets the PCU Group that contains the Datacenter UUID
+      description: Given datacenter UUID it retrieves the PCU Group that this datacenter belongs to, if any
+      operationId: pcuGroupGetByDatacenterUUID
+      parameters:
+        - in: path
+          name: datacenterUUID
+          required: true
+          description: The DatacenterUUID we want the PCU Group for
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns the PCU Group
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PCUGroup'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /v2/enterprises/organizations:
     post:
       tags:
@@ -4748,6 +4802,60 @@ components:
             description: User who updated the PCU association
             example: "user"
 
+    PCUGroupTypesRequest:
+      type: object
+      description: This object is used to fetch the types available for PCU Group
+      properties:
+        region:
+          type: string
+          description: region for which to get the PCU Group types
+          example: eu-west1
+        provider:
+          type: string
+          description: provider (cloud) to filter the PCU Group sizes by
+          example: shared
+    PCUGroupTypeResponse:
+      type: object
+      description: This object is used for the response of the PCU Group types request
+      properties:
+        type:
+          type: string
+          description: the size of the PCU Group type given the PCU Group types request
+          example: standard
+        region:
+          type: string
+          description: the region of that PCU Group type given the PCU Group types request
+          example: eu-west-1
+        provider:
+          type: string
+          description: the provider (cloud) of the PCU Group type given the PCU Group types request
+          example: aws
+        details:
+          $ref: '#/components/schemas/PCUGroupTypeDetails'
+    PCUGroupTypeDetails:
+      type: object
+      description: This object holds the details regarding the PCU Type
+      properties:
+        vCPU:
+          type: integer
+          format: int32
+          description: vCPUs for this pcu type
+        memory:
+          type: string
+          description: memory for this pcu type
+        disk_cache:
+          type: string
+          description: disk cache for this pcu type
+    PCUGroupType:
+      type: object
+      description: This object is used for the response of the PCU Group types request
+      properties:
+        type:
+          type: string
+          description: the size of the PCU Group type given the PCU Group types request
+          example: standard
+        details:
+          $ref: '#/components/schemas/PCUGroupTypeDetails'
   responses:
     # 200
     Ok:
