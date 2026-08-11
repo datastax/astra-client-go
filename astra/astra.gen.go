@@ -1070,15 +1070,6 @@ type PCUGroupTypeResponse struct {
 	Type *string `json:"type,omitempty"`
 }
 
-// PCUGroupTypesRequest This object is used to fetch the types available for PCU Group
-type PCUGroupTypesRequest struct {
-	// Provider provider (cloud) to filter the PCU Group sizes by
-	Provider *string `json:"provider,omitempty"`
-
-	// Region region for which to get the PCU Group types
-	Region *string `json:"region,omitempty"`
-}
-
 // PCUGroupUpdateRequest PCU Group Update Request Model
 type PCUGroupUpdateRequest struct {
 	// Description Description of the PCU group
@@ -1477,6 +1468,15 @@ type PcuCreateJSONBody = []PCUGroupCreateRequest
 // PcuUpdateJSONBody defines parameters for PcuUpdate.
 type PcuUpdateJSONBody = []PCUGroupUpdateRequest
 
+// PcuGetTypesParams defines parameters for PcuGetTypes.
+type PcuGetTypesParams struct {
+	// Provider Cloud provider filter
+	Provider *string `form:"provider,omitempty" json:"provider,omitempty"`
+
+	// Region Region filter
+	Region *string `form:"region,omitempty" json:"region,omitempty"`
+}
+
 // DeleteVPCPeeringConnectionParamsProvider defines parameters for DeleteVPCPeeringConnection.
 type DeleteVPCPeeringConnectionParamsProvider string
 
@@ -1577,9 +1577,6 @@ type PcuGetJSONRequestBody = PCUGroupGetRequest
 
 // PcuAssociationTransferJSONRequestBody defines body for PcuAssociationTransfer for application/json ContentType.
 type PcuAssociationTransferJSONRequestBody = PCUAssociationTransferRequest
-
-// PcuGetTypesJSONRequestBody defines body for PcuGetTypes for application/json ContentType.
-type PcuGetTypesJSONRequestBody = PCUGroupTypesRequest
 
 // CreateVPCPeeringConnectionJSONRequestBody defines body for CreateVPCPeeringConnection for application/json ContentType.
 type CreateVPCPeeringConnectionJSONRequestBody CreateVPCPeeringConnectionJSONBody
@@ -1916,10 +1913,8 @@ type ClientInterface interface {
 	// PcuGroupPark request
 	PcuGroupPark(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PcuGetTypesWithBody request with any body
-	PcuGetTypesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	PcuGetTypes(ctx context.Context, body PcuGetTypesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// PcuGetTypes request
+	PcuGetTypes(ctx context.Context, params *PcuGetTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PcuGroupUnpark request
 	PcuGroupUnpark(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3060,20 +3055,8 @@ func (c *Client) PcuGroupPark(ctx context.Context, pcuGroupUUID string, reqEdito
 	return c.Client.Do(req)
 }
 
-func (c *Client) PcuGetTypesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPcuGetTypesRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) PcuGetTypes(ctx context.Context, body PcuGetTypesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPcuGetTypesRequest(c.Server, body)
+func (c *Client) PcuGetTypes(ctx context.Context, params *PcuGetTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPcuGetTypesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -5966,19 +5949,8 @@ func NewPcuGroupParkRequest(server string, pcuGroupUUID string) (*http.Request, 
 	return req, nil
 }
 
-// NewPcuGetTypesRequest calls the generic PcuGetTypes builder with application/json body
-func NewPcuGetTypesRequest(server string, body PcuGetTypesJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewPcuGetTypesRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewPcuGetTypesRequestWithBody generates requests for PcuGetTypes with any type of body
-func NewPcuGetTypesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+// NewPcuGetTypesRequest generates requests for PcuGetTypes
+func NewPcuGetTypesRequest(server string, params *PcuGetTypesParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -5996,12 +5968,48 @@ func NewPcuGetTypesRequestWithBody(server string, contentType string, body io.Re
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Provider != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "provider", runtime.ParamLocationQuery, *params.Provider); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Region != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "region", runtime.ParamLocationQuery, *params.Region); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -6828,10 +6836,8 @@ type ClientWithResponsesInterface interface {
 	// PcuGroupParkWithResponse request
 	PcuGroupParkWithResponse(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*PcuGroupParkResponse, error)
 
-	// PcuGetTypesWithBodyWithResponse request with any body
-	PcuGetTypesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PcuGetTypesResponse, error)
-
-	PcuGetTypesWithResponse(ctx context.Context, body PcuGetTypesJSONRequestBody, reqEditors ...RequestEditorFn) (*PcuGetTypesResponse, error)
+	// PcuGetTypesWithResponse request
+	PcuGetTypesWithResponse(ctx context.Context, params *PcuGetTypesParams, reqEditors ...RequestEditorFn) (*PcuGetTypesResponse, error)
 
 	// PcuGroupUnparkWithResponse request
 	PcuGroupUnparkWithResponse(ctx context.Context, pcuGroupUUID string, reqEditors ...RequestEditorFn) (*PcuGroupUnparkResponse, error)
@@ -8490,7 +8496,7 @@ type PcuGetTypesResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *[]PCUGroupTypeResponse
 	JSON400      *BadRequest
-	JSON500      *ServerError
+	JSON5XX      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -9599,17 +9605,9 @@ func (c *ClientWithResponses) PcuGroupParkWithResponse(ctx context.Context, pcuG
 	return ParsePcuGroupParkResponse(rsp)
 }
 
-// PcuGetTypesWithBodyWithResponse request with arbitrary body returning *PcuGetTypesResponse
-func (c *ClientWithResponses) PcuGetTypesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PcuGetTypesResponse, error) {
-	rsp, err := c.PcuGetTypesWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePcuGetTypesResponse(rsp)
-}
-
-func (c *ClientWithResponses) PcuGetTypesWithResponse(ctx context.Context, body PcuGetTypesJSONRequestBody, reqEditors ...RequestEditorFn) (*PcuGetTypesResponse, error) {
-	rsp, err := c.PcuGetTypes(ctx, body, reqEditors...)
+// PcuGetTypesWithResponse request returning *PcuGetTypesResponse
+func (c *ClientWithResponses) PcuGetTypesWithResponse(ctx context.Context, params *PcuGetTypesParams, reqEditors ...RequestEditorFn) (*PcuGetTypesResponse, error) {
+	rsp, err := c.PcuGetTypes(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -12701,12 +12699,12 @@ func ParsePcuGetTypesResponse(rsp *http.Response) (*PcuGetTypesResponse, error) 
 		}
 		response.JSON400 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON500 = &dest
+		response.JSON5XX = &dest
 
 	}
 
