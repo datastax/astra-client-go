@@ -8496,7 +8496,7 @@ type PcuGetTypesResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *[]PCUGroupTypeResponse
 	JSON400      *BadRequest
-	JSON5XX      *ServerError
+	JSON500      *ServerError
 }
 
 // Status returns HTTPResponse.Status
@@ -12699,12 +12699,12 @@ func ParsePcuGetTypesResponse(rsp *http.Response) (*PcuGetTypesResponse, error) 
 		}
 		response.JSON400 = &dest
 
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 5:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON5XX = &dest
+		response.JSON500 = &dest
 
 	}
 

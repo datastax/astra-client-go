@@ -2523,7 +2523,7 @@ paths:
                   $ref: '#/components/schemas/PCUGroupTypeResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
-        '5XX':
+        '500':
           $ref: '#/components/responses/ServerError'
   /v2/pcus/actions/get/{datacenterUUID}:
     get:
