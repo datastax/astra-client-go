@@ -2495,19 +2495,23 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
   /v2/pcus/types:
-    post:
+    get:
       tags:
         - PCU
       summary: Gets the PCU Types
       description: Gets the PCU Types
       operationId: pcuGetTypes
-      requestBody:
-        description: PCU Types request
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PCUGroupTypesRequest'
+      parameters:
+        - in: query
+          name: provider
+          schema:
+            type: string
+          description: Cloud provider filter
+        - in: query
+          name: region
+          schema:
+            type: string
+          description: Region filter
       responses:
         '200':
           description: Returns the PCU Types
