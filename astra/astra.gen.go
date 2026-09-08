@@ -380,6 +380,43 @@ type ClientRoleList struct {
 	Clients *[]ClientRole `json:"clients,omitempty"`
 }
 
+// CloneStatus Status information about an ongoing DB Clone operation.
+type CloneStatus struct {
+	// CreatedAt the RFC3339 timestamp of when the operation was initiated
+	CreatedAt *string `json:"createdAt,omitempty"`
+
+	// Message status reason
+	Message *string `json:"message,omitempty"`
+
+	// OperationID ID of the ongoing operation.
+	OperationID *string `json:"operationID,omitempty"`
+
+	// Phase general phase of the clone operation
+	Phase *string `json:"phase,omitempty"`
+
+	// SnapshotID the ID of the snapshot being cloned
+	SnapshotID *string `json:"snapshotID,omitempty"`
+
+	// SnapshotTimestamp the RFC3339 timestamp of when the snapshot was taken
+	SnapshotTimestamp *string `json:"snapshotTimestamp,omitempty"`
+
+	// SourceDBID ID of the DB cloning from
+	SourceDBID *string `json:"sourceDBID,omitempty"`
+
+	// SourceRegion the provider region of the source DB
+	SourceRegion *string `json:"sourceRegion,omitempty"`
+	Status       *string `json:"status,omitempty"`
+
+	// TargetDBID ID of the DB cloning to
+	TargetDBID *string `json:"targetDBID,omitempty"`
+
+	// TargetRegion the provider region of the target DB
+	TargetRegion *string `json:"targetRegion,omitempty"`
+
+	// User the ID of the user who initiated the clone operation
+	User *string `json:"user,omitempty"`
+}
+
 // CloudProvider Cloud hosting provider
 type CloudProvider string
 
@@ -1269,6 +1306,16 @@ type ServiceAccountTokenResponse struct {
 // ServiceName The given endpoint service for the user to connect to
 type ServiceName = string
 
+// SnapshotList Snapshots of a DB
+type SnapshotList struct {
+	Snapshots *[]struct {
+		Id *string `json:"id,omitempty"`
+
+		// Time snapshot timestamp in RFC3339 format
+		Time *string `json:"time,omitempty"`
+	} `json:"snapshots,omitempty"`
+}
+
 // StatusEnum defines model for StatusEnum.
 type StatusEnum string
 
@@ -1456,10 +1503,31 @@ type GenerateSecureBundleURLParams struct {
 	All *bool `form:"all,omitempty" json:"all,omitempty"`
 }
 
+// ListSnapshotsParams defines parameters for ListSnapshots.
+type ListSnapshotsParams struct {
+	// From Optional timestamp in RFC3339 format. Sets the earliest time from which to fetch snapshots. If alone, fetches all available snapshots recorded on or after the given time. Use with 'to' to create a defined range.
+	From *string `form:"from,omitempty" json:"from,omitempty"`
+
+	// To Optional timestamp in RFC3339 format. Sets the latest time from which to fetch snapshots. If alone, fetches all available snapshots recorded on or before the given time. Use with 'from' to create a defined range.
+	To *string `form:"to,omitempty" json:"to,omitempty"`
+
+	// SourceRegion When set then identifies which region to use as the source.
+	SourceRegion *string `form:"sourceRegion,omitempty" json:"sourceRegion,omitempty"`
+}
+
 // TerminateDatabaseParams defines parameters for TerminateDatabase.
 type TerminateDatabaseParams struct {
 	// PreparedStateOnly For internal use only.  Used to safely terminate prepared databases.
 	PreparedStateOnly *bool `form:"preparedStateOnly,omitempty" json:"preparedStateOnly,omitempty"`
+}
+
+// CloneFromDBParams defines parameters for CloneFromDB.
+type CloneFromDBParams struct {
+	// SnapshotID The ID of the snapshot from the source DB to use as the basis of the clone operation.
+	SnapshotID string `form:"snapshotID" json:"snapshotID"`
+
+	// SourceRegion The name of the region to use as the source, if cloning from a secondary region of a multi-region database.
+	SourceRegion *string `form:"sourceRegion,omitempty" json:"sourceRegion,omitempty"`
 }
 
 // PcuCreateJSONBody defines parameters for PcuCreate.
@@ -1770,6 +1838,9 @@ type ClientInterface interface {
 	// GenerateSecureBundleURL request
 	GenerateSecureBundleURL(ctx context.Context, databaseId DatabaseIdParam, params *GenerateSecureBundleURLParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListSnapshots request
+	ListSnapshots(ctx context.Context, databaseId DatabaseIdParam, params *ListSnapshotsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// TerminateDatabase request
 	TerminateDatabase(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1780,6 +1851,12 @@ type ClientInterface interface {
 
 	// UnparkDatabase request
 	UnparkDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CloneFromDB request
+	CloneFromDB(ctx context.Context, targetDBID string, sourceDBID string, params *CloneFromDBParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CloneStatus request
+	CloneStatus(ctx context.Context, targetDBID string, operationID string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateOrganizationInEnterpriseWithBody request with any body
 	CreateOrganizationInEnterpriseWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -2419,6 +2496,18 @@ func (c *Client) GenerateSecureBundleURL(ctx context.Context, databaseId Databas
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListSnapshots(ctx context.Context, databaseId DatabaseIdParam, params *ListSnapshotsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListSnapshotsRequest(c.Server, databaseId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) TerminateDatabase(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewTerminateDatabaseRequest(c.Server, databaseId, params)
 	if err != nil {
@@ -2457,6 +2546,30 @@ func (c *Client) ConfigureMetricsExport(ctx context.Context, databaseId Database
 
 func (c *Client) UnparkDatabase(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUnparkDatabaseRequest(c.Server, databaseId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CloneFromDB(ctx context.Context, targetDBID string, sourceDBID string, params *CloneFromDBParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCloneFromDBRequest(c.Server, targetDBID, sourceDBID, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CloneStatus(ctx context.Context, targetDBID string, operationID string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCloneStatusRequest(c.Server, targetDBID, operationID)
 	if err != nil {
 		return nil, err
 	}
@@ -4440,6 +4553,94 @@ func NewGenerateSecureBundleURLRequest(server string, databaseId DatabaseIdParam
 	return req, nil
 }
 
+// NewListSnapshotsRequest generates requests for ListSnapshots
+func NewListSnapshotsRequest(server string, databaseId DatabaseIdParam, params *ListSnapshotsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "databaseId", runtime.ParamLocationPath, databaseId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/snapshots", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.From != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "from", runtime.ParamLocationQuery, *params.From); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.To != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "to", runtime.ParamLocationQuery, *params.To); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.SourceRegion != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sourceRegion", runtime.ParamLocationQuery, *params.SourceRegion); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewTerminateDatabaseRequest generates requests for TerminateDatabase
 func NewTerminateDatabaseRequest(server string, databaseId DatabaseIdParam, params *TerminateDatabaseParams) (*http.Request, error) {
 	var err error
@@ -4570,6 +4771,122 @@ func NewUnparkDatabaseRequest(server string, databaseId DatabaseIdParam) (*http.
 	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCloneFromDBRequest generates requests for CloneFromDB
+func NewCloneFromDBRequest(server string, targetDBID string, sourceDBID string, params *CloneFromDBParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "targetDBID", runtime.ParamLocationPath, targetDBID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "sourceDBID", runtime.ParamLocationPath, sourceDBID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/cloneFrom/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "snapshotID", runtime.ParamLocationQuery, params.SnapshotID); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		if params.SourceRegion != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sourceRegion", runtime.ParamLocationQuery, *params.SourceRegion); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCloneStatusRequest generates requests for CloneStatus
+func NewCloneStatusRequest(server string, targetDBID string, operationID string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "targetDBID", runtime.ParamLocationPath, targetDBID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "operationID", runtime.ParamLocationPath, operationID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/databases/%s/cloneStatus/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -6693,6 +7010,9 @@ type ClientWithResponsesInterface interface {
 	// GenerateSecureBundleURLWithResponse request
 	GenerateSecureBundleURLWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *GenerateSecureBundleURLParams, reqEditors ...RequestEditorFn) (*GenerateSecureBundleURLResponse, error)
 
+	// ListSnapshotsWithResponse request
+	ListSnapshotsWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *ListSnapshotsParams, reqEditors ...RequestEditorFn) (*ListSnapshotsResponse, error)
+
 	// TerminateDatabaseWithResponse request
 	TerminateDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*TerminateDatabaseResponse, error)
 
@@ -6703,6 +7023,12 @@ type ClientWithResponsesInterface interface {
 
 	// UnparkDatabaseWithResponse request
 	UnparkDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, reqEditors ...RequestEditorFn) (*UnparkDatabaseResponse, error)
+
+	// CloneFromDBWithResponse request
+	CloneFromDBWithResponse(ctx context.Context, targetDBID string, sourceDBID string, params *CloneFromDBParams, reqEditors ...RequestEditorFn) (*CloneFromDBResponse, error)
+
+	// CloneStatusWithResponse request
+	CloneStatusWithResponse(ctx context.Context, targetDBID string, operationID string, reqEditors ...RequestEditorFn) (*CloneStatusResponse, error)
 
 	// CreateOrganizationInEnterpriseWithBodyWithResponse request with any body
 	CreateOrganizationInEnterpriseWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationInEnterpriseResponse, error)
@@ -7578,6 +7904,33 @@ func (r GenerateSecureBundleURLResponse) StatusCode() int {
 	return 0
 }
 
+type ListSnapshotsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SnapshotList
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON403      *Forbidden
+	JSON404      *NotFound
+	JSON500      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListSnapshotsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListSnapshotsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type TerminateDatabaseResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -7651,6 +8004,60 @@ func (r UnparkDatabaseResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UnparkDatabaseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CloneFromDBResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CloneStatus
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON403      *Forbidden
+	JSON404      *NotFound
+	JSON500      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r CloneFromDBResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CloneFromDBResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CloneStatusResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CloneStatus
+	JSON400      *BadRequest
+	JSON401      *Unauthorized
+	JSON403      *Forbidden
+	JSON404      *NotFound
+	JSON500      *ServerError
+}
+
+// Status returns HTTPResponse.Status
+func (r CloneStatusResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CloneStatusResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -9144,6 +9551,15 @@ func (c *ClientWithResponses) GenerateSecureBundleURLWithResponse(ctx context.Co
 	return ParseGenerateSecureBundleURLResponse(rsp)
 }
 
+// ListSnapshotsWithResponse request returning *ListSnapshotsResponse
+func (c *ClientWithResponses) ListSnapshotsWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *ListSnapshotsParams, reqEditors ...RequestEditorFn) (*ListSnapshotsResponse, error) {
+	rsp, err := c.ListSnapshots(ctx, databaseId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListSnapshotsResponse(rsp)
+}
+
 // TerminateDatabaseWithResponse request returning *TerminateDatabaseResponse
 func (c *ClientWithResponses) TerminateDatabaseWithResponse(ctx context.Context, databaseId DatabaseIdParam, params *TerminateDatabaseParams, reqEditors ...RequestEditorFn) (*TerminateDatabaseResponse, error) {
 	rsp, err := c.TerminateDatabase(ctx, databaseId, params, reqEditors...)
@@ -9177,6 +9593,24 @@ func (c *ClientWithResponses) UnparkDatabaseWithResponse(ctx context.Context, da
 		return nil, err
 	}
 	return ParseUnparkDatabaseResponse(rsp)
+}
+
+// CloneFromDBWithResponse request returning *CloneFromDBResponse
+func (c *ClientWithResponses) CloneFromDBWithResponse(ctx context.Context, targetDBID string, sourceDBID string, params *CloneFromDBParams, reqEditors ...RequestEditorFn) (*CloneFromDBResponse, error) {
+	rsp, err := c.CloneFromDB(ctx, targetDBID, sourceDBID, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCloneFromDBResponse(rsp)
+}
+
+// CloneStatusWithResponse request returning *CloneStatusResponse
+func (c *ClientWithResponses) CloneStatusWithResponse(ctx context.Context, targetDBID string, operationID string, reqEditors ...RequestEditorFn) (*CloneStatusResponse, error) {
+	rsp, err := c.CloneStatus(ctx, targetDBID, operationID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCloneStatusResponse(rsp)
 }
 
 // CreateOrganizationInEnterpriseWithBodyWithResponse request with arbitrary body returning *CreateOrganizationInEnterpriseResponse
@@ -11019,6 +11453,67 @@ func ParseGenerateSecureBundleURLResponse(rsp *http.Response) (*GenerateSecureBu
 	return response, nil
 }
 
+// ParseListSnapshotsResponse parses an HTTP response from a ListSnapshotsWithResponse call
+func ParseListSnapshotsResponse(rsp *http.Response) (*ListSnapshotsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListSnapshotsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SnapshotList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseTerminateDatabaseResponse parses an HTTP response from a TerminateDatabaseWithResponse call
 func ParseTerminateDatabaseResponse(rsp *http.Response) (*TerminateDatabaseResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -11182,6 +11677,128 @@ func ParseUnparkDatabaseResponse(rsp *http.Response) (*UnparkDatabaseResponse, e
 			return nil, err
 		}
 		response.JSON5XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCloneFromDBResponse parses an HTTP response from a CloneFromDBWithResponse call
+func ParseCloneFromDBResponse(rsp *http.Response) (*CloneFromDBResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CloneFromDBResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CloneStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCloneStatusResponse parses an HTTP response from a CloneStatusWithResponse call
+func ParseCloneStatusResponse(rsp *http.Response) (*CloneStatusResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CloneStatusResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CloneStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest BadRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest Unauthorized
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Forbidden
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
