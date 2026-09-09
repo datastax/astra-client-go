@@ -46,6 +46,8 @@ tags:
     description: The DevOps APIs for your Astra organization
   - name: PCU
     description: The DevOps PCU (Provisioned Capacity Units) APIs for managing PCU groups and associations
+  - name: Clone
+    description: The DevOps Clone APIs for managing database cloning and snapshots
 paths:
   /v2/authenticateServiceAccount:
     post:
@@ -2601,6 +2603,153 @@ paths:
             text/plain:
               schema:
                 type: string
+
+  /v2/databases/{databaseId}/snapshots:
+    get:
+      tags:
+        - Clone
+      summary: List a database's snapshots.
+      description: List a database's snapshots.
+      security:
+        - BearerAuth:
+            - org-db-view
+      operationId: listSnapshots
+      parameters:
+        - $ref: '#/components/parameters/DatabaseIdParam'
+        - in: query
+          name: from
+          description: Optional timestamp in RFC3339 format. Sets the earliest time from which to fetch snapshots. If alone, fetches all available snapshots recorded on or after the given time. Use with 'to' to create a defined range.
+          required: false
+          schema:
+            type: string
+            description: Optional timestamp from which to list the snapshots in RFC3339 format.
+            example: "2006-01-02T15:04:05Z07:00"
+        - in: query
+          name: to
+          description: Optional timestamp in RFC3339 format. Sets the latest time from which to fetch snapshots. If alone, fetches all available snapshots recorded on or before the given time. Use with 'from' to create a defined range.
+          required: false
+          schema:
+            type: string
+            description: Optional timestamp until which to list the snapshots in RFC3339 format.
+            example: "2006-01-02T15:04:05Z07:00"
+        - in: query
+          name: sourceRegion
+          required: false
+          description: When set then identifies which region to use as the source.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of snapshots
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2/databases/{targetDBID}/cloneFrom/{sourceDBID}:
+    post:
+      tags:
+        - Clone
+      summary: Start a clone operation
+      description: Start a clone operation.
+      security:
+        - BearerAuth:
+            - org-db-create
+      operationId: cloneFromDB
+      parameters:
+        - in: path
+          name: targetDBID
+          required: true
+          description: The ID of the target database that you want to clone to.
+          schema:
+            type: string
+        - in: path
+          name: sourceDBID
+          required: true
+          description: The ID of the source database that you want to clone.
+          schema:
+            type: string
+        - in: query
+          name: snapshotID
+          description: "The ID of the snapshot from the source DB to use as the basis of the clone operation."
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: sourceRegion
+          required: false
+          description: The name of the region to use as the source, if cloning from a secondary region of a multi-region database.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The clone operation successfully started.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CloneStatus'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2/databases/{targetDBID}/cloneStatus/{operationID}:
+    get:
+      tags:
+        - Clone
+      summary: Get the status of a clone operation.
+      description: Get the status of a clone operation.
+      security:
+        - BearerAuth:
+            - org-db-view
+      operationId: cloneStatus
+      parameters:
+        - in: path
+          name: targetDBID
+          required: true
+          description: The ID of the target database that you want to clone to.
+          schema:
+            type: string
+        - in: path
+          name: operationID
+          required: true
+          description: The ID of the clone operation.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The clone operation successfully started.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CloneStatus'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
 servers:
   - url: https://api.astra.datastax.com/
 components:
@@ -4860,6 +5009,62 @@ components:
           example: standard
         details:
           $ref: '#/components/schemas/PCUGroupTypeDetails'
+
+    CloneStatus:
+      description: Status information about an ongoing DB Clone operation.
+      type: object
+      properties:
+        operationID:
+          type: string
+          description: ID of the ongoing operation.
+        status:
+          type: string
+        sourceDBID:
+          type: string
+          description: ID of the DB cloning from
+        targetDBID:
+          type: string
+          description: ID of the DB cloning to
+        phase:
+          type: string
+          description: general phase of the clone operation
+        message:
+          type: string
+          description: status reason
+        snapshotID:
+          type: string
+          description: the ID of the snapshot being cloned
+        snapshotTimestamp:
+          type: string
+          description: the RFC3339 timestamp of when the snapshot was taken
+        createdAt:
+          type: string
+          description: the RFC3339 timestamp of when the operation was initiated
+        sourceRegion:
+          type: string
+          description: the provider region of the source DB
+        targetRegion:
+          type: string
+          description: the provider region of the target DB
+        user:
+          type: string
+          description: the ID of the user who initiated the clone operation
+
+    SnapshotList:
+      description: Snapshots of a DB
+      type: object
+      properties:
+        snapshots:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              time:
+                type: string
+                description: snapshot timestamp in RFC3339 format
+
   responses:
     # 200
     Ok:
