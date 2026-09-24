@@ -3136,6 +3136,10 @@ components:
           type: integer
           example: 1
           description: CapacityUnits is the amount of space available (horizontal scaling) for the database
+        pcuGroupUUID:
+          type: string
+          description: PCU group to associate this datacenter with. If set, the datacenter will run on dedicated capacity from this PCU group instead of standard shared capacity.
+          example: '48de8fc3-b8ec-4ed2-8951-4aeaf4c9e626'
         studioUrl:
           type: string
           example: "http://path-to-studio:port"
@@ -3195,6 +3199,10 @@ components:
           type: string
           example: us-west-2
           description: Region refers to the cloud region.
+        pcuGroupUUID:
+          type: string
+          description: PCU group to associate this database's initial datacenter with. If set, the datacenter will run on dedicated capacity from this PCU group instead of standard shared capacity.
+          example: '48de8fc3-b8ec-4ed2-8951-4aeaf4c9e626'
         user:
           type: string
           example: db_admin
