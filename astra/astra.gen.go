@@ -614,6 +614,9 @@ type DatabaseInfoCreate struct {
 	// Password Password for the user to access the database
 	Password *string `json:"password,omitempty"`
 
+	// PcuGroupUUID PCU group to associate this database's initial datacenter with. If set, the datacenter will run on dedicated capacity from this PCU group instead of standard shared capacity.
+	PcuGroupUUID *string `json:"pcuGroupUUID,omitempty"`
+
 	// Region Region refers to the cloud region.
 	Region string `json:"region"`
 
@@ -633,13 +636,16 @@ type Datacenter struct {
 	CapacityUnits *int `json:"capacityUnits,omitempty"`
 
 	// CloudProvider Cloud hosting provider
-	CloudProvider                         CloudProvider                   `json:"cloudProvider"`
-	CqlshUrl                              *string                         `json:"cqlshUrl,omitempty"`
-	DataEndpointUrl                       *string                         `json:"dataEndpointUrl,omitempty"`
-	GrafanaUrl                            *string                         `json:"grafanaUrl,omitempty"`
-	GraphqlUrl                            *string                         `json:"graphqlUrl,omitempty"`
-	Id                                    *string                         `json:"id,omitempty"`
-	Name                                  *string                         `json:"name,omitempty"`
+	CloudProvider   CloudProvider `json:"cloudProvider"`
+	CqlshUrl        *string       `json:"cqlshUrl,omitempty"`
+	DataEndpointUrl *string       `json:"dataEndpointUrl,omitempty"`
+	GrafanaUrl      *string       `json:"grafanaUrl,omitempty"`
+	GraphqlUrl      *string       `json:"graphqlUrl,omitempty"`
+	Id              *string       `json:"id,omitempty"`
+	Name            *string       `json:"name,omitempty"`
+
+	// PcuGroupUUID PCU group to associate this datacenter with. If set, the datacenter will run on dedicated capacity from this PCU group instead of standard shared capacity.
+	PcuGroupUUID                          *string                         `json:"pcuGroupUUID,omitempty"`
 	Region                                string                          `json:"region"`
 	RegionClassification                  *DatacenterRegionClassification `json:"regionClassification,omitempty"`
 	RegionZone                            *DatacenterRegionZone           `json:"regionZone,omitempty"`
